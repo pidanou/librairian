@@ -7,7 +7,7 @@ import (
 )
 
 type ArchiveRepository interface {
-	Add(file *types.File) error
+	Add(file *types.File) (*uuid.UUID, error)
 	GetFileByID(id uuid.UUID) (*types.File, error)
 	EditSummary(summary *types.Summary) error
 }
@@ -17,5 +17,9 @@ type EmbeddingRepository interface {
 }
 
 type SimilarityRepository interface {
-	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, ownerID uuid.UUID) ([]types.MatchedFile, error)
+	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID uuid.UUID) ([]types.MatchedFile, error)
+}
+
+type AuthRepository interface {
+	LoginWithPassword(email, password string) (*types.Session, error)
 }

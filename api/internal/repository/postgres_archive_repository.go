@@ -16,51 +16,59 @@ func NewPostgresArchiveRepository(db *sqlx.DB) *PostgresArchiveRepository {
 	return &PostgresArchiveRepository{DB: db}
 }
 
-func (r *PostgresArchiveRepository) Add(file *types.File) error {
+func (r *PostgresArchiveRepository) Add(file *types.File) (*uuid.UUID, error) {
 	var insertedFileId uuid.UUID
 
 	tx := r.DB.MustBegin()
 
 	query := `INSERT INTO file 
-  (analysis_date, tags, size, word_count) 
-  VALUES (:analysis_date, :tags, :size, :word_count) returning id`
+  (user_id, analysis_date, tags, size, word_count) 
+  VALUES (:user_id, :analysis_date, :tags, :size, :word_count) returning id`
 	rows, err := tx.NamedQuery(query, file)
 	if err != nil {
 		log.Printf(`Cannot create file %s`, err)
-		return err
+		return nil, err
 	}
 
 	rows.Next()
 	err = rows.Scan(&insertedFileId)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 	rows.Close()
 
-	query = `INSERT INTO summary (file_id, data, embedding) VALUES ($1, $2, $3)`
-	_, err = tx.Exec(query, insertedFileId, file.Summary.Data, file.Summary.Embedding)
+	query = `INSERT INTO summary (file_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
+	_, err = tx.Exec(query, insertedFileId, file.Summary.Data, file.Summary.Embedding, file.Summary.UserID)
 	if err != nil {
 		log.Printf(`Cannot create summary: %s`, err)
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
-	query = `INSERT INTO description (file_id, data, embedding) VALUES ($1, $2, $3)`
-	_, err = tx.Exec(query, insertedFileId, file.Description.Data, file.Description.Embedding)
+	query = `INSERT INTO description (file_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
+	_, err = tx.Exec(query, insertedFileId, file.Description.Data, file.Description.Embedding, file.Description.UserID)
 	if err != nil {
 		log.Printf(`Cannot create summary %s`, err)
 		tx.Rollback()
-		return err
+		return nil, err
+	}
+
+	query = `INSERT INTO storage_location (location, storage_id, file_id, user_id) VALUES ($1, $2, $3, $4)`
+	_, err = tx.Exec(query, file.StorageLocation.Location, file.StorageLocation.StorageID, insertedFileId, file.StorageLocation.UserID)
+	if err != nil {
+		log.Printf(`Cannot create summary %s`, err)
+		tx.Rollback()
+		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		log.Printf(`Cannot commit: %s`, err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &insertedFileId, nil
 }
 
 func (r *PostgresArchiveRepository) GetFileByID(id uuid.UUID) (*types.File, error) {

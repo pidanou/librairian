@@ -10,11 +10,11 @@ type ArchiveService struct {
 	ArchiveRepository repository.ArchiveRepository
 }
 
-func NewFileService(r repository.ArchiveRepository) *ArchiveService {
+func NewArchiveService(r repository.ArchiveRepository) *ArchiveService {
 	return &ArchiveService{ArchiveRepository: r}
 }
 
-func (s *ArchiveService) AddFile(file *types.File) error {
+func (s *ArchiveService) AddFile(file *types.File) (*uuid.UUID, error) {
 	return s.ArchiveRepository.Add(file)
 }
 

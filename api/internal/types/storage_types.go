@@ -6,7 +6,7 @@ type StorageLocation struct {
 	Base
 	FileID    uuid.UUID `json:"-" db:"file_id"`
 	Storage   *Storage  `json:"storage"`
-	StorageID uuid.UUID `json:"-" db:"storage_id"`
+	StorageID uuid.UUID `json:"storage_id" db:"storage_id"`
 	Location  string    `json:"location"`
 }
 

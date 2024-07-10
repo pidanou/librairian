@@ -15,6 +15,6 @@ func NewSimilarityService(repo repository.SimilarityRepository) *SimilarityServi
 	return &SimilarityService{SimilarityRepository: repo}
 }
 
-func (s *SimilarityService) Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, ownerID uuid.UUID) ([]types.MatchedFile, error) {
-	return s.SimilarityRepository.Find(vector, matchThreshold, matchCount, ownerID)
+func (s *SimilarityService) Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID uuid.UUID) ([]types.MatchedFile, error) {
+	return s.SimilarityRepository.Find(vector, matchThreshold, matchCount, UserID)
 }

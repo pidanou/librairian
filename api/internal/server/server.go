@@ -3,7 +3,9 @@ package server
 import (
 	"os"
 
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/pidanou/librairian/internal/datastore"
 	"github.com/pidanou/librairian/internal/handler"
 	"github.com/pidanou/librairian/internal/repository"
@@ -26,7 +28,7 @@ func (s *Server) Start() {
 	embeddingRepository := repository.NewOpenaiEmbeddingRepository(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")
 	similarityRepository := repository.NewPgvectorSimilarityRepository(supabasePostgres)
 
-	archiveService := service.NewFileService(archiveRepository)
+	archiveService := service.NewArchiveService(archiveRepository)
 	embeddingService := service.NewEmbeddingService(embeddingRepository)
 	similarityService := service.NewSimilarityService(similarityRepository)
 
@@ -35,11 +37,23 @@ func (s *Server) Start() {
 	e := echo.New()
 	e.HideBanner = true
 
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
 	api := e.Group("/api/v1")
+	api.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(os.Getenv("JWT_SECRET")),
+		Skipper: func(c echo.Context) bool {
+			if c.Path() == "/api/v1/*" {
+				return true
+			}
+			return false
+		},
+	}))
+
 	api.POST("/file", h.PostFile)
 	api.GET("/file/:id", h.GetFileById)
-
-	api.GET("/matches", h.GetMatches)
+	api.GET("/file/matches", h.GetMatches)
 
 	e.Start(s.Port)
 

@@ -4,29 +4,27 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/pidanou/librairian/internal/service"
 	"github.com/pidanou/librairian/internal/types"
 )
 
-type Handler struct {
-	ArchiveService    *service.ArchiveService
-	EmbeddingService  *service.EmbeddingService
-	SimilarityService *service.SimilarityService
-}
-
-func New(fileService *service.ArchiveService, embeddingService *service.EmbeddingService, similarityService *service.SimilarityService) *Handler {
-	return &Handler{
-		ArchiveService:    fileService,
-		EmbeddingService:  embeddingService,
-		SimilarityService: similarityService,
-	}
-}
-
 func (h *Handler) PostFile(c echo.Context) error {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid token")
+	}
+
+	userID := uuid.MustParse(token.Claims.(jwt.MapClaims)["sub"].(string))
+
 	var file types.File
 	c.Bind(&file)
+
+	file.UserID = userID
+	file.Summary.UserID = userID
+	file.Description.UserID = userID
+	file.StorageLocation.UserID = userID
 
 	summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
 	if err != nil {
@@ -41,12 +39,12 @@ func (h *Handler) PostFile(c echo.Context) error {
 	file.Summary.Embedding = summaryEmbedding
 	file.Description.Embedding = descriptionEmbedding
 
-	err = h.ArchiveService.AddFile(&file)
+	id, err := h.ArchiveService.AddFile(&file)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot add file")
 	}
 
-	return c.String(200, "Starting Analysis")
+	return c.JSON(http.StatusCreated, map[string]interface{}{"message": map[string]interface{}{"created": id}})
 }
 
 func (h *Handler) GetFileById(c echo.Context) error {
@@ -68,6 +66,13 @@ func (h *Handler) GetMatches(c echo.Context) error {
 		Search string `query:"search"`
 	}
 
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid token")
+	}
+
+	userID := uuid.MustParse(token.Claims.(jwt.MapClaims)["sub"].(string))
+
 	req := request{}
 	err := c.Bind(&req)
 	if err != nil {
@@ -83,9 +88,7 @@ func (h *Handler) GetMatches(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	testId, _ := uuid.Parse("817025ca-b878-45a7-ab3d-9833a9f5c8fa")
-
-	matches, err := h.SimilarityService.Find(embedding, 0.5, 3, testId)
+	matches, err := h.SimilarityService.Find(embedding, 0.5, 3, userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
