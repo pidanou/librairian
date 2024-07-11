@@ -52,7 +52,10 @@ func (s *Server) Start() {
 	}))
 
 	api.POST("/file", h.PostFile)
+	api.PUT("/file", h.PutFile)
 	api.GET("/file/:id", h.GetFileById)
+	api.DELETE("/file/:id", h.DeleteFile)
+	api.PATCH("/file/:id/metadata", h.PatchFileMetadata)
 	api.GET("/file/matches", h.GetMatches)
 
 	e.Start(s.Port)

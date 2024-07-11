@@ -7,9 +7,12 @@ import (
 )
 
 type ArchiveRepository interface {
-	Add(file *types.File) (*uuid.UUID, error)
-	GetFileByID(id uuid.UUID) (*types.File, error)
-	EditSummary(summary *types.Summary) error
+	AddFile(file *types.File) (*uuid.UUID, error)
+	DeleteFile(id *uuid.UUID) error
+	UpdateFile(file *types.File) (*types.File, error)
+	GetFileByID(id *uuid.UUID) (*types.File, error)
+	EditFileMetadata(file *types.File) (*types.File, error)
+	EditFileSummary(summary *types.Summary) error
 }
 
 type EmbeddingRepository interface {
@@ -17,7 +20,7 @@ type EmbeddingRepository interface {
 }
 
 type SimilarityRepository interface {
-	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID uuid.UUID) ([]types.MatchedFile, error)
+	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedFile, error)
 }
 
 type AuthRepository interface {

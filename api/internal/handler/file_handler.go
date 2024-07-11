@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -21,10 +22,13 @@ func (h *Handler) PostFile(c echo.Context) error {
 	var file types.File
 	c.Bind(&file)
 
-	file.UserID = userID
-	file.Summary.UserID = userID
-	file.Description.UserID = userID
-	file.StorageLocation.UserID = userID
+	file.UserID = &userID
+	file.Summary.UserID = &userID
+	file.Description.UserID = &userID
+	for i, sl := range file.StorageLocation {
+		sl.UserID = &userID
+		file.StorageLocation[i] = sl
+	}
 
 	summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
 	if err != nil {
@@ -53,11 +57,62 @@ func (h *Handler) GetFileById(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
-	file, err := h.ArchiveService.GetFileById(id)
+	file, err := h.ArchiveService.GetFileById(&id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot get file")
 	}
 
+	return c.JSON(http.StatusOK, file)
+}
+
+func (h *Handler) DeleteFile(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
+	}
+
+	err = h.ArchiveService.DeleteFile(&id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot delete file")
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func (h *Handler) PutFile(c echo.Context) error {
+	var file = &types.File{}
+	c.Bind(file)
+
+	summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create summary embedding")
+	}
+	descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Description.Data)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
+	}
+	file.Summary.Embedding = summaryEmbedding
+	file.Description.Embedding = descriptionEmbedding
+	fmt.Println(file.Summary.ID)
+
+	file, err = h.ArchiveService.UpdateFile(file)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot update file")
+	}
+
+	return c.JSON(http.StatusOK, file)
+}
+
+func (h *Handler) PatchFileMetadata(c echo.Context) error {
+	var file = &types.File{}
+	c.Bind(file)
+
+	// id := uuid.MustParse(c.Param("id"))
+
+	file, err := h.ArchiveService.EditFileMetadata(file)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot update file")
+	}
 	return c.JSON(http.StatusOK, file)
 }
 
@@ -88,7 +143,7 @@ func (h *Handler) GetMatches(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	matches, err := h.SimilarityService.Find(embedding, 0.5, 3, userID)
+	matches, err := h.SimilarityService.Find(embedding, 0.5, 3, &userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
