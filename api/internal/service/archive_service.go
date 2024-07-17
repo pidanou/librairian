@@ -34,10 +34,6 @@ func (s *ArchiveService) EditFileMetadata(file *types.File) (*types.File, error)
 	return s.ArchiveRepository.EditFileMetadata(file)
 }
 
-func (s *ArchiveService) EditFileSummary(summary *types.Summary) error {
-	return s.ArchiveRepository.EditFileSummary(summary)
-}
-
 func (s *ArchiveService) GetStorageByID(id *uuid.UUID) (*types.Storage, error) {
 	return s.ArchiveRepository.GetStorageByID(id)
 }

@@ -12,7 +12,6 @@ type File struct {
 	Base
 	Name            string            `json:"name" db:"name"`
 	AnalysisDate    *time.Time        `json:"analysis_date" db:"analysis_date"`
-	Summary         *Summary          `json:"summary"`
 	Description     *Description      `json:"description"`
 	StorageLocation []StorageLocation `json:"storage_locations"`
 	Tags            StringArray       `json:"tags" db:"tags"`
@@ -21,7 +20,7 @@ type File struct {
 }
 
 func (f *File) UserHasAccess(userID *uuid.UUID) bool {
-	if f.UserID == nil || f.Summary.UserID == nil || f.Description.UserID == nil {
+	if f.UserID == nil || f.Description.UserID == nil {
 		log.Println("Missing userID in file")
 		return false
 	}
@@ -33,21 +32,7 @@ func (f *File) UserHasAccess(userID *uuid.UUID) bool {
 		}
 	}
 
-	return *f.UserID == *userID && f.Summary.UserHasAccess(userID) && f.Description.UserHasAccess(userID)
-}
-
-type Summary struct {
-	Base
-	FileID    *uuid.UUID       `json:"file_id" db:"file_id"`
-	Data      string           `json:"data" db:"data"`
-	Embedding *pgvector.Vector `json:"-" db:"embedding"`
-}
-
-func (s *Summary) UserHasAccess(userID *uuid.UUID) bool {
-	if s.UserID == nil || userID == nil {
-		return false
-	}
-	return *s.UserID == *userID
+	return *f.UserID == *userID && f.Description.UserHasAccess(userID)
 }
 
 type Description struct {

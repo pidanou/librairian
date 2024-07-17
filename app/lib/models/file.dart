@@ -8,7 +8,6 @@ class File {
   String? userId;
   String? name;
   DateTime? analysisDate;
-  Summary? summary;
   Description? description;
   List<StorageLocation>? storageLocations;
   List<String>? tags;
@@ -22,7 +21,6 @@ class File {
     this.userId,
     this.name,
     this.analysisDate,
-    this.summary,
     this.description,
     this.storageLocations,
     this.tags,
@@ -52,8 +50,6 @@ class File {
       analysisDate: json['analysis_date'] != null
           ? DateTime.parse(json['analysis_date'])
           : null,
-      summary:
-          json['summary'] != null ? Summary.fromJson(json['summary']) : null,
       description: json['description'] != null
           ? Description.fromJson(json['description'])
           : null,
@@ -72,53 +68,11 @@ class File {
       'user_id': userId,
       'name': name,
       'analysis_date': analysisDate?.toIso8601String(),
-      'summary': summary?.toJson(),
       'description': description?.toJson(),
       'storage_locations': storageLocations?.map((e) => e.toJson()).toList(),
       'tags': tags,
       'size': size,
       'word_count': wordCount,
-    };
-  }
-}
-
-class Summary {
-  String? id;
-  DateTime? createdAt;
-  DateTime? updatedAt;
-  String userId;
-  String? fileId;
-  String data;
-  // Assuming `embedding` is not needed as it is not included in JSON serialization
-
-  Summary({
-    this.id,
-    this.createdAt,
-    this.updatedAt,
-    required this.userId,
-    this.fileId,
-    required this.data,
-  });
-
-  factory Summary.fromJson(Map<String, dynamic> json) {
-    return Summary(
-      id: json['id'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      userId: json['user_id'],
-      fileId: json['file_id'],
-      data: json['data'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'user_id': userId,
-      'file_id': fileId,
-      'data': data,
     };
   }
 }

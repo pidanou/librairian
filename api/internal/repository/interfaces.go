@@ -12,7 +12,6 @@ type ArchiveRepository interface {
 	UpdateFile(file *types.File) (*types.File, error)
 	GetFileByID(id *uuid.UUID) (*types.File, error)
 	EditFileMetadata(file *types.File) (*types.File, error)
-	EditFileSummary(summary *types.Summary) error
 	GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error)
 	GetStorageByID(id *uuid.UUID) (*types.Storage, error)
 }

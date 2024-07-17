@@ -18,16 +18,13 @@ class FileEditForm extends ConsumerStatefulWidget {
 
 class FileEditFormState extends ConsumerState<FileEditForm> {
   TextEditingController descriptionController = TextEditingController();
-  TextEditingController summaryController = TextEditingController();
 
   FocusNode descriptionFocusNode = FocusNode();
-  FocusNode summaryFocusNode = FocusNode();
 
   @override
   build(BuildContext context) {
     File file = widget.file;
     descriptionController.text = widget.file.description?.data ?? '';
-    summaryController.text = widget.file.summary?.data ?? '';
     return FocusTraversalGroup(
         child: Form(
             child: Padding(

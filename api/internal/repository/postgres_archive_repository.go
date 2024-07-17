@@ -39,14 +39,6 @@ func (r *PostgresArchiveRepository) AddFile(file *types.File) (*types.File, erro
 	}
 	rows.Close()
 
-	query = `INSERT INTO summary (file_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
-	_, err = tx.Exec(query, insertedFileId, file.Summary.Data, file.Summary.Embedding, file.Summary.UserID)
-	if err != nil {
-		log.Printf(`Cannot create summary: %s`, err)
-		tx.Rollback()
-		return nil, err
-	}
-
 	query = `INSERT INTO description (file_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
 	_, err = tx.Exec(query, insertedFileId, file.Description.Data, file.Description.Embedding, file.Description.UserID)
 	if err != nil {
@@ -101,14 +93,6 @@ func (r *PostgresArchiveRepository) UpdateFile(file *types.File) (*types.File, e
 		return nil, err
 	}
 
-	query = `UPDATE summary set data = :data, embedding = :embedding, updated_at = now() where id = :id`
-	_, err = tx.NamedExec(query, file.Summary)
-	if err != nil {
-		log.Printf(`Cannot update summary: %s`, err)
-		tx.Rollback()
-		return nil, err
-	}
-
 	query = `UPDATE description set data = :data, embedding = :embedding, updated_at = now() where id = :id`
 	_, err = tx.NamedExec(query, file.Description)
 	if err != nil {
@@ -137,7 +121,6 @@ func (r *PostgresArchiveRepository) UpdateFile(file *types.File) (*types.File, e
 
 func (r *PostgresArchiveRepository) GetFileByID(id *uuid.UUID) (*types.File, error) {
 	file := &types.File{}
-	summary := &types.Summary{}
 	description := &types.Description{}
 	storageLocation := []types.StorageLocation{}
 	storage := &types.Storage{}
@@ -147,12 +130,6 @@ func (r *PostgresArchiveRepository) GetFileByID(id *uuid.UUID) (*types.File, err
 	if err != nil {
 		log.Printf("Cannot get file: %s", err)
 		return nil, err
-	}
-
-	query = `SELECT * FROM summary WHERE file_id = $1`
-	err = r.DB.Get(summary, query, file.ID)
-	if err != nil {
-		log.Printf("Cannot get summary: %s", err)
 	}
 
 	query = `SELECT * FROM description WHERE file_id = $1`
@@ -177,7 +154,6 @@ func (r *PostgresArchiveRepository) GetFileByID(id *uuid.UUID) (*types.File, err
 		storageLocation[i] = sl
 	}
 
-	file.Summary = summary
 	file.Description = description
 	file.StorageLocation = storageLocation
 
@@ -212,16 +188,6 @@ func (r *PostgresArchiveRepository) EditFileMetadata(file *types.File) (*types.F
 	}
 
 	return file, nil
-}
-
-func (r *PostgresArchiveRepository) EditFileSummary(summary *types.Summary) error {
-	query := `UPDATE summary SET file_id=:file_id, data = :data, embedding = :embedding, updated_at = now() WHERE id = :id`
-	_, err := r.DB.NamedExec(query, summary)
-	if err != nil {
-		log.Printf("Cannot edit summary: %s", err)
-		return err
-	}
-	return nil
 }
 
 func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {

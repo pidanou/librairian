@@ -22,9 +22,6 @@ func (h *Handler) PostFiles(c echo.Context) error {
 	errors := []types.File{}
 
 	for _, file := range *files {
-		if file.Summary == nil {
-			file.Summary = &types.Summary{}
-		}
 		if file.Description == nil {
 			file.Description = &types.Description{}
 		}
@@ -50,15 +47,6 @@ func (h *Handler) PostFiles(c echo.Context) error {
 		}
 
 		file.StorageLocation = cleanedStorageLocation
-
-		file.Summary.UserID = userID
-		summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
-		if err != nil {
-			log.Println("Cannot create summary embedding: ", err)
-			errors = append(errors, file)
-			continue
-		}
-		file.Summary.Embedding = summaryEmbedding
 
 		file.Description.UserID = userID
 		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Description.Data)
@@ -143,17 +131,11 @@ func (h *Handler) PutFile(c echo.Context) error {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
-	summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create summary embedding")
-	}
 	descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Description.Data)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 	}
-	file.Summary.Embedding = summaryEmbedding
 	file.Description.Embedding = descriptionEmbedding
-	fmt.Println(file.Summary.ID)
 
 	file, err = h.ArchiveService.UpdateFile(file)
 	if err != nil {
