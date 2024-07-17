@@ -117,10 +117,12 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                               .read(newFilesProvider.notifier)
                               .saveAll()
                               .then((value) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text("Some files could not be saved")));
+                            if (value.isNotEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Some files could not be saved")));
+                            }
                           });
                         })
                   ])),

@@ -96,7 +96,7 @@ func (r *PostgresArchiveRepository) UpdateFile(file *types.File) (*types.File, e
 	query = `UPDATE description set data = :data, embedding = :embedding, updated_at = now() where id = :id`
 	_, err = tx.NamedExec(query, file.Description)
 	if err != nil {
-		log.Printf(`Cannot update summary %s`, err)
+		log.Printf(`Cannot update description %s`, err)
 		tx.Rollback()
 		return nil, err
 	}

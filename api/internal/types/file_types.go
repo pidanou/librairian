@@ -52,6 +52,5 @@ func (d *Description) UserHasAccess(userID *uuid.UUID) bool {
 type MatchedFile struct {
 	FileID                *uuid.UUID `json:"id" db:"file_id"`
 	File                  *File      `json:"file"`
-	SummarySimilarity     float32    `json:"summary_similarity" db:"summary_similarity"`
 	DescriptionSimilarity float32    `json:"description_similarity" db:"description_similarity"`
 }
