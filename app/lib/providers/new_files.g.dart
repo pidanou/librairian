@@ -6,7 +6,7 @@ part of 'new_files.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$newFilesHash() => r'454081bdf15b11b3aca0c5782cc7067c51a88d23';
+String _$newFilesHash() => r'96a2e9d1856ba2e72c2feb1646bcd1350eb833b5';
 
 /// See also [NewFiles].
 @ProviderFor(NewFiles)

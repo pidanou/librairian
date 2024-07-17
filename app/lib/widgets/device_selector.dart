@@ -25,8 +25,16 @@ class _DeviceSelectorState extends ConsumerState<DeviceSelector> {
 
     if (currentDevice is AsyncError) return const Text("Error");
     if (currentDevice is AsyncLoading) {
-      return FilledButton(
-          child: const CircularProgressIndicator(), onPressed: () {});
+      return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 1000),
+          child: FilledButton(
+              child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                      backgroundColor:
+                          Theme.of(context).colorScheme.onPrimary)),
+              onPressed: () {}));
     }
 
     return MenuAnchor(
@@ -34,8 +42,8 @@ class _DeviceSelectorState extends ConsumerState<DeviceSelector> {
         builder: (context, controller, child) {
           return FilledButton.icon(
             icon: const Icon(Icons.devices),
-            label: Text(currentDevice.value != null
-                ? currentDevice.value!.alias ?? ""
+            label: Text(currentDevice != null
+                ? currentDevice.alias ?? ""
                 : "Select a device"),
             onPressed: () {
               if (controller.isOpen) {

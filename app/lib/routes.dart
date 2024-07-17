@@ -4,16 +4,18 @@ import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 import 'package:librairian/widgets/scaffold_with_nested_navigation.dart';
 import 'package:librairian/pages/login_page.dart';
-import 'package:librairian/pages/home_page.dart';
+import 'package:librairian/pages/add_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorHome = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
-final _shellNavigatorReappro =
-    GlobalKey<NavigatorState>(debugLabel: 'shellReappro');
+final _shellNavigatorAdd = GlobalKey<NavigatorState>(debugLabel: 'shellAdd');
+final _shellNavigatorSearch =
+    GlobalKey<NavigatorState>(debugLabel: 'shellSearch');
+final _shellNavigatorManage =
+    GlobalKey<NavigatorState>(debugLabel: 'shellManage');
 
 // the one and only GoRouter instance
 final goRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/add',
   navigatorKey: _rootNavigatorKey,
   routes: [
     // Stateful nested navigation based on:
@@ -36,13 +38,13 @@ final goRouter = GoRouter(
       branches: [
         // first branch (A)
         StatefulShellBranch(
-          navigatorKey: _shellNavigatorHome,
+          navigatorKey: _shellNavigatorAdd,
           routes: [
             // top route inside branch
             GoRoute(
-              path: '/',
+              path: '/add',
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: MyHomePage(),
+                child: AddPage(),
               ),
               routes: const [
                 // child route
@@ -56,21 +58,28 @@ final goRouter = GoRouter(
         ),
         // second branch (B)
         StatefulShellBranch(
-          navigatorKey: _shellNavigatorReappro,
+          navigatorKey: _shellNavigatorSearch,
           routes: [
             // top route inside branch
             GoRoute(
-              path: '/reappro',
+              path: '/search',
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: MyHomePage(),
+                child: AddPage(),
               ),
-              routes: const [
-                // child route
-                // GoRoute(
-                //   path: 'summary',
-                //   builder: (context, state) => ReapproSummaryPage(),
-                // ),
-              ],
+              routes: const [],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _shellNavigatorManage,
+          routes: [
+            // top route inside branch
+            GoRoute(
+              path: '/manage',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: AddPage(),
+              ),
+              routes: const [],
             ),
           ],
         ),

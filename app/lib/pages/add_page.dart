@@ -8,23 +8,26 @@ import 'package:librairian/providers/new_files.dart';
 import 'package:librairian/widgets/file_edit_form.dart';
 import 'package:librairian/widgets/file_picker.dart';
 
-class MyHomePage extends ConsumerStatefulWidget {
-  const MyHomePage({super.key});
+class AddPage extends ConsumerStatefulWidget {
+  const AddPage({super.key});
 
   @override
-  ConsumerState<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<AddPage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends ConsumerState<MyHomePage> {
+class _MyHomePageState extends ConsumerState<AddPage> {
   List<int> selected = [];
   bool selectAll = false;
   int? editing;
+
+  int? saving;
+  bool savingAll = false;
 
   void _addFiles(List<XFile>? listFiles) async {
     List<File> files = [];
     for (var pfile in listFiles ?? []) {
       var file = await File.fromXFile(pfile);
-      final currentDevice = await ref.read(currentDeviceProvider.future);
+      final currentDevice = ref.read(currentDeviceProvider);
       file.storageLocations = [
         StorageLocation(
             storage: currentDevice,
@@ -113,6 +116,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                         icon: const Icon(Icons.book),
                         label: const Text('Save all'),
                         onPressed: () {
+                          setState(() {
+                            savingAll = true;
+                          });
                           ref
                               .read(newFilesProvider.notifier)
                               .saveAll()
@@ -123,6 +129,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                                       content: Text(
                                           "Some files could not be saved")));
                             }
+                            setState(() {
+                              savingAll = false;
+                            });
                           });
                         })
                   ])),
@@ -167,6 +176,14 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                               ? uploadedFiles[i].storageLocations![0].location!
                               : '',
                           style: const TextStyle(fontSize: 11)),
+                      trailing: savingAll || saving == i
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.onPrimary))
+                          : const SizedBox(),
                     ))
             ])),
             if (MediaQuery.of(context).size.width > 840)
@@ -182,6 +199,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                           ? FileEditForm(
                               file: uploadedFiles[editing!],
                               onSave: () {
+                                setState(() {
+                                  saving = editing;
+                                });
                                 ref
                                     .read(newFilesProvider.notifier)
                                     .saveFile(editing!)
@@ -192,6 +212,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                                             content: Text(
                                                 "File could not be saved")));
                                   }
+                                  setState(() {
+                                    saving = null;
+                                  });
                                 });
                               },
                               onEdit: (file) {
@@ -200,7 +223,7 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                                     .editAt(editing!, file);
                               })
                           : const Center(child: Text("No file selected")))),
-          ]))
+          ])),
         ]));
   }
 }
