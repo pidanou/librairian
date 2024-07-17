@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log"
 
 	"github.com/google/uuid"
@@ -16,7 +17,7 @@ func NewPostgresArchiveRepository(db *sqlx.DB) *PostgresArchiveRepository {
 	return &PostgresArchiveRepository{DB: db}
 }
 
-func (r *PostgresArchiveRepository) AddFile(file *types.File) (*uuid.UUID, error) {
+func (r *PostgresArchiveRepository) AddFile(file *types.File) (*types.File, error) {
 	var insertedFileId uuid.UUID
 
 	tx := r.DB.MustBegin()
@@ -70,7 +71,12 @@ func (r *PostgresArchiveRepository) AddFile(file *types.File) (*uuid.UUID, error
 		return nil, err
 	}
 
-	return &insertedFileId, nil
+	file, err = r.GetFileByID(&insertedFileId)
+	if err != nil {
+		return nil, errors.New("Cannot get created file")
+	}
+
+	return file, nil
 }
 
 func (r *PostgresArchiveRepository) DeleteFile(id *uuid.UUID) error {
@@ -216,4 +222,27 @@ func (r *PostgresArchiveRepository) EditFileSummary(summary *types.Summary) erro
 		return err
 	}
 	return nil
+}
+
+func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {
+	storages := []types.Storage{}
+	query := `SELECT * FROM storage WHERE user_id = $1`
+	err := r.DB.Select(&storages, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	return storages, nil
+}
+
+func (r *PostgresArchiveRepository) GetStorageByID(id *uuid.UUID) (*types.Storage, error) {
+	storage := &types.Storage{}
+
+	query := `SELECT * FROM storage where id = $1`
+	err := r.DB.Get(storage, query, id)
+	if err != nil {
+		log.Printf("Cannot get storage: %s", err)
+		return nil, err
+	}
+
+	return storage, nil
 }

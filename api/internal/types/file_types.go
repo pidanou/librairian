@@ -1,6 +1,7 @@
 package types
 
 import (
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,22 @@ type File struct {
 	WordCount       int64             `json:"word_count" db:"word_count"`
 }
 
+func (f *File) UserHasAccess(userID *uuid.UUID) bool {
+	if f.UserID == nil || f.Summary.UserID == nil || f.Description.UserID == nil {
+		log.Println("Missing userID in file")
+		return false
+	}
+
+	for _, sl := range f.StorageLocation {
+		if !sl.UserHasAccess(userID) {
+			log.Println("Unauthorized access to storage location")
+			return false
+		}
+	}
+
+	return *f.UserID == *userID && f.Summary.UserHasAccess(userID) && f.Description.UserHasAccess(userID)
+}
+
 type Summary struct {
 	Base
 	FileID    *uuid.UUID       `json:"file_id" db:"file_id"`
@@ -26,11 +43,25 @@ type Summary struct {
 	Embedding *pgvector.Vector `json:"-" db:"embedding"`
 }
 
+func (s *Summary) UserHasAccess(userID *uuid.UUID) bool {
+	if s.UserID == nil || userID == nil {
+		return false
+	}
+	return *s.UserID == *userID
+}
+
 type Description struct {
 	Base
 	FileID    *uuid.UUID       `json:"file_id" db:"file_id"`
 	Data      string           `json:"data" db:"data"`
 	Embedding *pgvector.Vector `json:"-" db:"embedding"`
+}
+
+func (d *Description) UserHasAccess(userID *uuid.UUID) bool {
+	if d.UserID == nil || userID == nil {
+		return false
+	}
+	return *d.UserID == *userID
 }
 
 type MatchedFile struct {

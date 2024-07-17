@@ -1,26 +1,42 @@
 package types
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type StorageLocation struct {
 	Base
-	FileID    uuid.UUID `json:"file_id" db:"file_id"`
-	Storage   *Storage  `json:"storage"`
-	StorageID uuid.UUID `json:"storage_id" db:"storage_id"`
-	Location  string    `json:"location"`
+	FileID    *uuid.UUID `json:"file_id" db:"file_id"`
+	Storage   *Storage   `json:"storage"`
+	StorageID *uuid.UUID `json:"storage_id" db:"storage_id"`
+	Location  string     `json:"location"`
+}
+
+func (sl *StorageLocation) UserHasAccess(userID *uuid.UUID) bool {
+	if userID == nil || sl.UserID == nil {
+		return false
+	}
+	return *sl.UserID == *userID
 }
 
 type Storage struct {
 	Base
-	Name     PlatformName `json:"name" db:"name"`
+	Type     PlatformType `json:"type" db:"type"`
 	Alias    string       `json:"alias" db:"alias"`
 	Username string       `json:"username" db:"username"`
 }
 
-type PlatformName string
+func (s *Storage) UserHasAccess(userID *uuid.UUID) bool {
+	if userID == nil || s.UserID == nil {
+		return false
+	}
+	return *s.UserID == *userID
+}
+
+type PlatformType string
 
 const (
-	LocalStorageName       PlatformName = "Local"
-	GoogleDriveStorageName PlatformName = "Google Drive"
-	OneDriveStorageName    PlatformName = "OneDrive"
+	DeviceStorageName      PlatformType = "Device"
+	GoogleDriveStorageName PlatformType = "Google Drive"
+	OneDriveStorageName    PlatformType = "OneDrive"
 )

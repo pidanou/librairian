@@ -22,6 +22,9 @@ func NewOpenaiEmbeddingRepository(token string, model string) *OpenaiEmbeddingRe
 }
 
 func (r *OpenaiEmbeddingRepository) CreateEmbedding(text string) (*pgvector.Vector, error) {
+	if text == "" {
+		text = " "
+	}
 	queryReq := openai.EmbeddingRequest{
 		Input: []string{text},
 		Model: openai.SmallEmbedding3,

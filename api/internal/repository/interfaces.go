@@ -7,12 +7,14 @@ import (
 )
 
 type ArchiveRepository interface {
-	AddFile(file *types.File) (*uuid.UUID, error)
+	AddFile(file *types.File) (*types.File, error)
 	DeleteFile(id *uuid.UUID) error
 	UpdateFile(file *types.File) (*types.File, error)
 	GetFileByID(id *uuid.UUID) (*types.File, error)
 	EditFileMetadata(file *types.File) (*types.File, error)
 	EditFileSummary(summary *types.Summary) error
+	GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error)
+	GetStorageByID(id *uuid.UUID) (*types.Storage, error)
 }
 
 type EmbeddingRepository interface {

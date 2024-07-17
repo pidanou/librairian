@@ -11,64 +11,113 @@ import (
 	"github.com/pidanou/librairian/internal/types"
 )
 
-func (h *Handler) PostFile(c echo.Context) error {
-	token, ok := c.Get("user").(*jwt.Token)
-	if !ok {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid token")
+func (h *Handler) PostFiles(c echo.Context) error {
+	var files = &[]types.File{}
+	c.Bind(files)
+	fmt.Println(files)
+
+	userID := getUserIDFromJWT(c)
+
+	success := []types.File{}
+	errors := []types.File{}
+
+	for _, file := range *files {
+		if file.Summary == nil {
+			file.Summary = &types.Summary{}
+		}
+		if file.Description == nil {
+			file.Description = &types.Description{}
+		}
+
+		cleanedStorageLocation := []types.StorageLocation{}
+		for _, sl := range file.StorageLocation {
+			storage, err := h.ArchiveService.GetStorageByID(sl.StorageID)
+			if err != nil {
+				log.Println("Cannot get storage: ", err)
+				continue
+			}
+			if !UserHasAccess(storage, userID) {
+				continue
+			}
+			sl.UserID = userID
+			cleanedStorageLocation = append(cleanedStorageLocation, sl)
+		}
+
+		if len(cleanedStorageLocation) == 0 {
+			log.Println("No storage location")
+			errors = append(errors, file)
+			continue
+		}
+
+		file.StorageLocation = cleanedStorageLocation
+
+		file.Summary.UserID = userID
+		summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
+		if err != nil {
+			log.Println("Cannot create summary embedding: ", err)
+			errors = append(errors, file)
+			continue
+		}
+		file.Summary.Embedding = summaryEmbedding
+
+		file.Description.UserID = userID
+		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Description.Data)
+		if err != nil {
+			log.Println("Cannot create description embedding: ", err)
+			errors = append(errors, file)
+			continue
+		}
+		file.Description.Embedding = descriptionEmbedding
+
+		tfile, err := h.ArchiveService.AddFile(&file)
+		if err != nil {
+			log.Println("Cannot add file: ", err)
+			errors = append(errors, file)
+			continue
+		}
+
+		success = append(success, *tfile)
 	}
-
-	userID := uuid.MustParse(token.Claims.(jwt.MapClaims)["sub"].(string))
-
-	var file types.File
-	c.Bind(&file)
-
-	file.UserID = &userID
-	file.Summary.UserID = &userID
-	file.Description.UserID = &userID
-	for i, sl := range file.StorageLocation {
-		sl.UserID = &userID
-		file.StorageLocation[i] = sl
-	}
-
-	summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-	}
-
-	descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Description.Data)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-	}
-
-	file.Summary.Embedding = summaryEmbedding
-	file.Description.Embedding = descriptionEmbedding
-
-	id, err := h.ArchiveService.AddFile(&file)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Cannot add file")
-	}
-
-	return c.JSON(http.StatusCreated, map[string]interface{}{"message": map[string]interface{}{"created": id}})
+	return c.JSON(http.StatusCreated, map[string]interface{}{"successes": success, "errors": errors})
 }
 
 func (h *Handler) GetFileById(c echo.Context) error {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
+	userID := getUserIDFromJWT(c)
+
 	file, err := h.ArchiveService.GetFileById(&id)
 	if err != nil {
+		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot get file")
+	}
+
+	if !UserHasAccess(file, userID) {
+		return c.NoContent(http.StatusUnauthorized)
 	}
 
 	return c.JSON(http.StatusOK, file)
 }
 
 func (h *Handler) DeleteFile(c echo.Context) error {
+	userID := getUserIDFromJWT(c)
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
+	}
+
+	file, err := h.ArchiveService.GetFileById(&id)
+	if err != nil || file == nil {
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Cannot delete file: file does not exist")
+	}
+
+	if !UserHasAccess(file, userID) {
+		return c.NoContent(http.StatusUnauthorized)
 	}
 
 	err = h.ArchiveService.DeleteFile(&id)
@@ -82,6 +131,17 @@ func (h *Handler) DeleteFile(c echo.Context) error {
 func (h *Handler) PutFile(c echo.Context) error {
 	var file = &types.File{}
 	c.Bind(file)
+
+	userID := getUserIDFromJWT(c)
+	file, err := h.ArchiveService.GetFileById(file.ID)
+	if err != nil || file == nil {
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Cannot edit file: file does not exist")
+	}
+
+	if !UserHasAccess(file, userID) {
+		return c.NoContent(http.StatusUnauthorized)
+	}
 
 	summaryEmbedding, err := h.EmbeddingService.CreateEmbedding(file.Summary.Data)
 	if err != nil {
@@ -107,7 +167,15 @@ func (h *Handler) PatchFileMetadata(c echo.Context) error {
 	var file = &types.File{}
 	c.Bind(file)
 
-	// id := uuid.MustParse(c.Param("id"))
+	id := uuid.MustParse(c.Param("id"))
+	if &id != file.ID {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing ID")
+	}
+
+	userID := getUserIDFromJWT(c)
+	if !UserHasAccess(file, userID) {
+		return c.NoContent(http.StatusUnauthorized)
+	}
 
 	file, err := h.ArchiveService.EditFileMetadata(file)
 	if err != nil {
@@ -154,7 +222,9 @@ func (h *Handler) GetMatches(c echo.Context) error {
 			log.Printf("Cannot get file %s: %s", match.FileID, err)
 			continue
 		}
-		matches[i].File = file
+		if UserHasAccess(file, &userID) {
+			matches[i].File = file
+		}
 	}
 
 	return c.JSON(http.StatusOK, matches)
