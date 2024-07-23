@@ -47,6 +47,7 @@ class TextFieldTagsState extends State<TextFieldTags> {
         tags = tagsController.text.split(',');
         tags.removeWhere((item) => item.isEmpty);
         tags = tags.map((s) => s.trim()).toList();
+        tags = tags.take(3).toList();
         inputTags = tags.join(',');
         tagsController.text = '';
         done = true;
@@ -96,7 +97,7 @@ class TextFieldTagsState extends State<TextFieldTags> {
         : TextFormField(
             decoration: const InputDecoration(
               label: Text('Tags'),
-              hintText: 'Enter tags separated by commas',
+              hintText: 'Enter up to 3 tags separated by commas',
             ),
             controller: tagsController,
             focusNode: tagsFocus,

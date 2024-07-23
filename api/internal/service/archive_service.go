@@ -14,24 +14,24 @@ func NewArchiveService(r repository.ArchiveRepository) *ArchiveService {
 	return &ArchiveService{ArchiveRepository: r}
 }
 
-func (s *ArchiveService) AddFile(file *types.File) (*types.File, error) {
-	return s.ArchiveRepository.AddFile(file)
+func (s *ArchiveService) AddItem(item *types.Item) (*types.Item, error) {
+	return s.ArchiveRepository.AddItem(item)
 }
 
-func (s *ArchiveService) DeleteFile(id *uuid.UUID) error {
-	return s.ArchiveRepository.DeleteFile(id)
+func (s *ArchiveService) DeleteItem(id *uuid.UUID) error {
+	return s.ArchiveRepository.DeleteItem(id)
 }
 
-func (s *ArchiveService) UpdateFile(file *types.File) (*types.File, error) {
-	return s.ArchiveRepository.UpdateFile(file)
+func (s *ArchiveService) UpdateItem(item *types.Item) (*types.Item, error) {
+	return s.ArchiveRepository.UpdateItem(item)
 }
 
-func (s *ArchiveService) GetFileById(id *uuid.UUID) (*types.File, error) {
-	return s.ArchiveRepository.GetFileByID(id)
+func (s *ArchiveService) GetItemById(id *uuid.UUID) (*types.Item, error) {
+	return s.ArchiveRepository.GetItemByID(id)
 }
 
-func (s *ArchiveService) EditFileMetadata(file *types.File) (*types.File, error) {
-	return s.ArchiveRepository.EditFileMetadata(file)
+func (s *ArchiveService) EditItemMetadata(item *types.Item) (*types.Item, error) {
+	return s.ArchiveRepository.EditItemMetadata(item)
 }
 
 func (s *ArchiveService) GetStorageByID(id *uuid.UUID) (*types.Storage, error) {

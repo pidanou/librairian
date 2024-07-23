@@ -7,11 +7,11 @@ import (
 )
 
 type ArchiveRepository interface {
-	AddFile(file *types.File) (*types.File, error)
-	DeleteFile(id *uuid.UUID) error
-	UpdateFile(file *types.File) (*types.File, error)
-	GetFileByID(id *uuid.UUID) (*types.File, error)
-	EditFileMetadata(file *types.File) (*types.File, error)
+	AddItem(item *types.Item) (*types.Item, error)
+	DeleteItem(id *uuid.UUID) error
+	UpdateItem(item *types.Item) (*types.Item, error)
+	GetItemByID(id *uuid.UUID) (*types.Item, error)
+	EditItemMetadata(item *types.Item) (*types.Item, error)
 	GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error)
 	GetStorageByID(id *uuid.UUID) (*types.Storage, error)
 }
@@ -21,7 +21,7 @@ type EmbeddingRepository interface {
 }
 
 type SimilarityRepository interface {
-	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedFile, error)
+	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
 }
 
 type AuthRepository interface {

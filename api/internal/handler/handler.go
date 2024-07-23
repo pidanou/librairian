@@ -8,12 +8,12 @@ type Handler struct {
 	SimilarityService *service.SimilarityService
 }
 
-func New(fileService *service.ArchiveService,
+func New(itemService *service.ArchiveService,
 	embeddingService *service.EmbeddingService,
 	similarityService *service.SimilarityService,
 ) *Handler {
 	return &Handler{
-		ArchiveService:    fileService,
+		ArchiveService:    itemService,
 		EmbeddingService:  embeddingService,
 		SimilarityService: similarityService,
 	}

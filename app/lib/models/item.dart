@@ -1,12 +1,13 @@
 import 'package:cross_file/cross_file.dart';
 import 'package:librairian/models/storage.dart';
 
-class File {
+class Item {
   String? id;
   DateTime? createdAt;
   DateTime? updatedAt;
   String? userId;
   String? name;
+  bool? isDigital;
   DateTime? analysisDate;
   Description? description;
   List<StorageLocation>? storageLocations;
@@ -14,18 +15,17 @@ class File {
   int? size;
   int? wordCount;
 
-  File({
+  Item({
     this.id,
     this.createdAt,
     this.updatedAt,
     this.userId,
     this.name,
+    required this.isDigital,
     this.analysisDate,
     this.description,
     this.storageLocations,
     this.tags,
-    this.size,
-    this.wordCount,
   });
 
   @override
@@ -33,20 +33,26 @@ class File {
     return toJson().toString();
   }
 
-  static Future<File> fromXFile(XFile xfile) async {
-    return File(
-        name: xfile.name,
-        storageLocations: [StorageLocation(location: xfile.path)],
-        size: await xfile.length());
+  static newPhysicalItem() {
+    return Item(isDigital: false, name: 'New Item');
   }
 
-  factory File.fromJson(Map<String, dynamic> json) {
-    return File(
+  static Future<Item> fromXFile(XFile xfile) async {
+    return Item(
+      name: xfile.name,
+      isDigital: true,
+      storageLocations: [StorageLocation(location: xfile.path)],
+    );
+  }
+
+  factory Item.fromJson(Map<String, dynamic> json) {
+    return Item(
       id: json['id'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       userId: json['user_id'],
       name: json['name'],
+      isDigital: json['is_digital'],
       analysisDate: json['analysis_date'] != null
           ? DateTime.parse(json['analysis_date'])
           : null,
@@ -57,8 +63,6 @@ class File {
           .map((e) => StorageLocation.fromJson(e))
           .toList(),
       tags: List<String>.from(json['tags']),
-      size: json['size'],
-      wordCount: json['word_count'],
     );
   }
 
@@ -67,12 +71,11 @@ class File {
       'id': id,
       'user_id': userId,
       'name': name,
+      'is_digital': isDigital,
       'analysis_date': analysisDate?.toIso8601String(),
       'description': description?.toJson(),
       'storage_locations': storageLocations?.map((e) => e.toJson()).toList(),
       'tags': tags,
-      'size': size,
-      'word_count': wordCount,
     };
   }
 }
@@ -82,7 +85,7 @@ class Description {
   DateTime? createdAt;
   DateTime? updatedAt;
   String userId;
-  String? fileId;
+  String? itemId;
   String data;
   // Assuming `embedding` is not needed as it is not included in JSON serialization
 
@@ -91,7 +94,7 @@ class Description {
     this.createdAt,
     this.updatedAt,
     required this.userId,
-    this.fileId,
+    this.itemId,
     required this.data,
   });
 
@@ -101,7 +104,7 @@ class Description {
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       userId: json['user_id'],
-      fileId: json['file_id'],
+      itemId: json['item_id'],
       data: json['data'],
     );
   }
@@ -112,8 +115,25 @@ class Description {
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'user_id': userId,
-      'file_id': fileId,
+      'item_id': itemId,
       'data': data,
     };
+  }
+}
+
+class MatchItem {
+  Item? item;
+  double descriptionSimilarity;
+
+  MatchItem({
+    this.item,
+    required this.descriptionSimilarity,
+  });
+
+  factory MatchItem.fromJson(Map<String, dynamic> json) {
+    return MatchItem(
+      item: json['item'] != null ? Item.fromJson(json['item']) : null,
+      descriptionSimilarity: json['description_similarity'].toDouble(),
+    );
   }
 }

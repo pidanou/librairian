@@ -17,12 +17,12 @@ func NewPgvectorSimilarityRepository(db *sqlx.DB) *PgvectorSimilarityRepository 
 	return &PgvectorSimilarityRepository{DB: db}
 }
 
-func (r *PgvectorSimilarityRepository) Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedFile, error) {
-	matches := []types.MatchedFile{}
-	query := `SELECT * FROM match_file($1, $2, $3, $4)`
+func (r *PgvectorSimilarityRepository) Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
+	matches := []types.MatchedItem{}
+	query := `SELECT * FROM match_item($1, $2, $3, $4)`
 	err := r.DB.Select(&matches, query, vector, matchThreshold, matchCount, UserID)
 	if err != nil {
-		log.Printf("Error finding similar files %s", err)
+		log.Printf("Error finding similar items %s", err)
 		return nil, err
 	}
 

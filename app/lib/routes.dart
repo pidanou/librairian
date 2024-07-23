@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:librairian/pages/inventory_page.dart';
+import 'package:librairian/pages/search_page.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 import 'package:librairian/widgets/scaffold_with_nested_navigation.dart';
@@ -10,8 +12,10 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorAdd = GlobalKey<NavigatorState>(debugLabel: 'shellAdd');
 final _shellNavigatorSearch =
     GlobalKey<NavigatorState>(debugLabel: 'shellSearch');
-final _shellNavigatorManage =
-    GlobalKey<NavigatorState>(debugLabel: 'shellManage');
+final _shellNavigatorInventory =
+    GlobalKey<NavigatorState>(debugLabel: 'shellInventory');
+final _shellNavigatorSettings =
+    GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 // the one and only GoRouter instance
 final goRouter = GoRouter(
@@ -64,20 +68,33 @@ final goRouter = GoRouter(
             GoRoute(
               path: '/search',
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: AddPage(),
+                child: SearchPage(),
               ),
               routes: const [],
             ),
           ],
         ),
         StatefulShellBranch(
-          navigatorKey: _shellNavigatorManage,
+          navigatorKey: _shellNavigatorInventory,
           routes: [
             // top route inside branch
             GoRoute(
-              path: '/manage',
+              path: '/inventory',
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: AddPage(),
+                child: InventoryPage(),
+              ),
+              routes: const [],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _shellNavigatorSettings,
+          routes: [
+            // top route inside branch
+            GoRoute(
+              path: '/settings',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: InventoryPage(),
               ),
               routes: const [],
             ),

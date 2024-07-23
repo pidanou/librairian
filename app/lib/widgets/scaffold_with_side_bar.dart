@@ -30,9 +30,11 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SelectionArea(
+        child: Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: Theme.of(context).colorScheme.surfaceDim,
         title: const Row(children: [
           Text("Librairian"),
@@ -134,6 +136,6 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
               ),
             ],
           )),
-    );
+    ));
   }
 }

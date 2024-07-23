@@ -14,18 +14,20 @@ class ScaffoldWithBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: body,
-        bottomNavigationBar: NavigationBar(
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-          selectedIndex: selectedIndex,
-          destinations: [
-            for (var navigationDestination in navigationDestinations)
-              NavigationDestination(
-                  label: navigationDestination.label,
-                  icon: Icon(navigationDestination.icon)),
-          ],
-          onDestinationSelected: onDestinationSelected,
-        ));
+    return SelectionArea(
+        child: Scaffold(
+            body: body,
+            bottomNavigationBar: NavigationBar(
+              labelBehavior:
+                  NavigationDestinationLabelBehavior.onlyShowSelected,
+              selectedIndex: selectedIndex,
+              destinations: [
+                for (var navigationDestination in navigationDestinations)
+                  NavigationDestination(
+                      label: navigationDestination.label,
+                      icon: Icon(navigationDestination.icon)),
+              ],
+              onDestinationSelected: onDestinationSelected,
+            )));
   }
 }

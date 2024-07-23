@@ -17,39 +17,39 @@ func NewPostgresArchiveRepository(db *sqlx.DB) *PostgresArchiveRepository {
 	return &PostgresArchiveRepository{DB: db}
 }
 
-func (r *PostgresArchiveRepository) AddFile(file *types.File) (*types.File, error) {
-	var insertedFileId uuid.UUID
+func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, error) {
+	var insertedItemId uuid.UUID
 
 	tx := r.DB.MustBegin()
 
-	query := `INSERT INTO file 
-  (user_id, name, analysis_date, tags, size, word_count) 
-  VALUES (:user_id, :name, :analysis_date, :tags, :size, :word_count) returning id`
-	rows, err := tx.NamedQuery(query, file)
+	query := `INSERT INTO item 
+  (user_id, name, is_digital, analysis_date, tags) 
+  VALUES (:user_id, :name, :is_digital, :analysis_date, :tags) returning id`
+	rows, err := tx.NamedQuery(query, item)
 	if err != nil {
-		log.Printf(`Cannot create file %s`, err)
+		log.Printf(`Cannot create item %s`, err)
 		return nil, err
 	}
 
 	rows.Next()
-	err = rows.Scan(&insertedFileId)
+	err = rows.Scan(&insertedItemId)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 	rows.Close()
 
-	query = `INSERT INTO description (file_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
-	_, err = tx.Exec(query, insertedFileId, file.Description.Data, file.Description.Embedding, file.Description.UserID)
+	query = `INSERT INTO description (item_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
+	_, err = tx.Exec(query, insertedItemId, item.Description.Data, item.Description.Embedding, item.Description.UserID)
 	if err != nil {
 		log.Printf(`Cannot create description %s`, err)
 		tx.Rollback()
 		return nil, err
 	}
 
-	for _, sl := range file.StorageLocation {
-		query = `INSERT INTO storage_location (location, storage_id, file_id, user_id) VALUES ($1, $2, $3, $4)`
-		_, err = tx.Exec(query, sl.Location, sl.StorageID, insertedFileId, sl.UserID)
+	for _, sl := range item.StorageLocation {
+		query = `INSERT INTO storage_location (location, storage_id, item_id, user_id) VALUES ($1, $2, $3, $4)`
+		_, err = tx.Exec(query, sl.Location, sl.StorageID, insertedItemId, sl.UserID)
 		if err != nil {
 			log.Printf(`Cannot create storage location %s`, err)
 			tx.Rollback()
@@ -63,45 +63,45 @@ func (r *PostgresArchiveRepository) AddFile(file *types.File) (*types.File, erro
 		return nil, err
 	}
 
-	file, err = r.GetFileByID(&insertedFileId)
+	item, err = r.GetItemByID(&insertedItemId)
 	if err != nil {
-		return nil, errors.New("Cannot get created file")
+		return nil, errors.New("Cannot get created item")
 	}
 
-	return file, nil
+	return item, nil
 }
 
-func (r *PostgresArchiveRepository) DeleteFile(id *uuid.UUID) error {
-	query := `DELETE FROM file WHERE id = $1`
+func (r *PostgresArchiveRepository) DeleteItem(id *uuid.UUID) error {
+	query := `DELETE FROM item WHERE id = $1`
 	_, err := r.DB.Exec(query, id)
 	if err != nil {
-		log.Printf("Cannot delete file: %s", err)
+		log.Printf("Cannot delete item: %s", err)
 		return err
 	}
 
 	return nil
 }
 
-func (r *PostgresArchiveRepository) UpdateFile(file *types.File) (*types.File, error) {
+func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, error) {
 	tx := r.DB.MustBegin()
 
-	query := `UPDATE file 
-  set user_id = :user_id, analysis_date = :analysis_date, updated_at = now(), tags = :tags, size = :size, word_count = :word_count where id = :id`
-	_, err := tx.NamedExec(query, file)
+	query := `UPDATE item 
+  set user_id = :user_id, analysis_date = :analysis_date, is_digital = :is_digital, updated_at = now(), tags = :tags where id = :id`
+	_, err := tx.NamedExec(query, item)
 	if err != nil {
-		log.Printf(`Cannot update file %s`, err)
+		log.Printf(`Cannot update item %s`, err)
 		return nil, err
 	}
 
 	query = `UPDATE description set data = :data, embedding = :embedding, updated_at = now() where id = :id`
-	_, err = tx.NamedExec(query, file.Description)
+	_, err = tx.NamedExec(query, item.Description)
 	if err != nil {
 		log.Printf(`Cannot update description %s`, err)
 		tx.Rollback()
 		return nil, err
 	}
 
-	for _, sl := range file.StorageLocation {
+	for _, sl := range item.StorageLocation {
 		query = `UPDATE storage_location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id`
 		_, err = tx.NamedExec(query, sl)
 		if err != nil {
@@ -116,30 +116,30 @@ func (r *PostgresArchiveRepository) UpdateFile(file *types.File) (*types.File, e
 		log.Printf(`Cannot commit: %s`, err)
 		return nil, err
 	}
-	return file, nil
+	return item, nil
 }
 
-func (r *PostgresArchiveRepository) GetFileByID(id *uuid.UUID) (*types.File, error) {
-	file := &types.File{}
+func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, error) {
+	item := &types.Item{}
 	description := &types.Description{}
 	storageLocation := []types.StorageLocation{}
 	storage := &types.Storage{}
 
-	query := `SELECT * FROM file WHERE id = $1`
-	err := r.DB.Get(file, query, id)
+	query := `SELECT * FROM item WHERE id = $1`
+	err := r.DB.Get(item, query, id)
 	if err != nil {
-		log.Printf("Cannot get file: %s", err)
+		log.Printf("Cannot get item: %s", err)
 		return nil, err
 	}
 
-	query = `SELECT * FROM description WHERE file_id = $1`
-	err = r.DB.Get(description, query, file.ID)
+	query = `SELECT * FROM description WHERE item_id = $1`
+	err = r.DB.Get(description, query, item.ID)
 	if err != nil {
 		log.Printf("Cannot get description: %s", err)
 	}
 
-	query = `SELECT * FROM storage_location WHERE file_id = $1`
-	err = r.DB.Select(&storageLocation, query, file.ID)
+	query = `SELECT * FROM storage_location WHERE item_id = $1`
+	err = r.DB.Select(&storageLocation, query, item.ID)
 	if err != nil {
 		log.Printf("Cannot get storage location: %s", err)
 	}
@@ -154,23 +154,23 @@ func (r *PostgresArchiveRepository) GetFileByID(id *uuid.UUID) (*types.File, err
 		storageLocation[i] = sl
 	}
 
-	file.Description = description
-	file.StorageLocation = storageLocation
+	item.Description = description
+	item.StorageLocation = storageLocation
 
-	return file, nil
+	return item, nil
 }
 
-func (r *PostgresArchiveRepository) EditFileMetadata(file *types.File) (*types.File, error) {
+func (r *PostgresArchiveRepository) EditItemMetadata(item *types.Item) (*types.Item, error) {
 	tx := r.DB.MustBegin()
-	query := `UPDATE file set user_id = :user_id, name = :name, analysis_date = :analysis_date, updated_at = now(), tags = :tags, size = :size, word_count = :word_count where id = :id`
-	_, err := tx.NamedExec(query, file)
+	query := `UPDATE item set user_id = :user_id, name = :name, analysis_date = :analysis_date, updated_at = now(), tags = :tags where id = :id`
+	_, err := tx.NamedExec(query, item)
 	if err != nil {
-		log.Printf("Cannot edit file: %s", err)
+		log.Printf("Cannot edit item: %s", err)
 		tx.Rollback()
 		return nil, err
 	}
 
-	for _, sl := range file.StorageLocation {
+	for _, sl := range item.StorageLocation {
 		query = `UPDATE storage_location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id`
 		_, err = tx.NamedExec(query, sl)
 		if err != nil {
@@ -181,13 +181,13 @@ func (r *PostgresArchiveRepository) EditFileMetadata(file *types.File) (*types.F
 	}
 	tx.Commit()
 
-	file, err = r.GetFileByID(file.ID)
+	item, err = r.GetItemByID(item.ID)
 	if err != nil {
-		log.Printf("Cannot get file: %s", err)
+		log.Printf("Cannot get item: %s", err)
 		return nil, err
 	}
 
-	return file, nil
+	return item, nil
 }
 
 func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {

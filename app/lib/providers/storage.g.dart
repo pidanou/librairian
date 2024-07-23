@@ -20,7 +20,7 @@ final deviceProvider = AutoDisposeProvider<List<st.Storage>>.internal(
 );
 
 typedef DeviceRef = AutoDisposeProviderRef<List<st.Storage>>;
-String _$storageHash() => r'4a3529a0c92b1cb8ed054e566ef4e92ec7d65230';
+String _$storageHash() => r'804a58846203113d41a8d1df360c2442866bec19';
 
 /// See also [Storage].
 @ProviderFor(Storage)

@@ -1,35 +1,35 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:librairian/models/file.dart';
+import 'package:librairian/models/item.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
-part 'new_files.g.dart';
+part 'new_items.g.dart';
 
 @riverpod
-class NewFiles extends _$NewFiles {
+class NewItems extends _$NewItems {
   @override
-  List<File> build() {
+  List<Item> build() {
     return [];
   }
 
-  void add(List<File> value) {
+  void add(List<Item> value) {
     state = [...state, ...value];
   }
 
-  void set(List<File> value) {
+  void set(List<Item> value) {
     state = value;
   }
 
-  File? getAt(int index) {
+  Item? getAt(int index) {
     if (index < 0 || index >= state.length) {
       return null;
     }
     return state[index];
   }
 
-  void editAt(int index, File value) {
+  void editAt(int index, Item value) {
     if (index < 0 || index >= state.length) {
       return;
     }
@@ -37,10 +37,10 @@ class NewFiles extends _$NewFiles {
   }
 
   // Save a file and returns true if successful, if error returns false
-  Future<bool> saveFile(int i) async {
-    File file = state[i];
+  Future<bool> saveItem(int i) async {
+    Item file = state[i];
     String url;
-    url = 'http://localhost:8080/api/v1/files';
+    url = 'http://localhost:8080/api/v1/items';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -56,8 +56,15 @@ class NewFiles extends _$NewFiles {
       final response = await http.post(Uri.parse(url),
           headers: headers, body: jsonEncode([file]));
       if (response.statusCode < 300) {
-        state = [...state.sublist(0, i), ...state.sublist(i + 1)];
-        return true;
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if (data["errors"]
+            .map<Item>((data) => Item.fromJson(data))
+            .toList()
+            .isEmpty) {
+          state = [...state.sublist(0, i), ...state.sublist(i + 1)];
+          return true;
+        }
+        return false;
       } else {
         print("Error: ${response.statusCode}");
         return false;
@@ -69,15 +76,15 @@ class NewFiles extends _$NewFiles {
   }
 
   // Save all files, returns a list of errors
-  Future<List<File>> saveAll() async {
+  Future<List<Item>> saveAll() async {
     String url;
-    url = 'http://localhost:8080/api/v1/files';
+    url = 'http://localhost:8080/api/v1/items';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
       "content-type": "application/json"
     };
-    List<File> files = [];
+    List<Item> files = [];
     for (var file in state) {
       file.userId = Supabase.instance.client.auth.currentUser!.id;
       for (var sl in file.storageLocations ?? []) {
@@ -87,14 +94,14 @@ class NewFiles extends _$NewFiles {
       files.add(file);
     }
 
-    List<File> errors = [];
+    List<Item> errors = [];
     try {
       final response = await http.post(Uri.parse(url),
           headers: headers, body: jsonEncode(files));
       if (response.statusCode < 300) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         errors =
-            data["errors"].map<File>((data) => File.fromJson(data)).toList();
+            data["errors"].map<Item>((data) => Item.fromJson(data)).toList();
       } else {
         print("Error: ${response.statusCode}");
         return state;

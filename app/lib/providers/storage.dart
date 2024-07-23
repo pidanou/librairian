@@ -24,7 +24,7 @@ class Storage extends _$Storage {
             .map<st.Storage>((json) => st.Storage.fromJson(json))
             .toList();
       } else {
-        print("Erreur HTTP getting all depots : ${response.statusCode}");
+        print("Erreur HTTP getting all storages : ${response.statusCode}");
       }
     } catch (e) {
       rethrow;

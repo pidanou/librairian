@@ -11,10 +11,10 @@ class LoginPage extends StatelessWidget {
         body: Center(
       child: SupaEmailAuth(
         onSignInComplete: (response) {
-          GoRouter.of(context).go('/');
+          GoRouter.of(context).go('/search');
         },
         onSignUpComplete: (response) {
-          GoRouter.of(context).go('/');
+          GoRouter.of(context).go('/search');
         },
         metadataFields: [
           MetaDataField(

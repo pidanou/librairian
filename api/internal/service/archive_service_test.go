@@ -8,22 +8,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddFile(t *testing.T) {
+func TestAddItem(t *testing.T) {
 	testCases := []struct {
 		description string
-		file        *types.File
+		item        *types.Item
 		want        *uuid.UUID
 	}{
 		{
-			description: "File is nil",
-			file:        &types.File{},
+			description: "Item is nil",
+			item:        &types.Item{},
 			want:        nil,
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.description, func(t *testing.T) {
-			uuid, _ := testArchiveService.AddFile(testCase.file)
+			uuid, _ := testArchiveService.AddItem(testCase.item)
 			assert.Equal(t, testCase.want, uuid)
 		})
 	}

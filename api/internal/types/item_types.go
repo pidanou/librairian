@@ -8,20 +8,20 @@ import (
 	"github.com/pgvector/pgvector-go"
 )
 
-type File struct {
+type Item struct {
 	Base
 	Name            string            `json:"name" db:"name"`
+	IsDigital       bool              `json:"is_digital" db:"is_digital"`
 	AnalysisDate    *time.Time        `json:"analysis_date" db:"analysis_date"`
 	Description     *Description      `json:"description"`
 	StorageLocation []StorageLocation `json:"storage_locations"`
-	Tags            StringArray       `json:"tags" db:"tags"`
-	Size            int64             `json:"size" db:"size"`
-	WordCount       int64             `json:"word_count" db:"word_count"`
 }
 
-func (f *File) UserHasAccess(userID *uuid.UUID) bool {
+type ItemType string
+
+func (f *Item) UserHasAccess(userID *uuid.UUID) bool {
 	if f.UserID == nil || f.Description.UserID == nil {
-		log.Println("Missing userID in file")
+		log.Println("Missing userID in item")
 		return false
 	}
 
@@ -37,7 +37,7 @@ func (f *File) UserHasAccess(userID *uuid.UUID) bool {
 
 type Description struct {
 	Base
-	FileID    *uuid.UUID       `json:"file_id" db:"file_id"`
+	ItemID    *uuid.UUID       `json:"item_id" db:"item_id"`
 	Data      string           `json:"data" db:"data"`
 	Embedding *pgvector.Vector `json:"-" db:"embedding"`
 }
@@ -49,8 +49,8 @@ func (d *Description) UserHasAccess(userID *uuid.UUID) bool {
 	return *d.UserID == *userID
 }
 
-type MatchedFile struct {
-	FileID                *uuid.UUID `json:"id" db:"file_id"`
-	File                  *File      `json:"file"`
+type MatchedItem struct {
+	ItemID                *uuid.UUID `json:"-" db:"item_id"`
+	Item                  *Item      `json:"item"`
 	DescriptionSimilarity float32    `json:"description_similarity" db:"description_similarity"`
 }
