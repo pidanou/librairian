@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/widgets/edit_storage_location.dart';
-import 'package:librairian/widgets/textfield_tags.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 class ItemEditForm extends ConsumerStatefulWidget {
@@ -95,37 +94,44 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                 for (var i = 0;
                                     i < item.storageLocations!.length;
                                     i++)
-                                  InputChip(
-                                      avatar: const Icon(Icons.location_on),
-                                      label: Text(item.storageLocations?[i]
-                                              .storage?.alias ??
-                                          ""),
-                                      onPressed: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                EditStorageLocation(
-                                                  title: const Text(
-                                                      "Edit location"),
-                                                  onSave: (sl) {
-                                                    if (sl != null) {
-                                                      setState(() {
-                                                        item.storageLocations?[
-                                                            i] = sl;
-                                                      });
-                                                      widget.onEdit?.call(item);
-                                                    }
-                                                    Navigator.of(context).pop();
-                                                    return;
-                                                  },
-                                                ));
-                                      },
-                                      onDeleted: () {
-                                        setState(() {
-                                          item.storageLocations!.removeAt(i);
-                                        });
-                                        widget.onEdit?.call(item);
-                                      }),
+                                  item.storageLocations![i].storage != null
+                                      ? InputChip(
+                                          avatar: const Icon(Icons.location_on),
+                                          label: Text(item.storageLocations?[i]
+                                                  .storage?.alias ??
+                                              ""),
+                                          onPressed: () {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) =>
+                                                    EditStorageLocation(
+                                                      storageLocation: item
+                                                          .storageLocations![i],
+                                                      title: const Text(
+                                                          "Edit location"),
+                                                      onSave: (sl) {
+                                                        if (sl != null) {
+                                                          setState(() {
+                                                            item.storageLocations?[
+                                                                i] = sl;
+                                                          });
+                                                          widget.onEdit
+                                                              ?.call(item);
+                                                        }
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        return;
+                                                      },
+                                                    ));
+                                          },
+                                          onDeleted: () {
+                                            setState(() {
+                                              item.storageLocations!
+                                                  .removeAt(i);
+                                            });
+                                            widget.onEdit?.call(item);
+                                          })
+                                      : const SizedBox(),
                               const SizedBox(width: 10),
                               IconButton(
                                   icon: const Icon(Icons.add),
@@ -175,15 +181,6 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                               hintText: "Describe the item and it's content",
                               labelText: 'Description',
                             )),
-                        const SizedBox(height: 10),
-                        TextFieldTags(
-                            tags: item.tags ?? [],
-                            onTagsChanged: (List<String> input) {
-                              setState(() {
-                                item.tags = input;
-                              });
-                              widget.onEdit?.call(item);
-                            }),
                         const SizedBox(height: 30),
                         Align(
                             alignment: Alignment.centerRight,

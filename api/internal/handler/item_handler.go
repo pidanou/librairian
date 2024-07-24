@@ -179,7 +179,6 @@ func (h *Handler) GetMatches(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
 	}
-	fmt.Println(req)
 
 	if req.Search == "" {
 		return c.JSON(http.StatusOK, []types.Item{})
@@ -213,6 +212,7 @@ func (h *Handler) GetMatches(c echo.Context) error {
 			matches[i].Item = item
 		}
 	}
+	fmt.Println(matches)
 
 	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, matches)

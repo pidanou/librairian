@@ -11,7 +11,6 @@ class Item {
   DateTime? analysisDate;
   Description? description;
   List<StorageLocation>? storageLocations;
-  List<String>? tags;
   int? size;
   int? wordCount;
 
@@ -25,7 +24,6 @@ class Item {
     this.analysisDate,
     this.description,
     this.storageLocations,
-    this.tags,
   });
 
   @override
@@ -62,7 +60,6 @@ class Item {
       storageLocations: (json['storage_locations'] as List)
           .map((e) => StorageLocation.fromJson(e))
           .toList(),
-      tags: List<String>.from(json['tags']),
     );
   }
 
@@ -75,7 +72,6 @@ class Item {
       'analysis_date': analysisDate?.toIso8601String(),
       'description': description?.toJson(),
       'storage_locations': storageLocations?.map((e) => e.toJson()).toList(),
-      'tags': tags,
     };
   }
 }

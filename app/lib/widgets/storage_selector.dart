@@ -38,6 +38,7 @@ class _StorageSelectorState extends ConsumerState<StorageSelector> {
     return Row(children: [
       Expanded(
           child: DropdownMenu<Storage>(
+        inputDecorationTheme: Theme.of(context).inputDecorationTheme,
         controller: controller,
         initialSelection: widget.initialSelection,
         label: const Text("Storage"),

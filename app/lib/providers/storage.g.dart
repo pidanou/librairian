@@ -6,21 +6,7 @@ part of 'storage.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$deviceHash() => r'683116ac3f4c1ec2bb5d6593476e642426d13186';
-
-/// See also [device].
-@ProviderFor(device)
-final deviceProvider = AutoDisposeProvider<List<st.Storage>>.internal(
-  device,
-  name: r'deviceProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$deviceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef DeviceRef = AutoDisposeProviderRef<List<st.Storage>>;
-String _$storageHash() => r'804a58846203113d41a8d1df360c2442866bec19';
+String _$storageHash() => r'ee9e56609e260ea7ca7599b58cd66b8bb0c989bf';
 
 /// See also [Storage].
 @ProviderFor(Storage)
@@ -35,5 +21,21 @@ final storageProvider =
 );
 
 typedef _$Storage = AutoDisposeAsyncNotifier<List<st.Storage>>;
+String _$defaultStorageHash() => r'd095680415c5c7dab689ee0884c8ec78f69295fa';
+
+/// See also [DefaultStorage].
+@ProviderFor(DefaultStorage)
+final defaultStorageProvider =
+    AutoDisposeNotifierProvider<DefaultStorage, st.Storage?>.internal(
+  DefaultStorage.new,
+  name: r'defaultStorageProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$defaultStorageHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$DefaultStorage = AutoDisposeNotifier<st.Storage?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

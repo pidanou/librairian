@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -22,14 +23,15 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 
 	tx := r.DB.MustBegin()
 
-	query := `INSERT INTO item 
-  (user_id, name, is_digital, analysis_date, tags) 
-  VALUES (:user_id, :name, :is_digital, :analysis_date, :tags) returning id`
+	query := `INSERT INTO item
+  (user_id, name, is_digital, analysis_date)
+  VALUES (:user_id, :name, :is_digital, :analysis_date) returning id`
 	rows, err := tx.NamedQuery(query, item)
 	if err != nil {
 		log.Printf(`Cannot create item %s`, err)
 		return nil, err
 	}
+	defer rows.Close()
 
 	rows.Next()
 	err = rows.Scan(&insertedItemId)
@@ -85,8 +87,8 @@ func (r *PostgresArchiveRepository) DeleteItem(id *uuid.UUID) error {
 func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, error) {
 	tx := r.DB.MustBegin()
 
-	query := `UPDATE item 
-  set user_id = :user_id, analysis_date = :analysis_date, is_digital = :is_digital, updated_at = now(), tags = :tags where id = :id`
+	query := `UPDATE item
+  set user_id = :user_id, analysis_date = :analysis_date, is_digital = :is_digital, updated_at = now() where id = :id`
 	_, err := tx.NamedExec(query, item)
 	if err != nil {
 		log.Printf(`Cannot update item %s`, err)
@@ -162,7 +164,7 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 
 func (r *PostgresArchiveRepository) EditItemMetadata(item *types.Item) (*types.Item, error) {
 	tx := r.DB.MustBegin()
-	query := `UPDATE item set user_id = :user_id, name = :name, analysis_date = :analysis_date, updated_at = now(), tags = :tags where id = :id`
+	query := `UPDATE item set user_id = :user_id, name = :name, analysis_date = :analysis_date, updated_at = now() where id = :id`
 	_, err := tx.NamedExec(query, item)
 	if err != nil {
 		log.Printf("Cannot edit item: %s", err)
@@ -211,4 +213,65 @@ func (r *PostgresArchiveRepository) GetStorageByID(id *uuid.UUID) (*types.Storag
 	}
 
 	return storage, nil
+}
+
+func (r *PostgresArchiveRepository) AddStorage(storage *types.Storage) (*types.Storage, error) {
+	query := `INSERT INTO storage (user_id, type, alias, created_at, updated_at) VALUES (:user_id, :type, :alias, now(), now()) RETURNING *`
+	rows, err := r.DB.NamedQuery(query, storage)
+	if err != nil {
+		log.Printf("Cannot add storage: %s", err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		rows.StructScan(storage)
+		fmt.Println(storage)
+	}
+	return storage, nil
+}
+
+func (r *PostgresArchiveRepository) EditStorage(storage *types.Storage) (*types.Storage, error) {
+	query := `UPDATE storage (type, alias, updated_at) VALUES ( :type, :alias, now()) WHERE id = :id`
+	_, err := r.DB.NamedExec(query, storage)
+	if err != nil {
+		log.Printf("Cannot add storage: %s", err)
+		return nil, err
+	}
+	return storage, nil
+}
+
+func (r *PostgresArchiveRepository) DeleteStorageByID(id *uuid.UUID) error {
+	itemsInStorage := []types.Item{}
+	itemsIDList := []*uuid.UUID{}
+	tx, err := r.DB.Begin()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	query := `SELECT i.* FROM item i JOIN storage_location sl on i.id = sl.item_id WHERE sl.storage_id = $1`
+	_ = r.DB.Select(&itemsInStorage, query, id)
+
+	for _, item := range itemsInStorage {
+		itemsIDList = append(itemsIDList, item.ID)
+	}
+
+	query = "DELETE FROM item WHERE id = any ($1)"
+	_, err = tx.Exec(query, itemsIDList)
+	if err != nil {
+		tx.Rollback()
+		log.Println(err)
+		return err
+	}
+
+	query = `DELETE FROM storage WHERE id = $1`
+	_, err = tx.Exec(query, id)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Cannot delete storage: %s", err)
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }

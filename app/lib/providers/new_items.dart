@@ -49,7 +49,7 @@ class NewItems extends _$NewItems {
     file.userId = Supabase.instance.client.auth.currentUser!.id;
     for (var sl in file.storageLocations ?? []) {
       sl.userId = Supabase.instance.client.auth.currentUser!.id;
-      sl.storage.userId = Supabase.instance.client.auth.currentUser!.id;
+      sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
     }
 
     try {

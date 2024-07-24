@@ -83,6 +83,7 @@ class EditStorageLocationState extends ConsumerState<EditStorageLocation> {
                     child: TextFormField(
                   textInputAction: TextInputAction.none,
                   decoration: InputDecoration(
+                    hintText: "Location",
                     suffixIcon: (storage != null &&
                             (storage?.type == "Device" ||
                                 storage?.type == "Local"))

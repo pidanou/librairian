@@ -59,6 +59,9 @@ func (s *Server) Start() {
 	api.GET("/item/matches", h.GetMatches)
 
 	api.GET("/storage", h.GetStorage)
+	api.POST("/storage", h.PostStorage)
+	api.DELETE("/storage/:id", h.DeleteStorage)
+	api.PUT("/storage", h.PutStorage)
 
 	e.Start(s.Port)
 

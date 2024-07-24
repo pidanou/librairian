@@ -41,3 +41,15 @@ func (s *ArchiveService) GetStorageByID(id *uuid.UUID) (*types.Storage, error) {
 func (s *ArchiveService) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {
 	return s.ArchiveRepository.GetStorageByUserID(userID)
 }
+
+func (s *ArchiveService) DeleteStorageByID(id *uuid.UUID) error {
+	return s.ArchiveRepository.DeleteStorageByID(id)
+}
+
+func (s *ArchiveService) AddStorage(storage *types.Storage) (*types.Storage, error) {
+	return s.ArchiveRepository.AddStorage(storage)
+}
+
+func (s *ArchiveService) EditStorage(storage *types.Storage) (*types.Storage, error) {
+	return s.ArchiveRepository.EditStorage(storage)
+}

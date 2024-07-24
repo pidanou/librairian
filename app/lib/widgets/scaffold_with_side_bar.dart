@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:librairian/widgets/device_selector.dart';
+import 'package:librairian/widgets/default_storage_selector.dart';
 import 'package:librairian/widgets/navigation_destinations.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
@@ -39,7 +39,7 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
         title: const Row(children: [
           Text("Librairian"),
           SizedBox(width: 10),
-          DeviceSelector()
+          DefaultStorageSelector()
         ]),
         leading: IconButton(
             icon: const Icon(Icons.menu),

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
-import 'package:librairian/providers/device.dart';
 import 'package:librairian/providers/new_items.dart';
+import 'package:librairian/providers/storage.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/file_picker.dart';
 
@@ -27,13 +27,15 @@ class _MyHomePageState extends ConsumerState<AddPage> {
     List<Item> files = [];
     for (var pfile in listItems ?? []) {
       var file = await Item.fromXFile(pfile);
-      final currentDevice = ref.read(currentDeviceProvider);
-      file.storageLocations = [
-        StorageLocation(
-            storage: currentDevice,
-            location: pfile.path,
-            storageId: currentDevice?.id)
-      ];
+      final defaultStorage = ref.read(defaultStorageProvider);
+      if (defaultStorage != null) {
+        file.storageLocations = [
+          StorageLocation(
+              storage: defaultStorage,
+              location: pfile.path,
+              storageId: defaultStorage.id)
+        ];
+      }
       files.add(file);
     }
     ref.read(newItemsProvider.notifier).add(files);
@@ -129,9 +131,14 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                           icon: const Icon(Icons.category),
                           onPressed: () {
                             setState(() {
+                              final newItem = Item.newPhysicalItem();
+                              newItem.storageLocations = [
+                                StorageLocation(
+                                    storage: ref.read(defaultStorageProvider))
+                              ];
                               ref
                                   .read(newItemsProvider.notifier)
-                                  .add([Item.newPhysicalItem()]);
+                                  .add([newItem]);
                               editing = uploadedItems.length;
                             });
                           })
@@ -203,8 +210,9 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                             uploadedItems[i].storageLocations?.isNotEmpty ??
                                     false
                                 ? uploadedItems[i]
-                                    .storageLocations![0]
-                                    .location!
+                                        .storageLocations![0]
+                                        .location ??
+                                    ""
                                 : '',
                             style: const TextStyle(fontSize: 11)),
                         trailing: savingAll || saving == i

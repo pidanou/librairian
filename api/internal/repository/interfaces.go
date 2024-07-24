@@ -14,6 +14,9 @@ type ArchiveRepository interface {
 	EditItemMetadata(item *types.Item) (*types.Item, error)
 	GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error)
 	GetStorageByID(id *uuid.UUID) (*types.Storage, error)
+	DeleteStorageByID(id *uuid.UUID) error
+	EditStorage(storage *types.Storage) (*types.Storage, error)
+	AddStorage(storage *types.Storage) (*types.Storage, error)
 }
 
 type EmbeddingRepository interface {

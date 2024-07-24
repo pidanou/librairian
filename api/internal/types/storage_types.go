@@ -21,9 +21,8 @@ func (sl *StorageLocation) UserHasAccess(userID *uuid.UUID) bool {
 
 type Storage struct {
 	Base
-	Type     PlatformType `json:"type" db:"type"`
-	Alias    string       `json:"alias" db:"alias"`
-	Username string       `json:"username" db:"username"`
+	Type  PlatformType `json:"type" db:"type"`
+	Alias string       `json:"alias" db:"alias"`
 }
 
 func (s *Storage) UserHasAccess(userID *uuid.UUID) bool {
@@ -36,7 +35,7 @@ func (s *Storage) UserHasAccess(userID *uuid.UUID) bool {
 type PlatformType string
 
 const (
-	DeviceStorageName      PlatformType = "Device"
-	GoogleDriveStorageName PlatformType = "Google Drive"
-	OneDriveStorageName    PlatformType = "OneDrive"
+	Device   PlatformType = "Device"
+	Physical PlatformType = "Physical Storage"
+	Cloud    PlatformType = "Cloud"
 )

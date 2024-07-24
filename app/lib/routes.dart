@@ -29,8 +29,12 @@ final goRouter = GoRouter(
       builder: (context, state) => const LoginPage(),
     ),
     StatefulShellRoute.indexedStack(
-      redirect: (context, state) {
-        if (Supabase.instance.client.auth.currentSession == null) {
+      redirect: (context, state) async {
+        final AuthResponse res =
+            await Supabase.instance.client.auth.refreshSession();
+        final session = res.session;
+
+        if (session == null) {
           return "/login";
         }
         return null;

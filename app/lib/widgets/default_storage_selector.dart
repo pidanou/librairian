@@ -1,30 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:librairian/providers/device.dart';
+import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/providers/storage.dart' as storage_provider;
+import 'package:librairian/providers/storage.dart';
 
-class DeviceSelector extends ConsumerStatefulWidget {
+class DefaultStorageSelector extends ConsumerStatefulWidget {
   final EdgeInsets? expandedInsets;
 
-  const DeviceSelector({
+  const DefaultStorageSelector({
     super.key,
     this.expandedInsets,
   });
 
   @override
-  ConsumerState<DeviceSelector> createState() => _DeviceSelectorState();
+  ConsumerState<DefaultStorageSelector> createState() => _DeviceSelectorState();
 }
 
-class _DeviceSelectorState extends ConsumerState<DeviceSelector> {
+class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
   MenuController controller = MenuController();
 
   @override
   Widget build(BuildContext context) {
-    var devices = ref.watch(storage_provider.deviceProvider);
-    final currentDevice = ref.watch(currentDeviceProvider);
+    var storages = ref.watch(storage_provider.storageProvider);
+    final defaultStorage = ref.watch(defaultStorageProvider);
 
-    if (currentDevice is AsyncError) return const Text("Error");
-    if (currentDevice is AsyncLoading) {
+    if (defaultStorage is AsyncError || storages is AsyncError) {
+      return const Text("Error");
+    }
+    if (defaultStorage is AsyncLoading || storages is AsyncLoading) {
       return AnimatedSwitcher(
           duration: const Duration(milliseconds: 1000),
           child: FilledButton(
@@ -41,10 +44,17 @@ class _DeviceSelectorState extends ConsumerState<DeviceSelector> {
         controller: controller,
         builder: (context, controller, child) {
           return FilledButton.icon(
-            icon: const Icon(Icons.devices),
-            label: Text(currentDevice != null
-                ? currentDevice.alias ?? ""
-                : "Select a device"),
+            icon: defaultStorage == null
+                ? SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ))
+                : Icon(storageTypeIcon[defaultStorage.type]),
+            label: Text(defaultStorage != null
+                ? defaultStorage.alias ?? ""
+                : "Select a default storage"),
             onPressed: () {
               if (controller.isOpen) {
                 controller.close();
@@ -55,15 +65,16 @@ class _DeviceSelectorState extends ConsumerState<DeviceSelector> {
           );
         },
         menuChildren: [
-          for (var dev in devices)
+          for (var storage in storages.value ?? [])
             ListTile(
-                title: Text(dev.alias ?? ""),
+                leading: Icon(storageTypeIcon[storage.type]),
+                title: Text(storage.alias ?? ""),
                 onTap: () {
                   controller.close();
-                  ref.read(currentDeviceProvider.notifier).set(dev);
+                  ref.read(defaultStorageProvider.notifier).set(storage);
                 }),
           ListTile(
-              title: const Text("New device"),
+              title: const Text("New storage"),
               leading: const Icon(Icons.add),
               onTap: () {
                 controller.close();

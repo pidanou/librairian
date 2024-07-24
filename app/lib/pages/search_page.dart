@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
-import 'package:librairian/services/matches.dart';
+import 'package:librairian/providers/matches.dart';
 import 'package:librairian/widgets/chat_prompt.dart';
 import 'package:librairian/widgets/chat_response.dart';
 
@@ -10,11 +10,13 @@ class MatchRequest {
   final String prompt;
   final double matchThreshold;
   final int maxResults;
-  late Future<List<MatchItem>> matches;
+  final Future<List<MatchItem>> matches;
 
-  MatchRequest(this.prompt, this.matchThreshold, this.maxResults) {
-    matches = getMatches(prompt, matchThreshold / 100, maxResults);
-  }
+  MatchRequest(
+      {required this.prompt,
+      required this.matchThreshold,
+      required this.maxResults,
+      required this.matches});
 
   @override
   String toString() {
@@ -34,7 +36,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
   final ScrollController scrollController = ScrollController();
   List<MatchRequest> matchRequests = [];
   final FocusNode focusNode = FocusNode();
-  double matchThreshold = 50;
+  double matchThreshold = 0.5;
   int maxResults = 10;
 
   @override
@@ -58,7 +60,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
                       const Text("Match threshold:"),
                       Slider(
                           min: 0,
-                          max: 100,
+                          max: 1,
                           divisions: 10,
                           value: matchThreshold,
                           onChanged: (value) {
@@ -179,10 +181,16 @@ class SearchPageState extends ConsumerState<SearchPage> {
                                             matchRequests.insert(
                                                 0,
                                                 MatchRequest(
-                                                  controller.text,
-                                                  matchThreshold,
-                                                  maxResults,
-                                                ));
+                                                    prompt: controller.text,
+                                                    matchThreshold:
+                                                        matchThreshold,
+                                                    maxResults: maxResults,
+                                                    matches: ref.read(
+                                                        matchesProvider(
+                                                                controller.text,
+                                                                matchThreshold,
+                                                                maxResults)
+                                                            .future)));
                                             controller.clear();
                                           });
                                           scrollController.animateTo(
@@ -205,8 +213,15 @@ class SearchPageState extends ConsumerState<SearchPage> {
                                   setState(() {
                                     matchRequests.insert(
                                         0,
-                                        MatchRequest(controller.text,
-                                            matchThreshold, maxResults));
+                                        MatchRequest(
+                                            prompt: controller.text,
+                                            matchThreshold: matchThreshold,
+                                            maxResults: maxResults,
+                                            matches: ref.read(matchesProvider(
+                                                    controller.text,
+                                                    matchThreshold,
+                                                    maxResults)
+                                                .future)));
                                     controller.clear();
                                   });
                                   scrollController.animateTo(
