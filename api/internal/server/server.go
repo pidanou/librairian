@@ -51,12 +51,13 @@ func (s *Server) Start() {
 		},
 	}))
 
+	api.GET("/items", h.GetItems)
 	api.POST("/items", h.PostItems)
 	api.PUT("/item", h.PutItem)
 	api.GET("/item/:id", h.GetItemById)
 	api.DELETE("/item/:id", h.DeleteItem)
 	api.PATCH("/item/:id/metadata", h.PatchItemMetadata)
-	api.GET("/item/matches", h.GetMatches)
+	api.GET("/items/matches", h.GetMatches)
 
 	api.GET("/storage", h.GetStorage)
 	api.POST("/storage", h.PostStorage)

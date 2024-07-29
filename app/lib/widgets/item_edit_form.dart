@@ -6,11 +6,13 @@ import 'package:librairian/widgets/edit_storage_location.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 class ItemEditForm extends ConsumerStatefulWidget {
-  const ItemEditForm({super.key, required this.item, this.onEdit, this.onSave});
+  const ItemEditForm(
+      {super.key, required this.item, this.onEdit, this.onSave, this.onCancel});
 
   final Item item;
   final void Function(Item)? onEdit;
-  final void Function()? onSave;
+  final void Function(Item)? onSave;
+  final VoidCallback? onCancel;
 
   @override
   ConsumerState<ItemEditForm> createState() => ItemEditFormState();
@@ -18,11 +20,20 @@ class ItemEditForm extends ConsumerStatefulWidget {
 
 class ItemEditFormState extends ConsumerState<ItemEditForm> {
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
   FocusNode nameFocusNode = FocusNode();
 
   FocusNode descriptionFocusNode = FocusNode();
 
   bool editName = false;
+
+  @override
+  void didUpdateWidget(ItemEditForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.item.name != oldWidget.item.name) {
+      nameController.text = widget.item.name ?? "";
+    }
+  }
 
   @override
   build(BuildContext context) {
@@ -31,166 +42,156 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
     return ListView(children: [
       FocusTraversalGroup(
           child: Form(
-              child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        editName
-                            ? Row(children: [
-                                Expanded(
-                                    child: TextFormField(
-                                        maxLines: 1,
-                                        focusNode: nameFocusNode,
-                                        initialValue: item.name,
-                                        decoration: InputDecoration(
-                                            suffixIcon: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 5),
-                                                child: IconButton(
-                                                  icon: const Icon(Icons.cancel,
-                                                      size: 20),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      editName = false;
-                                                    });
-                                                  },
-                                                ))),
-                                        onFieldSubmitted: (value) {
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+            editName
+                ? Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(children: [
+                      Expanded(
+                          child: TextFormField(
+                              maxLines: 1,
+                              focusNode: nameFocusNode,
+                              controller: nameController,
+                              decoration: InputDecoration(
+                                  suffixIcon: Padding(
+                                      padding: const EdgeInsets.only(right: 5),
+                                      child: IconButton(
+                                        icon:
+                                            const Icon(Icons.cancel, size: 20),
+                                        onPressed: () {
                                           setState(() {
-                                            item.name = value;
                                             editName = false;
                                           });
-                                          widget.onEdit?.call(item);
-                                        }))
-                              ])
-                            : Row(
-                                children: [
-                                  Text(item.name ?? '',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium),
-                                  const SizedBox(width: 10),
-                                  IconButton(
-                                      icon: const Icon(Icons.edit, size: 20),
-                                      onPressed: () {
-                                        setState(() {
-                                          editName = true;
-                                          nameFocusNode.requestFocus();
-                                        });
-                                      })
-                                ],
-                              ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            runAlignment: WrapAlignment.start,
-                            direction: Axis.horizontal,
-                            spacing: 10,
-                            runSpacing: 5,
-                            children: [
-                              if (item.storageLocations != null &&
-                                  item.storageLocations!.isNotEmpty)
-                                for (var i = 0;
-                                    i < item.storageLocations!.length;
-                                    i++)
-                                  item.storageLocations![i].storage != null
-                                      ? InputChip(
-                                          avatar: const Icon(Icons.location_on),
-                                          label: Text(item.storageLocations?[i]
-                                                  .storage?.alias ??
-                                              ""),
-                                          onPressed: () {
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) =>
-                                                    EditStorageLocation(
-                                                      storageLocation: item
-                                                          .storageLocations![i],
-                                                      title: const Text(
-                                                          "Edit location"),
-                                                      onSave: (sl) {
-                                                        if (sl != null) {
-                                                          setState(() {
-                                                            item.storageLocations?[
-                                                                i] = sl;
-                                                          });
-                                                          widget.onEdit
-                                                              ?.call(item);
-                                                        }
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        return;
-                                                      },
-                                                    ));
-                                          },
-                                          onDeleted: () {
-                                            setState(() {
-                                              item.storageLocations!
-                                                  .removeAt(i);
-                                            });
-                                            widget.onEdit?.call(item);
-                                          })
-                                      : const SizedBox(),
-                              const SizedBox(width: 10),
-                              IconButton(
-                                  icon: const Icon(Icons.add),
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            EditStorageLocation(
-                                                title:
-                                                    const Text("Add location"),
-                                                onSave: (sl) {
-                                                  if (sl != null) {
-                                                    setState(() {
-                                                      if (item.storageLocations ==
-                                                          null) {
-                                                        item.storageLocations =
-                                                            [sl];
-                                                      } else {
-                                                        item.storageLocations!
-                                                            .add(sl);
-                                                      }
-                                                    });
-                                                    widget.onEdit?.call(item);
-                                                  }
-                                                  Navigator.of(context).pop();
-                                                }));
-                                  }),
-                            ]),
-                        const SizedBox(height: 10),
-                        TextFormField(
-                            maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                            maxLength: 1000,
-                            maxLines: null,
-                            onChanged: (value) {
-                              if (item.description == null) {
-                                item.description = Description(
-                                    data: value,
-                                    userId: Supabase
-                                        .instance.client.auth.currentUser!.id);
+                                        },
+                                      ))),
+                              onFieldSubmitted: (value) {
+                                setState(() {
+                                  item.name = value;
+                                  editName = false;
+                                });
                                 widget.onEdit?.call(item);
-                                return;
-                              }
-                              item.description!.data = value;
-                            },
-                            controller: descriptionController,
-                            decoration: const InputDecoration(
-                              hintText: "Describe the item and it's content",
-                              labelText: 'Description',
-                            )),
-                        const SizedBox(height: 30),
-                        Align(
-                            alignment: Alignment.centerRight,
-                            child: FilledButton.icon(
-                                label: const Text('Save'),
-                                icon: const Icon(Icons.backup),
+                              }))
+                    ]))
+                : ListTile(
+                    title: Text(item.name ?? '',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    trailing: IconButton(
+                        icon: const Icon(Icons.edit, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            editName = true;
+                            nameFocusNode.requestFocus();
+                          });
+                        })),
+            const SizedBox(height: 10),
+            ListTile(
+              title: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runAlignment: WrapAlignment.start,
+                  direction: Axis.horizontal,
+                  spacing: 10,
+                  runSpacing: 5,
+                  children: [
+                    if (item.storageLocations != null &&
+                        item.storageLocations!.isNotEmpty)
+                      for (var i = 0; i < item.storageLocations!.length; i++)
+                        item.storageLocations![i].storage != null
+                            ? InputChip(
+                                avatar: const Icon(Icons.location_on),
+                                label: Text(
+                                    item.storageLocations?[i].storage?.alias ??
+                                        ""),
                                 onPressed: () {
-                                  widget.onSave?.call();
-                                }))
-                      ]))))
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => EditStorageLocation(
+                                            storageLocation:
+                                                item.storageLocations![i],
+                                            title: const Text("Edit location"),
+                                            onSave: (sl) {
+                                              if (sl != null) {
+                                                setState(() {
+                                                  item.storageLocations?[i] =
+                                                      sl;
+                                                });
+                                                widget.onEdit?.call(item);
+                                              }
+                                              Navigator.of(context).pop();
+                                              return;
+                                            },
+                                          ));
+                                },
+                                onDeleted: () {
+                                  setState(() {
+                                    item.storageLocations!.removeAt(i);
+                                  });
+                                  widget.onEdit?.call(item);
+                                })
+                            : const SizedBox()
+                  ]),
+              trailing: IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) => EditStorageLocation(
+                            title: const Text("Add location"),
+                            onSave: (sl) {
+                              if (sl != null) {
+                                setState(() {
+                                  if (item.storageLocations == null) {
+                                    item.storageLocations = [sl];
+                                  } else {
+                                    item.storageLocations!.add(sl);
+                                  }
+                                });
+                                widget.onEdit?.call(item);
+                              }
+                              Navigator.of(context).pop();
+                            }));
+                  }),
+            ),
+            const SizedBox(height: 10),
+            ListTile(
+                title: TextFormField(
+                    maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                    maxLength: 1000,
+                    maxLines: null,
+                    onChanged: (value) {
+                      if (item.description == null) {
+                        item.description = Description(
+                            data: value,
+                            userId:
+                                Supabase.instance.client.auth.currentUser!.id);
+                        widget.onEdit?.call(item);
+                        return;
+                      }
+                      item.description!.data = value;
+                    },
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      hintText: "Describe the item and it's content",
+                      labelText: 'Description',
+                    ))),
+            const SizedBox(height: 30),
+            ListTile(
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              TextButton(
+                  child: const Text("Cancel"),
+                  onPressed: () {
+                    widget.onCancel?.call();
+                  }),
+              const SizedBox(width: 5),
+              FilledButton.icon(
+                  label: const Text('Save'),
+                  icon: const Icon(Icons.backup),
+                  onPressed: () {
+                    widget.onSave?.call(item);
+                  })
+            ]))
+          ])))
     ]);
   }
 }

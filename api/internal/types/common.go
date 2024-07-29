@@ -12,3 +12,14 @@ type Base struct {
 	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
 	UserID    *uuid.UUID `json:"user_id" db:"user_id"`
 }
+
+type Pagination struct {
+	Page  int `json:"page"`
+	Limit int `json:"limit"`
+	Total int `json:"total"`
+}
+
+type Response struct {
+	Data     interface{} `json:"data"`
+	Metadata interface{} `json:"metadata"`
+}

@@ -8,6 +8,7 @@ import (
 
 type ArchiveRepository interface {
 	AddItem(item *types.Item) (*types.Item, error)
+	GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int) ([]types.Item, int, error)
 	DeleteItem(id *uuid.UUID) error
 	UpdateItem(item *types.Item) (*types.Item, error)
 	GetItemByID(id *uuid.UUID) (*types.Item, error)

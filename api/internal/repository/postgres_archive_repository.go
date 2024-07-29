@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -51,7 +50,7 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 
 	for _, sl := range item.StorageLocation {
 		query = `INSERT INTO storage_location (location, storage_id, item_id, user_id) VALUES ($1, $2, $3, $4)`
-		_, err = tx.Exec(query, sl.Location, sl.StorageID, insertedItemId, sl.UserID)
+		_, err = tx.Exec(query, sl.Location, sl.Storage.ID, insertedItemId, sl.UserID)
 		if err != nil {
 			log.Printf(`Cannot create storage location %s`, err)
 			tx.Rollback()
@@ -71,6 +70,61 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	}
 
 	return item, nil
+}
+
+func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int) ([]types.Item, int, error) {
+	itemsID := []uuid.UUID{}
+	items := []types.Item{}
+	total := 0
+	page = page - 1
+	var err error
+
+	if *storageID != uuid.Nil {
+		query := `SELECT i.id FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2 LIMIT $3 OFFSET $4`
+		err := r.DB.Select(&itemsID, query, userID, storageID, limit, page*limit)
+		if err != nil {
+			log.Println("Cannot get items: ", err)
+			return nil, 0, err
+		}
+		for _, itemID := range itemsID {
+			item, err := r.GetItemByID(&itemID)
+			if err != nil || item == nil {
+				continue
+			}
+			items = append(items, *item)
+		}
+
+		query = `SELECT count(*) FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2`
+		err = r.DB.Get(&total, query, userID, storageID)
+		if err != nil {
+			log.Println("Cannot get items: ", err)
+		}
+
+		return items, total, nil
+	}
+
+	query := `SELECT id FROM item WHERE user_id = $1 LIMIT $2 OFFSET $3`
+	err = r.DB.Select(&itemsID, query, userID, limit, page*limit)
+	if err != nil {
+		log.Println("Cannot get items: ", err)
+		return nil, 0, err
+	}
+
+	for _, itemID := range itemsID {
+		item, err := r.GetItemByID(&itemID)
+		if err != nil || item == nil {
+			continue
+		}
+		items = append(items, *item)
+	}
+
+	query = `SELECT count(*) FROM item WHERE user_id = $1`
+	err = r.DB.Get(&total, query, userID)
+	if err != nil {
+		log.Println("Cannot get items: ", err)
+	}
+
+	return items, total, nil
 }
 
 func (r *PostgresArchiveRepository) DeleteItem(id *uuid.UUID) error {
@@ -225,13 +279,12 @@ func (r *PostgresArchiveRepository) AddStorage(storage *types.Storage) (*types.S
 	defer rows.Close()
 	for rows.Next() {
 		rows.StructScan(storage)
-		fmt.Println(storage)
 	}
 	return storage, nil
 }
 
 func (r *PostgresArchiveRepository) EditStorage(storage *types.Storage) (*types.Storage, error) {
-	query := `UPDATE storage (type, alias, updated_at) VALUES ( :type, :alias, now()) WHERE id = :id`
+	query := `UPDATE storage SET type = :type, alias = :alias, updated_at = now() WHERE id = :id`
 	_, err := r.DB.NamedExec(query, storage)
 	if err != nil {
 		log.Printf("Cannot add storage: %s", err)

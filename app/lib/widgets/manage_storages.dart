@@ -1,104 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/constants/storage_type.dart';
-import 'package:librairian/providers/storage.dart';
-import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
+import 'package:librairian/providers/storage.dart' as sp;
+import 'package:librairian/models/storage.dart';
 import 'package:librairian/widgets/edit_storage.dart';
 
 class ManageStorages extends ConsumerStatefulWidget {
-  const ManageStorages({super.key});
+  const ManageStorages({required this.selectAll, this.editing, super.key});
+  final bool selectAll;
+  final Storage? editing;
 
   @override
   ManageStoragesState createState() => ManageStoragesState();
 }
 
 class ManageStoragesState extends ConsumerState<ManageStorages> {
-  List<String> editing = [];
+  Storage? editing;
+  List<String> selected = [];
+  bool selectAll = false;
+
+  @override
+  void initState() {
+    editing = widget.editing;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final storage = ref.watch(storageProvider);
-    if (storage is AsyncError) {
+    var storages = ref.watch(sp.storageProvider);
+    if (storages is AsyncError) {
       return const Column(children: [Center(child: Text('Error'))]);
     }
-    if (storage is AsyncData) {
-      return Column(children: [
+    if (storages is AsyncData) {
+      return Row(children: [
         Expanded(
-            child: ListView(children: [
-          for (var storage in storage.value ?? [])
-            editing.contains(storage.id)
-                ? EditStorage(
-                    initialType: storage.type,
-                    initialAlias: storage.alias,
-                    onCancel: () {
-                      setState(() {
-                        editing.remove(storage.id);
-                      });
-                    })
-                : ListTile(
-                    title: storage.id == ref.watch(defaultStorageProvider)?.id
-                        ? Text("${storage.alias} (default)")
-                        : Text(storage.alias),
-                    leading: Tooltip(
-                        message: storage.type,
-                        child: Icon(storageTypeIcon[storage.type])),
-                    trailing: MenuAnchor(
-                        menuChildren: [
-                          MenuItemButton(
-                              onPressed: () {
-                                ref
-                                    .read(defaultStorageProvider.notifier)
-                                    .set(storage);
-                              },
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.star, size: 15),
-                                  SizedBox(width: 5),
-                                  Text("Set as default")
-                                ],
-                              )),
-                          MenuItemButton(
-                              onPressed: () {
-                                setState(() {
-                                  editing.add(storage.id);
-                                });
-                              },
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.edit, size: 15),
-                                  SizedBox(width: 5),
-                                  Text("Edit")
-                                ],
-                              )),
-                          MenuItemButton(
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialogDeleteStorage(
-                                          storageID: storage.id);
-                                    });
-                              },
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.delete, size: 15),
-                                  SizedBox(width: 5),
-                                  Text("Delete")
-                                ],
-                              ))
-                        ],
-                        builder: (context, controller, child) {
-                          return IconButton(
-                              icon: const Icon(Icons.more_horiz),
-                              onPressed: () {
-                                if (controller.isOpen) {
-                                  controller.close();
-                                } else {
-                                  controller.open();
-                                }
-                              });
-                        }))
-        ]))
+            flex: 1,
+            child: Column(children: [
+              Expanded(
+                  child: ListView(children: [
+                for (var storage in storages.value ?? [])
+                  Material(
+                      type: MaterialType.transparency,
+                      child: ListTile(
+                        selected: storage.id == editing?.id,
+                        selectedColor: Theme.of(context).colorScheme.onSurface,
+                        selectedTileColor:
+                            Theme.of(context).colorScheme.surfaceDim,
+                        onTap: () {
+                          setState(() {
+                            editing = storage;
+                          });
+                        },
+                        title: storage.id ==
+                                ref.watch(sp.defaultStorageProvider)?.id
+                            ? Text("${storage.alias} (default)")
+                            : Text(storage.alias),
+                        leading: Icon(storageTypeIcon[storage.type]),
+                        trailing: IconButton(
+                          onPressed: () {
+                            ref
+                                .read(sp.defaultStorageProvider.notifier)
+                                .set(storage);
+                          },
+                          icon: storage.id ==
+                                  ref.watch(sp.defaultStorageProvider)?.id
+                              ? Icon(Icons.star,
+                                  color: Theme.of(context).colorScheme.primary)
+                              : const Icon(
+                                  Icons.star_border,
+                                ),
+                        ),
+                      ))
+              ]))
+            ])),
+        if (MediaQuery.of(context).size.width > 600) ...[
+          VerticalDivider(
+            color: Theme.of(context).colorScheme.surfaceDim,
+            width: 1,
+          ),
+          editing != null
+              ? Expanded(
+                  flex: 2,
+                  child: EditStorage(
+                      storage: editing!,
+                      onDelete: () {
+                        setState(() {
+                          editing = null;
+                        });
+                      }))
+              : const Expanded(
+                  flex: 2,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text("No storage selected")]))
+        ]
       ]);
     }
     return const Column(children: [Center(child: CircularProgressIndicator())]);

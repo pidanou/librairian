@@ -18,6 +18,10 @@ func (s *ArchiveService) AddItem(item *types.Item) (*types.Item, error) {
 	return s.ArchiveRepository.AddItem(item)
 }
 
+func (s *ArchiveService) GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int) ([]types.Item, int, error) {
+	return s.ArchiveRepository.GetItems(userID, storageID, page, limit)
+}
+
 func (s *ArchiveService) DeleteItem(id *uuid.UUID) error {
 	return s.ArchiveRepository.DeleteItem(id)
 }

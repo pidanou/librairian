@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:librairian/pages/inventory_page.dart';
+import 'package:librairian/pages/storage_page.dart';
 import 'package:librairian/pages/search_page.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
@@ -85,7 +85,7 @@ final goRouter = GoRouter(
             GoRoute(
               path: '/inventory',
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: InventoryPage(),
+                child: StoragePage(),
               ),
               routes: const [],
             ),
@@ -98,7 +98,7 @@ final goRouter = GoRouter(
             GoRoute(
               path: '/settings',
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: InventoryPage(),
+                child: StoragePage(),
               ),
               routes: const [],
             ),

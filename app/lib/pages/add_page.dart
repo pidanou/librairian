@@ -244,7 +244,7 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                       child: editing != null
                           ? ItemEditForm(
                               item: uploadedItems[editing!],
-                              onSave: () {
+                              onSave: (_) {
                                 save();
                               },
                               onEdit: (file) {

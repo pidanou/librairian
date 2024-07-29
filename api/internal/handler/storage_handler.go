@@ -28,6 +28,7 @@ func (h *Handler) PostStorage(c echo.Context) error {
 
 	err := c.Bind(storage)
 	if err != nil {
+		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid storage")
 	}
 
@@ -48,6 +49,7 @@ func (h *Handler) PutStorage(c echo.Context) error {
 
 	err := c.Bind(storage)
 	if err != nil {
+		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid storage")
 	}
 

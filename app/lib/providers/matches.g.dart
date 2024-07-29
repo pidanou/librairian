@@ -6,7 +6,7 @@ part of 'matches.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$matchesHash() => r'45a9292381ca37c08aa63cbe049bdec44b1be879';
+String _$matchesHash() => r'0f0508acf167a34059b0d5cf055802c8142405a6';
 
 /// Copied from Dart SDK
 class _SystemHash {

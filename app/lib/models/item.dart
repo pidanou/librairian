@@ -1,5 +1,24 @@
 import 'package:cross_file/cross_file.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/models/common.dart';
+
+class PaginatedItemsList {
+  List<Item> data;
+  PaginationMetadata metadata;
+
+  PaginatedItemsList({required this.data, required this.metadata});
+
+  factory PaginatedItemsList.fromJson(Map<String, dynamic> json) {
+    return PaginatedItemsList(
+        data: (json['data'] as List).map((e) => Item.fromJson(e)).toList(),
+        metadata: PaginationMetadata.fromJson(json["metadata"]));
+  }
+
+  @override
+  toString() {
+    return data.toString();
+  }
+}
 
 class Item {
   String? id;

@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/providers/storage.dart';
 
 class AlertDialogDeleteStorage extends ConsumerWidget {
-  const AlertDialogDeleteStorage({required this.storageID, super.key});
+  const AlertDialogDeleteStorage(
+      {this.onDelete, required this.storageID, super.key});
 
   final String storageID;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,6 +24,7 @@ class AlertDialogDeleteStorage extends ConsumerWidget {
         TextButton(
           onPressed: () {
             ref.read(storageProvider.notifier).delete(storageID);
+            onDelete?.call();
             Navigator.pop(context, true);
           },
           child: const Text('Delete'),

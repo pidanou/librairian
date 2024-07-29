@@ -1,15 +1,43 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/pidanou/librairian/internal/types"
 )
+
+func (h *Handler) GetItems(c echo.Context) error {
+	userID := getUserIDFromJWT(c)
+
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	storageIDString := c.QueryParam("storage_id")
+	storageID, err := uuid.Parse(storageIDString)
+
+	if page == 0 {
+		page = 1
+	}
+
+	if limit == 0 {
+		limit = 20
+	}
+
+	items, total, err := h.ArchiveService.GetItems(userID, &storageID, page, limit)
+	if err != nil {
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get items")
+	}
+
+	response := types.Response{Data: items, Metadata: types.Pagination{Page: page, Limit: limit, Total: total}}
+
+	return c.JSON(http.StatusOK, response)
+}
 
 func (h *Handler) PostItems(c echo.Context) error {
 	var items = &[]types.Item{}
@@ -27,7 +55,7 @@ func (h *Handler) PostItems(c echo.Context) error {
 
 		cleanedStorageLocation := []types.StorageLocation{}
 		for _, sl := range item.StorageLocation {
-			storage, err := h.ArchiveService.GetStorageByID(sl.StorageID)
+			storage, err := h.ArchiveService.GetStorageByID(sl.Storage.ID)
 			if err != nil {
 				log.Println("Cannot get storage: ", err)
 				continue
@@ -59,7 +87,6 @@ func (h *Handler) PostItems(c echo.Context) error {
 
 		success = append(success, *titem)
 	}
-	print(success, errors)
 	return c.JSON(http.StatusCreated, map[string]interface{}{"successes": success, "errors": errors})
 }
 
@@ -115,13 +142,13 @@ func (h *Handler) PutItem(c echo.Context) error {
 	c.Bind(item)
 
 	userID := getUserIDFromJWT(c)
-	item, err := h.ArchiveService.GetItemById(item.ID)
-	if err != nil || item == nil {
+	itemCheck, err := h.ArchiveService.GetItemById(item.ID)
+	if err != nil || itemCheck == nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item: item does not exist")
 	}
 
-	if !UserHasAccess(item, userID) {
+	if !UserHasAccess(itemCheck, userID) {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
@@ -212,7 +239,6 @@ func (h *Handler) GetMatches(c echo.Context) error {
 			matches[i].Item = item
 		}
 	}
-	fmt.Println(matches)
 
 	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, matches)
