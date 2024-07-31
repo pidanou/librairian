@@ -40,7 +40,6 @@ class FilePickerState extends State<FilePicker> {
   }
 
   void _logException(String message) {
-    print(message);
     _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
     _scaffoldMessengerKey.currentState?.showSnackBar(
       const SnackBar(

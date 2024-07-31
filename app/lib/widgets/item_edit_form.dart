@@ -28,9 +28,15 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
   bool editName = false;
 
   @override
+  void initState() {
+    super.initState();
+    nameController.text = widget.item.name ?? "";
+  }
+
+  @override
   void didUpdateWidget(ItemEditForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.item.name != oldWidget.item.name) {
+    if (widget.item.id != oldWidget.item.id) {
       nameController.text = widget.item.name ?? "";
     }
   }
@@ -66,13 +72,26 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                           });
                                         },
                                       ))),
+                              onChanged: (value) {
+                                setState(() {
+                                  item.name = value;
+                                });
+                              },
                               onFieldSubmitted: (value) {
                                 setState(() {
                                   item.name = value;
                                   editName = false;
                                 });
                                 widget.onEdit?.call(item);
-                              }))
+                              })),
+                      IconButton(
+                          icon: const Icon(Icons.check_circle, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              item.name = nameController.text;
+                              editName = false;
+                            });
+                          })
                     ]))
                 : ListTile(
                     title: Text(item.name ?? '',

@@ -37,6 +37,22 @@ class UserItems extends _$UserItems {
     return null;
   }
 
+  void add(List<Item> items) {
+    if (state.value != null) {
+      var tmp = state.value;
+      tmp!.data.insertAll(0, items);
+      state = AsyncValue.data(tmp); // Assuming AsyncValue or similar wrapper
+    }
+  }
+
+  void remove(String id) {
+    if (state.value != null) {
+      var tmp = state.value;
+      tmp!.data.removeWhere((i) => i.tmpId == id || i.id == id);
+      state = AsyncValue.data(tmp); // Assuming AsyncValue or similar wrapper
+    }
+  }
+
   Future<void> delete(String itemID) async {
     String url = 'http://localhost:8080/api/v1/item/$itemID';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
@@ -85,7 +101,8 @@ class UserItems extends _$UserItems {
           final Map<String, dynamic> data = jsonDecode(response.body);
           final newItem = Item.fromJson(data["successes"][0]);
           final tmp = state.value;
-          tmp?.data.add(newItem);
+          tmp?.data.insert(0, newItem);
+          tmp?.data.removeWhere((i) => i.tmpId == item.tmpId);
           state = AsyncValue.data(tmp);
 
           return;

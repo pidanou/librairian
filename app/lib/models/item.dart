@@ -1,6 +1,14 @@
 import 'package:cross_file/cross_file.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/models/common.dart';
+import 'dart:math';
+import 'dart:convert';
+
+String getRandString(int len) {
+  var random = Random.secure();
+  var values = List<int>.generate(len, (i) => random.nextInt(255));
+  return base64UrlEncode(values);
+}
 
 class PaginatedItemsList {
   List<Item> data;
@@ -21,6 +29,7 @@ class PaginatedItemsList {
 }
 
 class Item {
+  String? tmpId;
   String? id;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -34,6 +43,7 @@ class Item {
   int? wordCount;
 
   Item({
+    this.tmpId,
     this.id,
     this.createdAt,
     this.updatedAt,
@@ -51,11 +61,12 @@ class Item {
   }
 
   static newPhysicalItem() {
-    return Item(isDigital: false, name: 'New Item');
+    return Item(tmpId: getRandString(5), isDigital: false, name: 'New Item');
   }
 
   static Future<Item> fromXFile(XFile xfile) async {
     return Item(
+      tmpId: getRandString(5),
       name: xfile.name,
       isDigital: true,
       storageLocations: [StorageLocation(location: xfile.path)],
@@ -65,8 +76,8 @@ class Item {
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
       id: json['id'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: DateTime.parse(json['created_at']).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at']).toLocal(),
       userId: json['user_id'],
       name: json['name'],
       isDigital: json['is_digital'],

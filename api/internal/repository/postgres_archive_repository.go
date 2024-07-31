@@ -80,7 +80,7 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 	var err error
 
 	if *storageID != uuid.Nil {
-		query := `SELECT i.id FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2 LIMIT $3 OFFSET $4`
+		query := `SELECT i.id FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2  ORDER BY i.updated_at DESC LIMIT $3 OFFSET $4`
 		err := r.DB.Select(&itemsID, query, userID, storageID, limit, page*limit)
 		if err != nil {
 			log.Println("Cannot get items: ", err)
@@ -142,7 +142,7 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 	tx := r.DB.MustBegin()
 
 	query := `UPDATE item
-  set user_id = :user_id, analysis_date = :analysis_date, is_digital = :is_digital, updated_at = now() where id = :id`
+    set name = :name, analysis_date = :analysis_date, is_digital = :is_digital, updated_at = now() where id = :id`
 	_, err := tx.NamedExec(query, item)
 	if err != nil {
 		log.Printf(`Cannot update item %s`, err)
@@ -172,6 +172,12 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 		log.Printf(`Cannot commit: %s`, err)
 		return nil, err
 	}
+
+	item, err = r.GetItemByID(item.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return item, nil
 }
 
@@ -181,7 +187,7 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 	storageLocation := []types.StorageLocation{}
 	storage := &types.Storage{}
 
-	query := `SELECT * FROM item WHERE id = $1`
+	query := `SELECT * FROM item WHERE id = $1 ORDER BY updated_at DESC`
 	err := r.DB.Get(item, query, id)
 	if err != nil {
 		log.Printf("Cannot get item: %s", err)
@@ -248,7 +254,7 @@ func (r *PostgresArchiveRepository) EditItemMetadata(item *types.Item) (*types.I
 
 func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {
 	storages := []types.Storage{}
-	query := `SELECT * FROM storage WHERE user_id = $1`
+	query := `SELECT * FROM storage WHERE user_id = $1 ORDER BY updated_at DESC`
 	err := r.DB.Select(&storages, query, userID)
 	if err != nil {
 		return nil, err
@@ -259,7 +265,7 @@ func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]typ
 func (r *PostgresArchiveRepository) GetStorageByID(id *uuid.UUID) (*types.Storage, error) {
 	storage := &types.Storage{}
 
-	query := `SELECT * FROM storage where id = $1`
+	query := `SELECT * FROM storage where id = $1 ORDER BY updated_at DESC`
 	err := r.DB.Get(storage, query, id)
 	if err != nil {
 		log.Printf("Cannot get storage: %s", err)

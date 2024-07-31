@@ -36,6 +36,7 @@ func (h *Handler) GetItems(c echo.Context) error {
 
 	response := types.Response{Data: items, Metadata: types.Pagination{Page: page, Limit: limit, Total: total}}
 
+	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -109,6 +110,7 @@ func (h *Handler) GetItemById(c echo.Context) error {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
+	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, item)
 }
 
