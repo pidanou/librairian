@@ -22,3 +22,14 @@ type ProtectedResource interface {
 func UserHasAccess(p ProtectedResource, userID *uuid.UUID) bool {
 	return p.UserHasAccess(userID)
 }
+
+var allowedItemOrderBy = []string{"name", "created_at", "updated_at"}
+
+func isValidOrderColumn(column string) bool {
+	for _, c := range allowedItemOrderBy {
+		if c == column {
+			return true
+		}
+	}
+	return false
+}

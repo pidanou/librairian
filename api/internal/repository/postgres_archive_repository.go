@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -72,7 +73,7 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	return item, nil
 }
 
-func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int) ([]types.Item, int, error) {
+func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error) {
 	itemsID := []uuid.UUID{}
 	items := []types.Item{}
 	total := 0
@@ -80,7 +81,14 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 	var err error
 
 	if *storageID != uuid.Nil {
-		query := `SELECT i.id FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2  ORDER BY i.updated_at DESC LIMIT $3 OFFSET $4`
+		query := fmt.Sprintf(`SELECT i.id 
+                      FROM item i 
+                      JOIN storage_location sl 
+                      ON i.id = sl.item_id 
+                      WHERE i.user_id = $1 
+                      AND sl.storage_id = $2  
+                      ORDER BY i.%s %s 
+                      LIMIT $3 OFFSET $4`, orderBy.Column, orderBy.Direction)
 		err := r.DB.Select(&itemsID, query, userID, storageID, limit, page*limit)
 		if err != nil {
 			log.Println("Cannot get items: ", err)
@@ -103,7 +111,11 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 		return items, total, nil
 	}
 
-	query := `SELECT id FROM item WHERE user_id = $1 LIMIT $2 OFFSET $3`
+	query := fmt.Sprintf(`SELECT i.id 
+                      FROM item i 
+                      WHERE i.user_id = $1 
+                      ORDER BY i.%s %s 
+                      LIMIT $2 OFFSET $3`, orderBy.Column, orderBy.Direction)
 	err = r.DB.Select(&itemsID, query, userID, limit, page*limit)
 	if err != nil {
 		log.Println("Cannot get items: ", err)

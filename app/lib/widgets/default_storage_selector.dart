@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/providers/storage.dart' as storage_provider;
 import 'package:librairian/providers/storage.dart';
@@ -54,7 +55,7 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
                 : Icon(storageTypeIcon[defaultStorage.type]),
             label: Text(defaultStorage != null
                 ? defaultStorage.alias ?? ""
-                : "Select a default storage"),
+                : "No default storage"),
             onPressed: () {
               if (controller.isOpen) {
                 controller.close();
@@ -74,10 +75,18 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
                   ref.read(defaultStorageProvider.notifier).set(storage);
                 }),
           ListTile(
-              title: const Text("New storage"),
-              leading: const Icon(Icons.add),
+              leading: const Icon(Icons.cancel),
+              title: const Text("No default storage"),
               onTap: () {
                 controller.close();
+                ref.read(defaultStorageProvider.notifier).set(null);
+              }),
+          ListTile(
+              title: const Text("New storage"),
+              leading: const Icon(Icons.add_circle),
+              onTap: () {
+                controller.close();
+                GoRouter.of(context).go("/storage");
               })
         ]);
   }

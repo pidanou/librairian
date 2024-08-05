@@ -132,10 +132,12 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                           onPressed: () {
                             setState(() {
                               final newItem = Item.newPhysicalItem();
-                              newItem.storageLocations = [
-                                StorageLocation(
-                                    storage: ref.read(defaultStorageProvider))
-                              ];
+                              if (ref.read(defaultStorageProvider) != null) {
+                                newItem.storageLocations = [
+                                  StorageLocation(
+                                      storage: ref.read(defaultStorageProvider))
+                                ];
+                              }
                               ref
                                   .read(newItemsProvider.notifier)
                                   .add([newItem]);
@@ -244,8 +246,13 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                       child: editing != null
                           ? ItemEditForm(
                               item: uploadedItems[editing!],
-                              onSave: (_) {
+                              onSave: (item) {
                                 save();
+                              },
+                              onCancel: () {
+                                setState(() {
+                                  editing = null;
+                                });
                               },
                               onEdit: (file) {
                                 ref

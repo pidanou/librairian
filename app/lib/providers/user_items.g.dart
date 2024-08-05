@@ -6,7 +6,7 @@ part of 'user_items.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userItemsHash() => r'206a0ca73e409b6955592ecd397fb15ad21820a1';
+String _$userItemsHash() => r'5c0030d1723146e1f91061e314481ac66527ba11';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -34,11 +34,15 @@ abstract class _$UserItems
   late final int page;
   late final int limit;
   late final String? storageID;
+  late final String? orderBy;
+  late final bool? asc;
 
   FutureOr<PaginatedItemsList?> build(
     int page,
     int limit, [
     String? storageID,
+    String? orderBy = "name",
+    bool? asc = false,
   ]);
 }
 
@@ -56,11 +60,15 @@ class UserItemsFamily extends Family<AsyncValue<PaginatedItemsList?>> {
     int page,
     int limit, [
     String? storageID,
+    String? orderBy = "name",
+    bool? asc = false,
   ]) {
     return UserItemsProvider(
       page,
       limit,
       storageID,
+      orderBy,
+      asc,
     );
   }
 
@@ -72,6 +80,8 @@ class UserItemsFamily extends Family<AsyncValue<PaginatedItemsList?>> {
       provider.page,
       provider.limit,
       provider.storageID,
+      provider.orderBy,
+      provider.asc,
     );
   }
 
@@ -98,11 +108,15 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
     int page,
     int limit, [
     String? storageID,
+    String? orderBy = "name",
+    bool? asc = false,
   ]) : this._internal(
           () => UserItems()
             ..page = page
             ..limit = limit
-            ..storageID = storageID,
+            ..storageID = storageID
+            ..orderBy = orderBy
+            ..asc = asc,
           from: userItemsProvider,
           name: r'userItemsProvider',
           debugGetCreateSourceHash:
@@ -114,6 +128,8 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
           page: page,
           limit: limit,
           storageID: storageID,
+          orderBy: orderBy,
+          asc: asc,
         );
 
   UserItemsProvider._internal(
@@ -126,11 +142,15 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
     required this.page,
     required this.limit,
     required this.storageID,
+    required this.orderBy,
+    required this.asc,
   }) : super.internal();
 
   final int page;
   final int limit;
   final String? storageID;
+  final String? orderBy;
+  final bool? asc;
 
   @override
   FutureOr<PaginatedItemsList?> runNotifierBuild(
@@ -140,6 +160,8 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
       page,
       limit,
       storageID,
+      orderBy,
+      asc,
     );
   }
 
@@ -151,7 +173,9 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
         () => create()
           ..page = page
           ..limit = limit
-          ..storageID = storageID,
+          ..storageID = storageID
+          ..orderBy = orderBy
+          ..asc = asc,
         from: from,
         name: null,
         dependencies: null,
@@ -160,6 +184,8 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
         page: page,
         limit: limit,
         storageID: storageID,
+        orderBy: orderBy,
+        asc: asc,
       ),
     );
   }
@@ -175,7 +201,9 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
     return other is UserItemsProvider &&
         other.page == page &&
         other.limit == limit &&
-        other.storageID == storageID;
+        other.storageID == storageID &&
+        other.orderBy == orderBy &&
+        other.asc == asc;
   }
 
   @override
@@ -184,6 +212,8 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
     hash = _SystemHash.combine(hash, page.hashCode);
     hash = _SystemHash.combine(hash, limit.hashCode);
     hash = _SystemHash.combine(hash, storageID.hashCode);
+    hash = _SystemHash.combine(hash, orderBy.hashCode);
+    hash = _SystemHash.combine(hash, asc.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -198,6 +228,12 @@ mixin UserItemsRef on AutoDisposeAsyncNotifierProviderRef<PaginatedItemsList?> {
 
   /// The parameter `storageID` of this provider.
   String? get storageID;
+
+  /// The parameter `orderBy` of this provider.
+  String? get orderBy;
+
+  /// The parameter `asc` of this provider.
+  bool? get asc;
 }
 
 class _UserItemsProviderElement extends AutoDisposeAsyncNotifierProviderElement<
@@ -210,6 +246,10 @@ class _UserItemsProviderElement extends AutoDisposeAsyncNotifierProviderElement<
   int get limit => (origin as UserItemsProvider).limit;
   @override
   String? get storageID => (origin as UserItemsProvider).storageID;
+  @override
+  String? get orderBy => (origin as UserItemsProvider).orderBy;
+  @override
+  bool? get asc => (origin as UserItemsProvider).asc;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -11,13 +11,14 @@ part 'user_items.g.dart';
 class UserItems extends _$UserItems {
   @override
   Future<PaginatedItemsList?> build(int page, int limit,
-      [String? storageID]) async {
+      [String? storageID, String? orderBy = "name", bool? asc = false]) async {
     String url;
     if (storageID != null) {
       url =
-          'http://localhost:8080/api/v1/items?limit=$limit&page=$page&storage_id=$storageID';
+          'http://localhost:8080/api/v1/items?limit=$limit&page=$page&storage_id=$storageID&order_by=$orderBy&asc=$asc';
     } else {
-      url = 'http://localhost:8080/api/v1/items?limit=$limit&page=$page';
+      url =
+          'http://localhost:8080/api/v1/items?limit=$limit&page=$page&order_by=$orderBy&asc=$asc';
     }
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};

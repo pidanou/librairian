@@ -45,5 +45,28 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-</dict>
+    </dict>
+  <key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.740244662736-6f5aa0sku5p283d8i7vj89tccunkntfd</string>
+    </array>
+  </dict>
+    </array>
+  <key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <!-- abstract name for this URL type (you can leave it blank) -->
+        <string>sample_name</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>io.librairian.app</string>
+        </array>
+    </dict>
+</array>
 </plist>

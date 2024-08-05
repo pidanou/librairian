@@ -7,14 +7,14 @@ import 'package:librairian/models/storage.dart';
 class ItemsList extends ConsumerStatefulWidget {
   const ItemsList(
       {this.items,
-      required this.storage,
+      this.storage,
       this.selectAll = false,
       this.onSelected,
       this.onTap,
       this.onDelete,
       super.key});
 
-  final Storage storage;
+  final Storage? storage;
   final bool selectAll;
   final Function(Item)? onTap;
   final Function(List<String>)? onDelete;
@@ -29,7 +29,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
   List<String> selected = [];
   String editing = "";
   bool selectAll = false;
-  late Storage storage;
+  Storage? storage;
   late List<Item> items;
 
   @override
@@ -43,7 +43,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
   @override
   void didUpdateWidget(ItemsList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.storage.id != oldWidget.storage.id) {
+    if (widget.storage?.id != oldWidget.storage?.id) {
       storage = widget.storage;
     }
     if (widget.items != oldWidget.items) {
@@ -83,27 +83,24 @@ class ItemsListState extends ConsumerState<ItemsList> {
                     editing == item.tmpId,
                 selectedColor: Theme.of(context).colorScheme.onSurface,
                 selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
-                leading: Checkbox(
-                  value: selected.contains(item.id) ||
-                      selected.contains(item.tmpId),
-                  onChanged: (value) {
-                    setState(() {
-                      editing = "";
-                      selected.contains(item.id)
-                          ? selected.remove(item.id)
-                          : selected.add(item.id ?? item.tmpId ?? "");
-                    });
-                    widget.onSelected?.call(selected);
-                  },
-                ),
+                leading: widget.onSelected != null
+                    ? Checkbox(
+                        value: selected.contains(item.id) ||
+                            selected.contains(item.tmpId),
+                        onChanged: (value) {
+                          setState(() {
+                            editing = "";
+                            selected.contains(item.id)
+                                ? selected.remove(item.id)
+                                : selected.add(item.id ?? item.tmpId ?? "");
+                          });
+                          widget.onSelected?.call(selected);
+                        },
+                      )
+                    : null,
                 title: item.tmpId == null
                     ? Text(item.name ?? "")
                     : Text("(Not saved) ${item.name}"),
-                subtitle: Text(
-                    item.storageLocations?.isNotEmpty ?? false
-                        ? item.storageLocations![0].location ?? ""
-                        : '',
-                    style: const TextStyle(fontSize: 11)),
                 trailing: item.tmpId == null
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,

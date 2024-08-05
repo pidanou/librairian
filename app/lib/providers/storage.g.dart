@@ -21,7 +21,7 @@ final storageProvider =
 );
 
 typedef _$Storage = AutoDisposeAsyncNotifier<List<st.Storage>>;
-String _$defaultStorageHash() => r'd095680415c5c7dab689ee0884c8ec78f69295fa';
+String _$defaultStorageHash() => r'04e5d5137a736c1b56b6ac6c655bc5d12541fcc6';
 
 /// See also [DefaultStorage].
 @ProviderFor(DefaultStorage)

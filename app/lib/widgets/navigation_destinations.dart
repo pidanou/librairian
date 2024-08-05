@@ -7,9 +7,9 @@ class Destination {
 }
 
 const List<Destination> navigationDestinations = <Destination>[
-  Destination(Icons.library_add, 'Add'),
   Destination(Icons.search, 'Search'),
+  Destination(Icons.library_add, 'Add'),
   Destination(Icons.shelves, 'Storage'),
   Destination(Icons.list_alt, 'Inventory'),
-  Destination(Icons.settings, 'Settings'),
+  // Destination(Icons.settings, 'Settings'),
 ];

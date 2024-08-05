@@ -13,6 +13,11 @@ type Base struct {
 	UserID    *uuid.UUID `json:"user_id" db:"user_id"`
 }
 
+type OrderBy struct {
+	Column    string
+	Direction string
+}
+
 type Pagination struct {
 	Page  int `json:"page"`
 	Limit int `json:"limit"`

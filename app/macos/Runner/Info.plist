@@ -28,5 +28,17 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+  <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLName</key>
+        <string>sample_name</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <!-- your schemes -->
+          <string>io.librairian.app</string>
+        </array>
+      </dict>
+    </array>
 </dict>
 </plist>

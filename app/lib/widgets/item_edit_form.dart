@@ -104,74 +104,76 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                             nameFocusNode.requestFocus();
                           });
                         })),
+            Divider(
+              color: Theme.of(context).colorScheme.surfaceDim,
+              height: 1,
+            ),
             const SizedBox(height: 10),
             ListTile(
-              title: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  runAlignment: WrapAlignment.start,
-                  direction: Axis.horizontal,
-                  spacing: 10,
-                  runSpacing: 5,
-                  children: [
-                    if (item.storageLocations != null &&
-                        item.storageLocations!.isNotEmpty)
-                      for (var i = 0; i < item.storageLocations!.length; i++)
-                        item.storageLocations![i].storage != null
-                            ? InputChip(
-                                avatar: const Icon(Icons.location_on),
-                                label: Text(
-                                    item.storageLocations?[i].storage?.alias ??
-                                        ""),
-                                onPressed: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) => EditStorageLocation(
-                                            storageLocation:
-                                                item.storageLocations![i],
-                                            title: const Text("Edit location"),
-                                            onSave: (sl) {
-                                              if (sl != null) {
-                                                setState(() {
-                                                  item.storageLocations?[i] =
-                                                      sl;
-                                                });
-                                                widget.onEdit?.call(item);
-                                              }
-                                              Navigator.of(context).pop();
-                                              return;
-                                            },
-                                          ));
-                                },
-                                onDeleted: () {
+                title: const Text(
+                  "Storage locations",
+                ),
+                trailing: IconButton(
+                    icon: const Icon(Icons.add, size: 20),
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) => EditStorageLocation(
+                              title: const Text("Add location"),
+                              onSave: (sl) {
+                                if (sl != null) {
                                   setState(() {
-                                    item.storageLocations!.removeAt(i);
+                                    if (item.storageLocations == null) {
+                                      item.storageLocations = [sl];
+                                    } else {
+                                      item.storageLocations!.add(sl);
+                                    }
                                   });
                                   widget.onEdit?.call(item);
-                                })
-                            : const SizedBox()
-                  ]),
-              trailing: IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) => EditStorageLocation(
-                            title: const Text("Add location"),
-                            onSave: (sl) {
-                              if (sl != null) {
+                                }
+                                Navigator.of(context).pop();
+                              }));
+                    })),
+            if (item.storageLocations != null &&
+                item.storageLocations!.isNotEmpty)
+              for (var i = 0; i < item.storageLocations!.length; i++)
+                item.storageLocations![i].storage != null
+                    ? Material(
+                        type: MaterialType.transparency,
+                        child: ListTile(
+                          leading: const Icon(Icons.location_on),
+                          title: Text(
+                              item.storageLocations?[i].storage?.alias ?? ""),
+                          subtitle: Text(
+                              item.storageLocations?[i].location ?? "",
+                              style: const TextStyle(fontSize: 10)),
+                          trailing: IconButton(
+                              icon: const Icon(Icons.delete, size: 20),
+                              onPressed: () {
                                 setState(() {
-                                  if (item.storageLocations == null) {
-                                    item.storageLocations = [sl];
-                                  } else {
-                                    item.storageLocations!.add(sl);
-                                  }
+                                  item.storageLocations!.removeAt(i);
                                 });
                                 widget.onEdit?.call(item);
-                              }
-                              Navigator.of(context).pop();
-                            }));
-                  }),
-            ),
+                              }),
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) => EditStorageLocation(
+                                    storageLocation: item.storageLocations![i],
+                                    title: const Text("Edit location"),
+                                    onSave: (sl) {
+                                      if (sl != null) {
+                                        setState(() {
+                                          item.storageLocations?[i] = sl;
+                                        });
+                                        widget.onEdit?.call(item);
+                                      }
+                                      Navigator.of(context).pop();
+                                      return;
+                                    }));
+                          },
+                        ))
+                    : const SizedBox(),
             const SizedBox(height: 10),
             ListTile(
                 title: TextFormField(
@@ -197,11 +199,13 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
             const SizedBox(height: 30),
             ListTile(
                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              TextButton(
-                  child: const Text("Cancel"),
-                  onPressed: () {
-                    widget.onCancel?.call();
-                  }),
+              widget.onCancel != null
+                  ? TextButton(
+                      child: const Text("Cancel"),
+                      onPressed: () {
+                        widget.onCancel?.call();
+                      })
+                  : Container(),
               const SizedBox(width: 5),
               FilledButton.icon(
                   label: const Text('Save'),

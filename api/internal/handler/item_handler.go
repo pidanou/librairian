@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,6 +21,19 @@ func (h *Handler) GetItems(c echo.Context) error {
 	storageIDString := c.QueryParam("storage_id")
 	storageID, err := uuid.Parse(storageIDString)
 
+	orderBy := c.QueryParam("order_by")
+	if !isValidOrderColumn(orderBy) {
+		orderBy = "updated_at"
+	}
+
+	asc := "DESC"
+	ascQ := c.QueryParam("asc")
+	if ascQ != "true" {
+		asc = "ASC"
+	}
+
+	order := types.OrderBy{Column: orderBy, Direction: asc}
+
 	if page == 0 {
 		page = 1
 	}
@@ -28,7 +42,7 @@ func (h *Handler) GetItems(c echo.Context) error {
 		limit = 20
 	}
 
-	items, total, err := h.ArchiveService.GetItems(userID, &storageID, page, limit)
+	items, total, err := h.ArchiveService.GetItems(userID, &storageID, page, limit, order)
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get items")
@@ -43,6 +57,7 @@ func (h *Handler) GetItems(c echo.Context) error {
 func (h *Handler) PostItems(c echo.Context) error {
 	var items = &[]types.Item{}
 	c.Bind(items)
+	fmt.Println(items)
 
 	userID := getUserIDFromJWT(c)
 
@@ -55,7 +70,13 @@ func (h *Handler) PostItems(c echo.Context) error {
 		}
 
 		cleanedStorageLocation := []types.StorageLocation{}
+		if item.StorageLocation == nil {
+			item.StorageLocation = []types.StorageLocation{}
+		}
 		for _, sl := range item.StorageLocation {
+			if sl.Storage == nil {
+				continue
+			}
 			storage, err := h.ArchiveService.GetStorageByID(sl.Storage.ID)
 			if err != nil {
 				log.Println("Cannot get storage: ", err)
