@@ -21,7 +21,7 @@ RUN mkdir /app/
 COPY . /app/
 
 WORKDIR /app/
-RUN flutter build web
+RUN flutter build web --dart-define-from-file .env
 
 
 

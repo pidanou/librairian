@@ -12,11 +12,9 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 
 Future main() async {
   usePathUrlStrategy();
-  // await dotenv.load();
   await Supabase.initialize(
-    url: "https://zuribdilwpksvpydtdkf.supabase.co",
-    anonKey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1cmliZGlsd3Brc3ZweWR0ZGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAzMDE4NTIsImV4cCI6MjAzNTg3Nzg1Mn0.3LYKDT2SWLb6YeiwgNOa9lvi_fUs3QiDRJMHiADZf44",
+    url: const String.fromEnvironment("SUPABASE_URL"),
+    anonKey: const String.fromEnvironment("SUPABASE_ANON_KEY"),
   );
   final sharedPreferences = await SharedPreferences.getInstance();
   runApp(
