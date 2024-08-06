@@ -11,6 +11,6 @@ FROM alpine:latest
 
 COPY --from=builder /api/api /api
 
-EXPOSE 8080
+EXPOSE 3001
 
 ENTRYPOINT ["/api"]

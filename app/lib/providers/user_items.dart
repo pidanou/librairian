@@ -15,10 +15,10 @@ class UserItems extends _$UserItems {
     String url;
     if (storageID != null) {
       url =
-          'http://localhost:8080/api/v1/items?limit=$limit&page=$page&storage_id=$storageID&order_by=$orderBy&asc=$asc';
+          '${const String.fromEnvironment('API_URL')}/api/v1/items?limit=$limit&page=$page&storage_id=$storageID&order_by=$orderBy&asc=$asc';
     } else {
       url =
-          'http://localhost:8080/api/v1/items?limit=$limit&page=$page&order_by=$orderBy&asc=$asc';
+          '${const String.fromEnvironment('API_URL')}/api/v1/items?limit=$limit&page=$page&order_by=$orderBy&asc=$asc';
     }
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
@@ -55,7 +55,8 @@ class UserItems extends _$UserItems {
   }
 
   Future<void> delete(String itemID) async {
-    String url = 'http://localhost:8080/api/v1/item/$itemID';
+    String url =
+        '${const String.fromEnvironment('API_URL')}/api/v1/item/$itemID';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -78,7 +79,7 @@ class UserItems extends _$UserItems {
   }
 
   Future<void> save(Item item) async {
-    String url = 'http://localhost:8080/api/v1/item/';
+    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -94,7 +95,7 @@ class UserItems extends _$UserItems {
       sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
     }
     if (item.id == null) {
-      url = 'http://localhost:8080/api/v1/items';
+      url = '${const String.fromEnvironment('API_URL')}/api/v1/items';
       try {
         final response = await http.post(Uri.parse(url),
             headers: headers, body: jsonEncode([item]));
@@ -115,7 +116,7 @@ class UserItems extends _$UserItems {
       return;
     }
 
-    url = 'http://localhost:8080/api/v1/item';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/item';
     try {
       final response = await http.put(Uri.parse(url),
           headers: headers, body: jsonEncode(item));

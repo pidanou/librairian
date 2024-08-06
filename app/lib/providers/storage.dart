@@ -13,7 +13,7 @@ class Storage extends _$Storage {
   @override
   Future<List<st.Storage>> build() async {
     String url;
-    url = 'http://localhost:8080/api/v1/storage';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/storage';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
 
@@ -39,7 +39,7 @@ class Storage extends _$Storage {
 
   Future<void> add(st.Storage s) async {
     String url;
-    url = 'http://localhost:8080/api/v1/storage';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/storage';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -62,7 +62,7 @@ class Storage extends _$Storage {
 
   Future<void> edit(st.Storage s) async {
     String url;
-    url = 'http://localhost:8080/api/v1/storage';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/storage';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -93,7 +93,7 @@ class Storage extends _$Storage {
 
   Future<void> delete(String id) async {
     String url;
-    url = 'http://localhost:8080/api/v1/storage/$id';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/storage/$id';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
 

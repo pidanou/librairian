@@ -1,27 +1,11 @@
-FROM debian:latest AS build-env
+FROM ghcr.io/cirruslabs/flutter:3.22.3 AS build-env
 
-RUN apt-get update
 
-RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3 sed
-
-RUN apt-get clean
-
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
-
-ENV PATH="${PATH}:/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin"
-
-RUN flutter doctor -v
-
-RUN flutter channel master
-
-RUN flutter upgrade
-
-RUN mkdir /app/
+WORKDIR /app/
 
 COPY . /app/
 
-WORKDIR /app/
-RUN flutter build web --dart-define-from-file .env
+RUN flutter build web --dart-define-from-file dotenv
 
 
 

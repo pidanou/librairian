@@ -14,7 +14,7 @@ class Matches extends _$Matches {
       String input, double threshold, int maxResults) async {
     String url;
     url =
-        'http://localhost:8080/api/v1/items/matches?search=$input&threshold=$threshold&max_results=$maxResults';
+        '${const String.fromEnvironment('API_URL')}/api/v1/items/matches?search=$input&threshold=$threshold&max_results=$maxResults';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
 

@@ -40,7 +40,7 @@ class NewItems extends _$NewItems {
   Future<bool> saveItem(int i) async {
     Item file = state[i];
     String url;
-    url = 'http://localhost:8080/api/v1/items';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/items';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -78,7 +78,7 @@ class NewItems extends _$NewItems {
   // Save all files, returns a list of errors
   Future<List<Item>> saveAll() async {
     String url;
-    url = 'http://localhost:8080/api/v1/items';
+    url = '${const String.fromEnvironment('API_URL')}/api/v1/items';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
