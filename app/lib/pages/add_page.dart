@@ -1,4 +1,5 @@
 import 'package:cross_file/cross_file.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
@@ -32,7 +33,8 @@ class _MyHomePageState extends ConsumerState<AddPage> {
         file.storageLocations = [
           StorageLocation(
               storage: defaultStorage,
-              location: pfile.path,
+              location:
+                  kIsWeb ? "Please add the location of the file" : pfile.path,
               storageId: defaultStorage.id)
         ];
       }

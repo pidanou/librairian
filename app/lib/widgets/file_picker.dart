@@ -1,4 +1,5 @@
 import 'package:cross_file/cross_file.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import 'package:flutter/services.dart';
@@ -27,7 +28,6 @@ class FilePickerState extends State<FilePicker> {
         lockParentWindow: true,
         compressionQuality: 30,
         allowMultiple: widget.allowMultiple,
-        onFileLoading: (fp.FilePickerStatus status) => print(status),
         dialogTitle: "Librairian",
       ));
     } on PlatformException catch (e) {

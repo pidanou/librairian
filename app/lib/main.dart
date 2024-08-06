@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/providers/shared_preferences.dart';
@@ -9,39 +7,16 @@ import 'package:librairian/theme/input_decoration.dart';
 import 'package:librairian/theme/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:win32_registry/win32_registry.dart';
-
-Future<void> register(String scheme) async {
-  String appPath = Platform.resolvedExecutable;
-
-  String protocolRegKey = 'Software\\Classes\\$scheme';
-  RegistryValue protocolRegValue = const RegistryValue(
-    'URL Protocol',
-    RegistryValueType.string,
-    '',
-  );
-  String protocolCmdRegKey = 'shell\\open\\command';
-  RegistryValue protocolCmdRegValue = RegistryValue(
-    '',
-    RegistryValueType.string,
-    '"$appPath" "%1"',
-  );
-
-  final regKey = Registry.currentUser.createKey(protocolRegKey);
-  regKey.createValue(protocolRegValue);
-  regKey.createKey(protocolCmdRegKey).createValue(protocolCmdRegValue);
-}
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 Future main() async {
-  if (Platform.isWindows) {
-    await register('io.librairian.app');
-  }
-  await dotenv.load();
+  usePathUrlStrategy();
+  // await dotenv.load();
   await Supabase.initialize(
-    url: dotenv.get('SUPABASE_URL'),
-    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
+    url: "https://zuribdilwpksvpydtdkf.supabase.co",
+    anonKey:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1cmliZGlsd3Brc3ZweWR0ZGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAzMDE4NTIsImV4cCI6MjAzNTg3Nzg1Mn0.3LYKDT2SWLb6YeiwgNOa9lvi_fUs3QiDRJMHiADZf44",
   );
   final sharedPreferences = await SharedPreferences.getInstance();
   runApp(

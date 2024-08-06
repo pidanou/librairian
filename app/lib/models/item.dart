@@ -1,4 +1,5 @@
 import 'package:cross_file/cross_file.dart';
+import 'package:flutter/foundation.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/models/common.dart';
 import 'dart:math';
@@ -69,7 +70,11 @@ class Item {
       tmpId: getRandString(5),
       name: xfile.name,
       isDigital: true,
-      storageLocations: [StorageLocation(location: xfile.path)],
+      storageLocations: [
+        StorageLocation(
+            location:
+                kIsWeb == true ? "Please add location of the file" : xfile.path)
+      ],
     );
   }
 

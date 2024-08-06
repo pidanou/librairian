@@ -33,6 +33,7 @@ final goRouter = GoRouter(
     ),
     StatefulShellRoute.indexedStack(
       redirect: (context, state) async {
+        print(Supabase.instance.client.auth.currentSession);
         if (Supabase.instance.client.auth.currentSession == null) {
           return "/login";
         }
