@@ -23,7 +23,7 @@ class AlertDialogDeleteStorage extends ConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            ref.read(storageProvider.notifier).delete(storageID);
+            ref.read(storagesProvider.notifier).delete(storageID);
             onDelete?.call();
             Navigator.pop(context, true);
           },

@@ -9,6 +9,23 @@ import (
 	"github.com/pidanou/librairian/internal/types"
 )
 
+func (h *Handler) GetStorageByID(c echo.Context) error {
+
+	userID := getUserIDFromJWT(c)
+	id := uuid.MustParse(c.Param("id"))
+
+	storage, err := h.ArchiveService.GetStorageByID(&id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get storage")
+	}
+
+	if !UserHasAccess(storage, userID) {
+		return echo.NewHTTPError(http.StatusForbidden)
+	}
+
+	return c.JSON(http.StatusOK, storage)
+}
+
 func (h *Handler) GetStorage(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)

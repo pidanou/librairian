@@ -4,10 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
-import 'package:librairian/providers/storage.dart' as sp;
+import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/user_items.dart';
 import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
 import 'package:librairian/widgets/file_picker.dart';
+import 'package:librairian/widgets/alert_form_edit_storage.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/items_list.dart';
 import 'package:librairian/helpers/uuid.dart';
@@ -25,7 +26,6 @@ class EditStorage extends ConsumerStatefulWidget {
 
 class EditStorageState extends ConsumerState<EditStorage> {
   late Storage storage;
-  bool editing = false;
   TextEditingController controller = TextEditingController();
   Item? editingItem;
   int page = 1;
@@ -33,6 +33,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
   List<String> selected = [];
   bool selectAll = false;
   List<Item> newItems = [];
+  bool editingStorage = false;
 
   void _addItemsFromFiles(List<XFile>? listItems) async {
     List<Item> files = [];
@@ -71,6 +72,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
   void initState() {
     super.initState();
     storage = widget.storage;
+    controller.text = storage.alias ?? "";
   }
 
   @override
@@ -99,91 +101,65 @@ class EditStorageState extends ConsumerState<EditStorage> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-            !editing
-                ? ListTile(
-                    leading: Icon(storageTypeIcon[widget.storage.type]),
-                    title: Text(widget.storage.alias ?? 'No name',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                      IconButton(
-                          icon: const Icon(Icons.edit, size: 20),
-                          onPressed: () {
+            if (MediaQuery.of(context).size.width > 600)
+              ListTile(
+                  leading: editingStorage
+                      ? Icon(storageTypeIcon[widget.storage.type])
+                      : Icon(storageTypeIcon[widget.storage.type]),
+                  title: editingStorage
+                      ? TextField(
+                          controller: controller,
+                          onChanged: (value) {
                             setState(() {
-                              editing = true;
+                              storage.alias = value;
                             });
-                          }),
-                      IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialogDeleteStorage(
-                                      onDelete: widget.onDelete,
-                                      storageID: widget.storage.id ?? "");
-                                });
                           })
-                    ]))
-                : Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Wrap(spacing: 5, runSpacing: 10, children: [
-                      DropdownMenu<String>(
-                          label: const Text('Type'),
-                          leadingIcon:
-                              Icon(storageTypeIcon[widget.storage.type]),
-                          onSelected: (value) {
-                            if (value == null) {
-                              return;
-                            }
-                            setState(() {
-                              storage.type = value;
-                            });
-                          },
-                          inputDecorationTheme:
-                              Theme.of(context).inputDecorationTheme,
-                          initialSelection: widget.storage.type,
-                          dropdownMenuEntries:
-                              storageTypeIcon.entries.map((entry) {
-                            return DropdownMenuEntry<String>(
-                                value: entry.key,
-                                label: entry.key,
-                                leadingIcon: Icon(entry.value));
-                          }).toList()),
-                      const SizedBox(width: 10),
-                      Row(children: [
-                        Expanded(
-                            child: TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Name',
-                                ),
-                                controller: controller,
-                                onChanged: (value) {
-                                  setState(() {
-                                    storage.alias = value;
-                                  });
-                                })),
-                        IconButton(
-                            tooltip: 'Submit',
-                            onPressed: () {
-                              ref
-                                  .read(sp.storageProvider.notifier)
-                                  .edit(storage);
-                              setState(() {
-                                editing = false;
-                              });
-                            },
-                            icon: const Icon(Icons.check)),
-                        IconButton(
-                            tooltip: 'Cancel',
-                            onPressed: () {
-                              setState(() {
-                                editing = false;
-                              });
-                            },
-                            icon: const Icon(Icons.cancel)),
-                      ])
-                    ])),
-            const SizedBox(height: 10),
+                      : Text(widget.storage.alias ?? 'No name',
+                          style: Theme.of(context).textTheme.titleMedium),
+                  trailing: editingStorage
+                      ? Row(mainAxisSize: MainAxisSize.min, children: [
+                          IconButton(
+                              icon: const Icon(Icons.cancel, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  editingStorage = false;
+                                });
+                              }),
+                          IconButton(
+                              icon: const Icon(Icons.check_circle, size: 20),
+                              onPressed: () {
+                                ref
+                                    .read(storagesProvider.notifier)
+                                    .edit(storage);
+                                setState(() {
+                                  editingStorage = false;
+                                });
+                              })
+                        ])
+                      : Row(mainAxisSize: MainAxisSize.min, children: [
+                          IconButton(
+                              icon: const Icon(Icons.edit, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  editingStorage = true;
+                                });
+                              }),
+                          IconButton(
+                              icon: const Icon(Icons.delete, size: 20),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialogDeleteStorage(
+                                          onDelete: widget.onDelete,
+                                          storageID: widget.storage.id ?? "");
+                                    });
+                              })
+                        ])),
+            Divider(
+              color: Theme.of(context).colorScheme.surfaceDim,
+              height: 0,
+            ),
             Expanded(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,9 +200,9 @@ class EditStorageState extends ConsumerState<EditStorage> {
                             newItems.add(newItem);
                           });
                         }),
-                    FilePicker(onSelect: (List<XFile>? files) {
-                      _addItemsFromFiles(files);
-                    }),
+                    // FilePicker(onSelect: (List<XFile>? files) {
+                    //   _addItemsFromFiles(files);
+                    // }),
                     IconButton(
                         icon: const Icon(Icons.refresh),
                         onPressed: () {
@@ -234,48 +210,94 @@ class EditStorageState extends ConsumerState<EditStorage> {
                               userItemsProvider(page, limit, storage.id));
                         })
                   ]),
-                  if (MediaQuery.of(context).size.width > 840) ...[
-                    Divider(
-                      color: Theme.of(context).colorScheme.surfaceDim,
-                      height: 0,
-                    ),
-                    items is AsyncData
-                        ? Expanded(
-                            child: ItemsList(
-                                items: [
-                                ...newItems,
-                                ...items.value?.data ?? []
-                              ],
-                                storage: storage,
-                                selectAll: selectAll,
-                                onSelected: (List<String> list) {
-                                  setState(() {
-                                    selected = list;
-                                  });
-                                },
-                                onTap: (Item item) {
-                                  setState(() {
-                                    editingItem = item;
-                                  });
-                                }))
-                        : const Expanded(
-                            child: Center(child: CircularProgressIndicator())),
-                    PageSwitcher(
-                        prevPage: () {
-                          setState(() {
-                            page = page - 1;
-                          });
-                        },
-                        nextPage: () {
-                          setState(() {
-                            page = page + 1;
-                          });
-                        },
-                        pageSize: limit,
-                        currentPage: page,
-                        totalItem: (items.value?.metadata.total ?? 0) +
-                            newItems.length)
-                  ]
+                  Divider(
+                    color: Theme.of(context).colorScheme.surfaceDim,
+                    height: 0,
+                  ),
+                  items is AsyncData
+                      ? Expanded(
+                          child: ItemsList(
+                              items: [...newItems, ...items.value?.data ?? []],
+                              onRefresh: () => ref.refresh(
+                                  userItemsProvider(page, limit, storage.id)
+                                      .future),
+                              storage: storage,
+                              selectAll: selectAll,
+                              onSelected: (List<String> list) {
+                                setState(() {
+                                  selected = list;
+                                });
+                              },
+                              onTap: (Item item) {
+                                setState(() {
+                                  editingItem = item;
+                                });
+                                if (MediaQuery.of(context).size.width < 600) {
+                                  showModalBottomSheet<void>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.max,
+                                            children: <Widget>[
+                                              Expanded(
+                                                  child: ItemEditForm(
+                                                      item: editingItem!,
+                                                      onSave: (item) {
+                                                        ref
+                                                            .read(
+                                                                userItemsProvider(
+                                                                        page,
+                                                                        limit,
+                                                                        storage
+                                                                            .id)
+                                                                    .notifier)
+                                                            .save(item);
+                                                        if (!isValidUUID(
+                                                            item.id)) {
+                                                          newItems.removeWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .tmpId ==
+                                                                  item.tmpId);
+                                                        }
+                                                        ref.invalidate(
+                                                            userItemsProvider(
+                                                                page,
+                                                                limit,
+                                                                storage.id));
+                                                        editingItem = null;
+                                                      },
+                                                      onCancel: () {
+                                                        setState(() {
+                                                          editingItem = null;
+                                                        });
+                                                      }))
+                                            ],
+                                          ),
+                                        );
+                                      });
+                                }
+                              }))
+                      : const Expanded(
+                          child: Center(child: CircularProgressIndicator())),
+                  PageSwitcher(
+                      prevPage: () {
+                        setState(() {
+                          page = page - 1;
+                        });
+                      },
+                      nextPage: () {
+                        setState(() {
+                          page = page + 1;
+                        });
+                      },
+                      pageSize: limit,
+                      currentPage: page,
+                      totalItem:
+                          (items.value?.metadata.total ?? 0) + newItems.length)
                 ])),
           ]))),
       if (MediaQuery.of(context).size.width > 840)

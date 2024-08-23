@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/pidanou/librairian/internal/datastore"
+	"github.com/pidanou/librairian/internal/config"
 	"github.com/pidanou/librairian/internal/repository"
 )
 
@@ -14,7 +14,7 @@ var testArchiveRespository *repository.PostgresArchiveRepository
 var testArchiveService *ArchiveService
 
 func TestMain(m *testing.M) {
-	testPostgres = datastore.NewPostgresDB(os.Getenv("POSTGRES_CONNECTION_STRING"))
+	testPostgres = config.NewPostgresDB(os.Getenv("POSTGRES_CONNECTION_STRING"))
 	testArchiveRespository = repository.NewPostgresArchiveRepository(testPostgres)
 	testArchiveService = NewArchiveService(testArchiveRespository)
 

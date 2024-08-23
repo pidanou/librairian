@@ -6,7 +6,7 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/pidanou/librairian/internal/datastore"
+	"github.com/pidanou/librairian/internal/config"
 	"github.com/pidanou/librairian/internal/handler"
 	"github.com/pidanou/librairian/internal/repository"
 	"github.com/pidanou/librairian/internal/service"
@@ -22,7 +22,7 @@ func New(port string) *Server {
 
 func (s *Server) Start() {
 
-	supabasePostgres := datastore.NewPostgresDB(os.Getenv("POSTGRES_CONNECTION_STRING"))
+	supabasePostgres := config.NewPostgresDB(os.Getenv("POSTGRES_CONNECTION_STRING"))
 
 	archiveRepository := repository.NewPostgresArchiveRepository(supabasePostgres)
 	embeddingRepository := repository.NewOpenaiEmbeddingRepository(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")

@@ -8,7 +8,9 @@ import 'package:librairian/theme/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
 
 Future main() async {
   usePathUrlStrategy();
@@ -33,30 +35,34 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'), // English
-          Locale('fr'),
-        ],
-        debugShowCheckedModeBanner: false,
-        title: "Librairian",
-        routerConfig: goRouter,
-        theme: ThemeData(
+    return AdaptiveTheme(
+        light: ThemeData(
           useMaterial3: true,
           chipTheme: CustomChipDecorationThemeData.all(),
           inputDecorationTheme: CustomInputDecorationTheme.all(),
           colorScheme: MaterialTheme.lightScheme(),
         ),
-        darkTheme: ThemeData(
+        dark: ThemeData(
           useMaterial3: true,
           chipTheme: CustomChipDecorationThemeData.all(),
           inputDecorationTheme: CustomInputDecorationTheme.all(),
           colorScheme: MaterialTheme.darkScheme(),
-        ));
+        ),
+        initial: AdaptiveThemeMode.system,
+        builder: (theme, darkTheme) => MaterialApp.router(
+                localizationsDelegates: const [
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [
+                  Locale('en'), // English
+                  Locale('fr'),
+                ],
+                debugShowCheckedModeBanner: false,
+                title: "Librairian",
+                routerConfig: goRouter,
+                theme: theme,
+                darkTheme: darkTheme));
   }
 }

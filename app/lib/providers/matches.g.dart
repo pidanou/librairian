@@ -6,7 +6,8 @@ part of 'matches.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$matchesHash() => r'0f0508acf167a34059b0d5cf055802c8142405a6';
+String _$matchesByDescriptionHash() =>
+    r'86c5aebb5b8b6b931a09904dd9352f0d59152ca5';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,35 +30,22 @@ class _SystemHash {
   }
 }
 
-abstract class _$Matches
-    extends BuildlessAutoDisposeAsyncNotifier<List<MatchItem>> {
-  late final String input;
-  late final double threshold;
-  late final int maxResults;
+/// See also [matchesByDescription].
+@ProviderFor(matchesByDescription)
+const matchesByDescriptionProvider = MatchesByDescriptionFamily();
 
-  FutureOr<List<MatchItem>> build(
-    String input,
-    double threshold,
-    int maxResults,
-  );
-}
+/// See also [matchesByDescription].
+class MatchesByDescriptionFamily extends Family<AsyncValue<List<MatchItem>>> {
+  /// See also [matchesByDescription].
+  const MatchesByDescriptionFamily();
 
-/// See also [Matches].
-@ProviderFor(Matches)
-const matchesProvider = MatchesFamily();
-
-/// See also [Matches].
-class MatchesFamily extends Family<AsyncValue<List<MatchItem>>> {
-  /// See also [Matches].
-  const MatchesFamily();
-
-  /// See also [Matches].
-  MatchesProvider call(
+  /// See also [matchesByDescription].
+  MatchesByDescriptionProvider call(
     String input,
     double threshold,
     int maxResults,
   ) {
-    return MatchesProvider(
+    return MatchesByDescriptionProvider(
       input,
       threshold,
       maxResults,
@@ -65,8 +53,8 @@ class MatchesFamily extends Family<AsyncValue<List<MatchItem>>> {
   }
 
   @override
-  MatchesProvider getProviderOverride(
-    covariant MatchesProvider provider,
+  MatchesByDescriptionProvider getProviderOverride(
+    covariant MatchesByDescriptionProvider provider,
   ) {
     return call(
       provider.input,
@@ -87,36 +75,39 @@ class MatchesFamily extends Family<AsyncValue<List<MatchItem>>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'matchesProvider';
+  String? get name => r'matchesByDescriptionProvider';
 }
 
-/// See also [Matches].
-class MatchesProvider
-    extends AutoDisposeAsyncNotifierProviderImpl<Matches, List<MatchItem>> {
-  /// See also [Matches].
-  MatchesProvider(
+/// See also [matchesByDescription].
+class MatchesByDescriptionProvider
+    extends AutoDisposeFutureProvider<List<MatchItem>> {
+  /// See also [matchesByDescription].
+  MatchesByDescriptionProvider(
     String input,
     double threshold,
     int maxResults,
   ) : this._internal(
-          () => Matches()
-            ..input = input
-            ..threshold = threshold
-            ..maxResults = maxResults,
-          from: matchesProvider,
-          name: r'matchesProvider',
+          (ref) => matchesByDescription(
+            ref as MatchesByDescriptionRef,
+            input,
+            threshold,
+            maxResults,
+          ),
+          from: matchesByDescriptionProvider,
+          name: r'matchesByDescriptionProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$matchesHash,
-          dependencies: MatchesFamily._dependencies,
-          allTransitiveDependencies: MatchesFamily._allTransitiveDependencies,
+                  : _$matchesByDescriptionHash,
+          dependencies: MatchesByDescriptionFamily._dependencies,
+          allTransitiveDependencies:
+              MatchesByDescriptionFamily._allTransitiveDependencies,
           input: input,
           threshold: threshold,
           maxResults: maxResults,
         );
 
-  MatchesProvider._internal(
+  MatchesByDescriptionProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -133,25 +124,13 @@ class MatchesProvider
   final int maxResults;
 
   @override
-  FutureOr<List<MatchItem>> runNotifierBuild(
-    covariant Matches notifier,
+  Override overrideWith(
+    FutureOr<List<MatchItem>> Function(MatchesByDescriptionRef provider) create,
   ) {
-    return notifier.build(
-      input,
-      threshold,
-      maxResults,
-    );
-  }
-
-  @override
-  Override overrideWith(Matches Function() create) {
     return ProviderOverride(
       origin: this,
-      override: MatchesProvider._internal(
-        () => create()
-          ..input = input
-          ..threshold = threshold
-          ..maxResults = maxResults,
+      override: MatchesByDescriptionProvider._internal(
+        (ref) => create(ref as MatchesByDescriptionRef),
         from: from,
         name: null,
         dependencies: null,
@@ -165,14 +144,13 @@ class MatchesProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<Matches, List<MatchItem>>
-      createElement() {
-    return _MatchesProviderElement(this);
+  AutoDisposeFutureProviderElement<List<MatchItem>> createElement() {
+    return _MatchesByDescriptionProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is MatchesProvider &&
+    return other is MatchesByDescriptionProvider &&
         other.input == input &&
         other.threshold == threshold &&
         other.maxResults == maxResults;
@@ -189,7 +167,7 @@ class MatchesProvider
   }
 }
 
-mixin MatchesRef on AutoDisposeAsyncNotifierProviderRef<List<MatchItem>> {
+mixin MatchesByDescriptionRef on AutoDisposeFutureProviderRef<List<MatchItem>> {
   /// The parameter `input` of this provider.
   String get input;
 
@@ -200,17 +178,163 @@ mixin MatchesRef on AutoDisposeAsyncNotifierProviderRef<List<MatchItem>> {
   int get maxResults;
 }
 
-class _MatchesProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<Matches, List<MatchItem>>
-    with MatchesRef {
-  _MatchesProviderElement(super.provider);
+class _MatchesByDescriptionProviderElement
+    extends AutoDisposeFutureProviderElement<List<MatchItem>>
+    with MatchesByDescriptionRef {
+  _MatchesByDescriptionProviderElement(super.provider);
 
   @override
-  String get input => (origin as MatchesProvider).input;
+  String get input => (origin as MatchesByDescriptionProvider).input;
   @override
-  double get threshold => (origin as MatchesProvider).threshold;
+  double get threshold => (origin as MatchesByDescriptionProvider).threshold;
   @override
-  int get maxResults => (origin as MatchesProvider).maxResults;
+  int get maxResults => (origin as MatchesByDescriptionProvider).maxResults;
+}
+
+String _$matchesByNameHash() => r'770eced801e51eefb7b121caa4eaa9829c08f6b1';
+
+/// See also [matchesByName].
+@ProviderFor(matchesByName)
+const matchesByNameProvider = MatchesByNameFamily();
+
+/// See also [matchesByName].
+class MatchesByNameFamily extends Family<AsyncValue<List<MatchItem>>> {
+  /// See also [matchesByName].
+  const MatchesByNameFamily();
+
+  /// See also [matchesByName].
+  MatchesByNameProvider call(
+    String input,
+    int maxResults,
+  ) {
+    return MatchesByNameProvider(
+      input,
+      maxResults,
+    );
+  }
+
+  @override
+  MatchesByNameProvider getProviderOverride(
+    covariant MatchesByNameProvider provider,
+  ) {
+    return call(
+      provider.input,
+      provider.maxResults,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'matchesByNameProvider';
+}
+
+/// See also [matchesByName].
+class MatchesByNameProvider extends AutoDisposeFutureProvider<List<MatchItem>> {
+  /// See also [matchesByName].
+  MatchesByNameProvider(
+    String input,
+    int maxResults,
+  ) : this._internal(
+          (ref) => matchesByName(
+            ref as MatchesByNameRef,
+            input,
+            maxResults,
+          ),
+          from: matchesByNameProvider,
+          name: r'matchesByNameProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$matchesByNameHash,
+          dependencies: MatchesByNameFamily._dependencies,
+          allTransitiveDependencies:
+              MatchesByNameFamily._allTransitiveDependencies,
+          input: input,
+          maxResults: maxResults,
+        );
+
+  MatchesByNameProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.input,
+    required this.maxResults,
+  }) : super.internal();
+
+  final String input;
+  final int maxResults;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<MatchItem>> Function(MatchesByNameRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MatchesByNameProvider._internal(
+        (ref) => create(ref as MatchesByNameRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        input: input,
+        maxResults: maxResults,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<MatchItem>> createElement() {
+    return _MatchesByNameProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MatchesByNameProvider &&
+        other.input == input &&
+        other.maxResults == maxResults;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, input.hashCode);
+    hash = _SystemHash.combine(hash, maxResults.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin MatchesByNameRef on AutoDisposeFutureProviderRef<List<MatchItem>> {
+  /// The parameter `input` of this provider.
+  String get input;
+
+  /// The parameter `maxResults` of this provider.
+  int get maxResults;
+}
+
+class _MatchesByNameProviderElement
+    extends AutoDisposeFutureProviderElement<List<MatchItem>>
+    with MatchesByNameRef {
+  _MatchesByNameProviderElement(super.provider);
+
+  @override
+  String get input => (origin as MatchesByNameProvider).input;
+  @override
+  int get maxResults => (origin as MatchesByNameProvider).maxResults;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

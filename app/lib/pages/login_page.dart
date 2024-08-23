@@ -28,6 +28,13 @@ class LoginPage extends StatelessWidget {
                 ),
                 const Divider(),
                 SupaSocialsAuth(
+                  nativeGoogleAuthConfig: const NativeGoogleAuthConfig(
+                      iosClientId:
+                          "740244662736-6f5aa0sku5p283d8i7vj89tccunkntfd.apps.googleusercontent.com",
+                      webClientId:
+                          "740244662736-3pfti4ji50uhbchp7btj6st5210upceb.apps.googleusercontent.com"),
+                  enableNativeAppleAuth: true,
+                  showSuccessSnackBar: false,
                   redirectUrl:
                       kIsWeb ? null : 'io.librairian.app://login-callback/',
                   socialButtonVariant: SocialButtonVariant.icon,
@@ -37,6 +44,7 @@ class LoginPage extends StatelessWidget {
                   ],
                   colored: true,
                   onSuccess: (Session response) {
+                    Supabase.instance.client.auth.currentSession;
                     GoRouter.of(context).go('/search');
                   },
                   onError: (error) {

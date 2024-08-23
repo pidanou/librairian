@@ -9,9 +9,14 @@ class EditStorageLocation extends ConsumerStatefulWidget {
   final StorageLocation? storageLocation;
   final Widget title;
   final void Function(StorageLocation?)? onSave;
+  final String? itemID;
 
   const EditStorageLocation(
-      {super.key, this.storageLocation, required this.title, this.onSave});
+      {super.key,
+      this.storageLocation,
+      required this.title,
+      this.onSave,
+      this.itemID});
 
   @override
   ConsumerState createState() => EditStorageLocationState();
@@ -82,20 +87,20 @@ class EditStorageLocationState extends ConsumerState<EditStorageLocation> {
                 Expanded(
                     child: TextFormField(
                   textInputAction: TextInputAction.none,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "Location",
-                    suffixIcon: (storage != null &&
-                            (storage?.type == "Device" ||
-                                storage?.type == "Local"))
-                        ? FilePicker(
-                            allowMultiple: false,
-                            onSelect: (List<XFile>? files) {
-                              setState(() {
-                                controller.text = files?[0].path ?? '';
-                              });
-                              focus.requestFocus();
-                            })
-                        : const SizedBox(),
+                    // suffixIcon: (storage != null &&
+                    //         (storage?.type == "Device" ||
+                    //             storage?.type == "Local"))
+                    //     ? FilePicker(
+                    //         allowMultiple: false,
+                    //         onSelect: (List<XFile>? files) {
+                    //           setState(() {
+                    //             controller.text = files?[0].path ?? '';
+                    //           });
+                    //           focus.requestFocus();
+                    //         })
+                    //     : const SizedBox(),
                   ),
                   focusNode: focus,
                   onFieldSubmitted: (s) {

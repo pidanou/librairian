@@ -3,3 +3,6 @@ dev/server:
 
 dev/app:
 	cd app && flutter run --dart-define-from-file dotenv-dev
+
+dev/flutter:
+	cd app && dart run build_runner watch

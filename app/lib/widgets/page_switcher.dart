@@ -29,7 +29,7 @@ class PageSwitcher extends StatelessWidget {
                 }),
       const SizedBox(width: 10),
       Text(
-          "${max((currentPage - 1) * pageSize, 1)} - ${min((currentPage - 1) * pageSize + pageSize, totalItem)} of $totalItem"),
+          "${totalItem == 0 ? 0 : max((currentPage - 1) * pageSize, 1)} - ${min((currentPage - 1) * pageSize + pageSize, totalItem)} of $totalItem"),
       const SizedBox(width: 10),
       IconButton(
         icon: const Icon(Icons.chevron_right),

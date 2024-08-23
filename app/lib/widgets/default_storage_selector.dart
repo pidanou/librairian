@@ -22,7 +22,7 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
 
   @override
   Widget build(BuildContext context) {
-    var storages = ref.watch(storage_provider.storageProvider);
+    var storages = ref.watch(storage_provider.storagesProvider);
     final defaultStorage = ref.watch(defaultStorageProvider);
 
     if (defaultStorage is AsyncError || storages is AsyncError) {

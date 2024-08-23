@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:librairian/pages/inventory_page.dart';
-import 'package:librairian/pages/storage_page.dart';
-import 'package:librairian/pages/search_page.dart';
+import 'package:librairian/models/storage.dart';
+import 'package:librairian/pages/storage_detail_page.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 import 'package:librairian/widgets/scaffold_with_nested_navigation.dart';
 import 'package:librairian/pages/login_page.dart';
 import 'package:librairian/pages/add_page.dart';
+import 'package:librairian/pages/settings_page.dart';
+import 'package:librairian/pages/inventory_page.dart';
+import 'package:librairian/pages/storage_page.dart';
+import 'package:librairian/pages/search_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorAdd = GlobalKey<NavigatorState>(debugLabel: 'shellAdd');
@@ -93,7 +96,18 @@ final goRouter = GoRouter(
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: StoragePage(),
               ),
-              routes: const [],
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (context, state) {
+                    Storage storage = state.extra as Storage;
+                    return StorageDetailPage(
+                      storageID: state.pathParameters['id']!,
+                      storage: storage,
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),
@@ -110,19 +124,19 @@ final goRouter = GoRouter(
             ),
           ],
         ),
-        // StatefulShellBranch(
-        //   navigatorKey: _shellNavigatorSettings,
-        //   routes: [
-        //     // top route inside branch
-        //     GoRoute(
-        //       path: '/settings',
-        //       pageBuilder: (context, state) => const NoTransitionPage(
-        //         child: StoragePage(),
-        //       ),
-        //       routes: const [],
-        //     ),
-        //   ],
-        // ),
+        StatefulShellBranch(
+          navigatorKey: _shellNavigatorSettings,
+          routes: [
+            // top route inside branch
+            GoRoute(
+              path: '/settings',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: SettingsPage(),
+              ),
+              routes: const [],
+            ),
+          ],
+        ),
       ],
     ),
   ],

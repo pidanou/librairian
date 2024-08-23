@@ -6,22 +6,22 @@ part of 'storage.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$storageHash() => r'541a7649732a7086f169c46cd7083586a205bb07';
+String _$storagesHash() => r'f09795db317b733d316ee6ee671e925123d53ae4';
 
-/// See also [Storage].
-@ProviderFor(Storage)
-final storageProvider =
-    AutoDisposeAsyncNotifierProvider<Storage, List<st.Storage>>.internal(
-  Storage.new,
-  name: r'storageProvider',
+/// See also [Storages].
+@ProviderFor(Storages)
+final storagesProvider =
+    AutoDisposeAsyncNotifierProvider<Storages, List<st.Storage>>.internal(
+  Storages.new,
+  name: r'storagesProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$storageHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$storagesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$Storage = AutoDisposeAsyncNotifier<List<st.Storage>>;
-String _$defaultStorageHash() => r'04e5d5137a736c1b56b6ac6c655bc5d12541fcc6';
+typedef _$Storages = AutoDisposeAsyncNotifier<List<st.Storage>>;
+String _$defaultStorageHash() => r'18ef69c5fb6779431c40bcdb8a614b9344714bce';
 
 /// See also [DefaultStorage].
 @ProviderFor(DefaultStorage)

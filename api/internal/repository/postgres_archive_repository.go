@@ -73,7 +73,7 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	return item, nil
 }
 
-func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error) {
+func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error) {
 	itemsID := []uuid.UUID{}
 	items := []types.Item{}
 	total := 0
@@ -87,9 +87,10 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
                       ON i.id = sl.item_id 
                       WHERE i.user_id = $1 
                       AND sl.storage_id = $2  
+                      AND i.name ILIKE $3
                       ORDER BY i.%s %s 
-                      LIMIT $3 OFFSET $4`, orderBy.Column, orderBy.Direction)
-		err := r.DB.Select(&itemsID, query, userID, storageID, limit, page*limit)
+                      LIMIT $4 OFFSET $5`, orderBy.Column, orderBy.Direction)
+		err := r.DB.Select(&itemsID, query, userID, storageID, "%"+name+"%", limit, page*limit)
 		if err != nil {
 			log.Println("Cannot get items: ", err)
 			return nil, 0, err
@@ -102,8 +103,9 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 			items = append(items, *item)
 		}
 
-		query = `SELECT count(*) FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2`
-		err = r.DB.Get(&total, query, userID, storageID)
+		query = `SELECT count(*) FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2                       AND i.name ILIKE $3
+            AND i.name ILIKE $3`
+		err = r.DB.Get(&total, query, userID, storageID, "%"+name+"%")
 		if err != nil {
 			log.Println("Cannot get items: ", err)
 		}
@@ -114,9 +116,10 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 	query := fmt.Sprintf(`SELECT i.id 
                       FROM item i 
                       WHERE i.user_id = $1 
+                      AND i.name ILIKE $2
                       ORDER BY i.%s %s 
-                      LIMIT $2 OFFSET $3`, orderBy.Column, orderBy.Direction)
-	err = r.DB.Select(&itemsID, query, userID, limit, page*limit)
+                      LIMIT $3 OFFSET $4`, orderBy.Column, orderBy.Direction)
+	err = r.DB.Select(&itemsID, query, userID, "%"+name+"%", limit, page*limit)
 	if err != nil {
 		log.Println("Cannot get items: ", err)
 		return nil, 0, err
@@ -130,8 +133,9 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 		items = append(items, *item)
 	}
 
-	query = `SELECT count(*) FROM item WHERE user_id = $1`
-	err = r.DB.Get(&total, query, userID)
+	query = `SELECT count(*) FROM item WHERE user_id = $1 AND name ILIKE $2
+`
+	err = r.DB.Get(&total, query, userID, "%"+name+"%")
 	if err != nil {
 		log.Println("Cannot get items: ", err)
 	}
@@ -169,14 +173,37 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 		return nil, err
 	}
 
+	slList := []uuid.UUID{}
+
 	for _, sl := range item.StorageLocation {
-		query = `UPDATE storage_location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id`
-		_, err = tx.NamedExec(query, sl)
+		if sl.ID == nil {
+			sl.ItemID = item.ID
+			sl.UserID = item.UserID
+			query = `INSERT INTO storage_location(item_id, user_id, location, storage_id, created_at, updated_at) VALUES (:item_id, :user_id, :location, :storage_id, now(), now()) RETURNING id`
+		} else {
+			query = `UPDATE storage_location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id returning id`
+		}
+		rows, err := tx.NamedQuery(query, sl)
+		defer rows.Close()
 		if err != nil {
 			log.Printf(`Cannot update storage location %s`, err)
 			tx.Rollback()
 			return nil, err
 		}
+		var id uuid.UUID
+		for rows.Next() {
+			_ = rows.Scan(&id)
+			slList = append(slList, id)
+		}
+	}
+
+	query, args, err := sqlx.In(`DELETE FROM storage_location where id NOT IN (?)`, slList)
+	query = tx.Rebind(query)
+	_, err = tx.Exec(query, args...)
+	if err != nil {
+		log.Printf(`Cannot delete storage location %s`, err)
+		tx.Rollback()
+		return nil, err
 	}
 
 	err = tx.Commit()

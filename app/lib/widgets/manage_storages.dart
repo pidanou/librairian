@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/providers/storage.dart' as sp;
 import 'package:librairian/models/storage.dart';
@@ -27,7 +28,7 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
 
   @override
   Widget build(BuildContext context) {
-    var storages = ref.watch(sp.storageProvider);
+    var storages = ref.watch(sp.storagesProvider);
     if (storages is AsyncError) {
       return const Column(children: [Center(child: Text('Error'))]);
     }
@@ -37,43 +38,57 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
             flex: 1,
             child: Column(children: [
               Expanded(
-                  child: ListView(children: [
-                for (var storage in storages.value ?? [])
-                  Material(
-                      type: MaterialType.transparency,
-                      child: ListTile(
-                        selected: storage.id == editing?.id,
-                        selectedColor: Theme.of(context).colorScheme.onSurface,
-                        selectedTileColor:
-                            Theme.of(context).colorScheme.surfaceDim,
-                        onTap: () {
-                          setState(() {
-                            editing = storage;
-                          });
-                        },
-                        title: storage.id ==
-                                ref.watch(sp.defaultStorageProvider)?.id
-                            ? Text("${storage.alias} (default)")
-                            : Text(storage.alias),
-                        leading: Icon(storageTypeIcon[storage.type]),
-                        trailing: IconButton(
-                          onPressed: () {
-                            ref
-                                .read(sp.defaultStorageProvider.notifier)
-                                .set(storage);
-                          },
-                          icon: storage.id ==
-                                  ref.watch(sp.defaultStorageProvider)?.id
-                              ? Icon(Icons.star,
-                                  color: Theme.of(context).colorScheme.primary)
-                              : const Icon(
-                                  Icons.star_border,
+                  child: RefreshIndicator(
+                      onRefresh: () => ref.refresh(sp.storagesProvider.future),
+                      child: ListView(children: [
+                        for (var storage in storages.value ?? [])
+                          Material(
+                              type: MaterialType.transparency,
+                              child: ListTile(
+                                selected: storage.id == editing?.id,
+                                selectedColor:
+                                    Theme.of(context).colorScheme.onSurface,
+                                selectedTileColor:
+                                    Theme.of(context).colorScheme.surfaceDim,
+                                onTap: () {
+                                  if (MediaQuery.of(context).size.width > 600) {
+                                    setState(() {
+                                      editing = storage;
+                                    });
+                                  } else {
+                                    GoRouter.of(context).go(
+                                        '/storage/${storage.id}',
+                                        extra: storage);
+                                  }
+                                },
+                                title: storage.id ==
+                                        ref.watch(sp.defaultStorageProvider)?.id
+                                    ? Text("${storage.alias} (default)")
+                                    : Text(storage.alias),
+                                leading: Icon(storageTypeIcon[storage.type]),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    ref
+                                        .read(
+                                            sp.defaultStorageProvider.notifier)
+                                        .set(storage);
+                                  },
+                                  icon: storage.id ==
+                                          ref
+                                              .watch(sp.defaultStorageProvider)
+                                              ?.id
+                                      ? Icon(Icons.star,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary)
+                                      : const Icon(
+                                          Icons.star_border,
+                                        ),
                                 ),
-                        ),
-                      ))
-              ]))
+                              ))
+                      ])))
             ])),
-        if (MediaQuery.of(context).size.width > 840) ...[
+        if (MediaQuery.of(context).size.width > 600) ...[
           VerticalDivider(
             color: Theme.of(context).colorScheme.surfaceDim,
             width: 1,
@@ -96,6 +111,8 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
         ]
       ]);
     }
-    return const Column(children: [Center(child: CircularProgressIndicator())]);
+    return const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [Center(child: CircularProgressIndicator())]);
   }
 }

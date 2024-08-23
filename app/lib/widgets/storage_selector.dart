@@ -24,7 +24,7 @@ class _StorageSelectorState extends ConsumerState<StorageSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final storages = ref.watch(storage_provider.storageProvider);
+    final storages = ref.watch(storage_provider.storagesProvider);
     if (storages is AsyncError) {
       return const Text("error");
     }

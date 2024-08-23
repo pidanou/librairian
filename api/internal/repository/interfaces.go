@@ -8,7 +8,7 @@ import (
 
 type ArchiveRepository interface {
 	AddItem(item *types.Item) (*types.Item, error)
-	GetItems(userID *uuid.UUID, storageID *uuid.UUID, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error)
+	GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error)
 	DeleteItem(id *uuid.UUID) error
 	UpdateItem(item *types.Item) (*types.Item, error)
 	GetItemByID(id *uuid.UUID) (*types.Item, error)
@@ -26,8 +26,4 @@ type EmbeddingRepository interface {
 
 type SimilarityRepository interface {
 	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
-}
-
-type AuthRepository interface {
-	LoginWithPassword(email, password string) (*types.Session, error)
 }

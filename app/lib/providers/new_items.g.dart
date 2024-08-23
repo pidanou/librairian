@@ -6,7 +6,7 @@ part of 'new_items.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$newItemsHash() => r'65f5fcd68ceab992107596d0d36aa18d577e9c6c';
+String _$newItemsHash() => r'3390694ccb3fa9740a29461e6e654f0cf3347917';
 
 /// See also [NewItems].
 @ProviderFor(NewItems)

@@ -12,10 +12,12 @@ class ItemsList extends ConsumerStatefulWidget {
       this.onSelected,
       this.onTap,
       this.onDelete,
+      this.onRefresh,
       super.key});
 
   final Storage? storage;
   final bool selectAll;
+  final Future<void> Function()? onRefresh;
   final Function(Item)? onTap;
   final Function(List<String>)? onDelete;
   final Function(List<String>)? onSelected;
@@ -64,57 +66,62 @@ class ItemsListState extends ConsumerState<ItemsList> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(children: [
-      for (Item item in items)
-        Material(
-            type: MaterialType.transparency,
-            child: ListTile(
-                onTap: () {
-                  widget.onTap?.call(item);
-                  setState(() {
-                    editing = item.id ?? item.tmpId ?? "";
-                    selected = [];
-                    selectAll = false;
-                  });
-                },
-                selected: selected.contains(item.id) ||
-                    selected.contains(item.tmpId) ||
-                    editing == item.id ||
-                    editing == item.tmpId,
-                selectedColor: Theme.of(context).colorScheme.onSurface,
-                selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
-                leading: widget.onSelected != null
-                    ? Checkbox(
-                        value: selected.contains(item.id) ||
-                            selected.contains(item.tmpId),
-                        onChanged: (value) {
-                          setState(() {
-                            editing = "";
-                            selected.contains(item.id)
-                                ? selected.remove(item.id)
-                                : selected.add(item.id ?? item.tmpId ?? "");
-                          });
-                          widget.onSelected?.call(selected);
-                        },
-                      )
-                    : null,
-                title: item.tmpId == null
-                    ? Text(item.name ?? "")
-                    : Text("(Not saved) ${item.name}"),
-                trailing: item.tmpId == null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text("Last modified:"),
-                          Text(
-                              formatTimestamp(item.updatedAt?.toString() ?? ""))
-                        ],
-                      )
-                    : const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator()))),
-    ]);
+    return RefreshIndicator(
+        onRefresh: widget.onRefresh ??
+            () {
+              return Future.value();
+            },
+        child: ListView(children: [
+          for (Item item in items)
+            Material(
+                type: MaterialType.transparency,
+                child: ListTile(
+                    onTap: () {
+                      widget.onTap?.call(item);
+                      setState(() {
+                        editing = item.id ?? item.tmpId ?? "";
+                        selected = [];
+                        selectAll = false;
+                      });
+                    },
+                    selected: selected.contains(item.id) ||
+                        selected.contains(item.tmpId) ||
+                        editing == item.id ||
+                        editing == item.tmpId,
+                    selectedColor: Theme.of(context).colorScheme.onSurface,
+                    selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
+                    leading: widget.onSelected != null
+                        ? Checkbox(
+                            value: selected.contains(item.id) ||
+                                selected.contains(item.tmpId),
+                            onChanged: (value) {
+                              setState(() {
+                                editing = "";
+                                selected.contains(item.id)
+                                    ? selected.remove(item.id)
+                                    : selected.add(item.id ?? item.tmpId ?? "");
+                              });
+                              widget.onSelected?.call(selected);
+                            },
+                          )
+                        : null,
+                    title: item.tmpId == null
+                        ? Text(item.name ?? "")
+                        : Text("(Not saved) ${item.name}"),
+                    trailing: item.tmpId == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text("Last modified:"),
+                              Text(formatTimestamp(
+                                  item.updatedAt?.toString() ?? ""))
+                            ],
+                          )
+                        : const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator()))),
+        ]));
   }
 }

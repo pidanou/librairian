@@ -9,7 +9,7 @@ import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 part 'storage.g.dart';
 
 @riverpod
-class Storage extends _$Storage {
+class Storages extends _$Storages {
   @override
   Future<List<st.Storage>> build() async {
     String url;
@@ -122,7 +122,7 @@ class DefaultStorage extends _$DefaultStorage {
       return null;
     }
 
-    final storages = ref.watch(storageProvider);
+    final storages = ref.watch(storagesProvider);
     if (storages is AsyncLoading || storages is AsyncError) {
       return null;
     }

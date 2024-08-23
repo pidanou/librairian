@@ -64,11 +64,11 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                   suffixIcon: Padding(
                                       padding: const EdgeInsets.only(right: 5),
                                       child: IconButton(
-                                        icon:
-                                            const Icon(Icons.cancel, size: 20),
+                                        icon: const Icon(Icons.backspace,
+                                            size: 20),
                                         onPressed: () {
                                           setState(() {
-                                            editName = false;
+                                            nameController.clear();
                                           });
                                         },
                                       ))),
@@ -84,6 +84,14 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                 });
                                 widget.onEdit?.call(item);
                               })),
+                      IconButton(
+                          icon: const Icon(Icons.cancel, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              editName = false;
+                            });
+                            setState(() {});
+                          }),
                       IconButton(
                           icon: const Icon(Icons.check_circle, size: 20),
                           onPressed: () {

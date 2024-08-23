@@ -21,6 +21,8 @@ func (h *Handler) GetItems(c echo.Context) error {
 	storageIDString := c.QueryParam("storage_id")
 	storageID, err := uuid.Parse(storageIDString)
 
+	name := c.QueryParam("name")
+
 	orderBy := c.QueryParam("order_by")
 	if !isValidOrderColumn(orderBy) {
 		orderBy = "updated_at"
@@ -42,7 +44,7 @@ func (h *Handler) GetItems(c echo.Context) error {
 		limit = 20
 	}
 
-	items, total, err := h.ArchiveService.GetItems(userID, &storageID, page, limit, order)
+	items, total, err := h.ArchiveService.GetItems(userID, &storageID, name, page, limit, order)
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get items")

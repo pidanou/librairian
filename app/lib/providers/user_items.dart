@@ -125,6 +125,7 @@ class UserItems extends _$UserItems {
         int index = state.value!.data.indexWhere((e) => e.id == item.id);
         var tmp = state;
         tmp.value!.data[index] = Item.fromJson(data);
+        print(tmp);
         state = tmp;
       }
     } catch (e) {
