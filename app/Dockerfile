@@ -5,7 +5,7 @@ WORKDIR /app/
 
 COPY . /app/
 
-RUN flutter build web --dart-define-from-file dotenv
+RUN flutter build web --dart-define-from-file dotenv --web-renderer html
 
 
 
