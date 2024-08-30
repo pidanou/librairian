@@ -154,6 +154,39 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                       }
                       ref.read(newItemsProvider.notifier).add([newItem]);
                       editing = uploadedItems.length;
+                      if (MediaQuery.of(context).size.width < 600) {
+                        showModalBottomSheet<void>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: <Widget>[
+                                    Expanded(
+                                        child: ItemEditForm(
+                                            item: uploadedItems[editing!],
+                                            onSave: (item) {
+                                              save();
+                                              Navigator.pop(context);
+                                            },
+                                            onCancel: () {
+                                              setState(() {
+                                                editing = null;
+                                              });
+                                              Navigator.pop(context);
+                                            },
+                                            onEdit: (file) {
+                                              ref
+                                                  .read(
+                                                      newItemsProvider.notifier)
+                                                  .editAt(editing!, file);
+                                            })),
+                                  ],
+                                ),
+                              );
+                            });
+                      }
                     });
                   })
             ]),
@@ -276,6 +309,7 @@ class _MyHomePageState extends ConsumerState<AddPage> {
                   color: Theme.of(context).colorScheme.surfaceBright,
                   child: editing != null
                       ? ItemEditForm(
+                          isNewItem: true,
                           item: uploadedItems[editing!],
                           onSave: (item) {
                             save();

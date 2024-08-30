@@ -7,8 +7,14 @@ import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 class ItemEditForm extends ConsumerStatefulWidget {
   const ItemEditForm(
-      {super.key, required this.item, this.onEdit, this.onSave, this.onCancel});
+      {super.key,
+      required this.item,
+      this.onEdit,
+      this.onSave,
+      this.onCancel,
+      this.isNewItem});
 
+  final bool? isNewItem;
   final Item item;
   final void Function(Item)? onEdit;
   final void Function(Item)? onSave;
@@ -31,6 +37,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
   void initState() {
     super.initState();
     nameController.text = widget.item.name ?? "";
+    editName = widget.isNewItem ?? false;
   }
 
   @override
@@ -38,6 +45,10 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
     super.didUpdateWidget(oldWidget);
     if (widget.item.id != oldWidget.item.id) {
       nameController.text = widget.item.name ?? "";
+      editName = widget.isNewItem ?? false;
+      if (editName) {
+        nameFocusNode.requestFocus();
+      }
     }
   }
 
@@ -57,6 +68,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                     child: Row(children: [
                       Expanded(
                           child: TextFormField(
+                              autofocus: true,
                               maxLines: 1,
                               focusNode: nameFocusNode,
                               controller: nameController,

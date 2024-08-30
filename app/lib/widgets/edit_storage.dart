@@ -104,16 +104,31 @@ class EditStorageState extends ConsumerState<EditStorage> {
             if (MediaQuery.of(context).size.width > 600)
               ListTile(
                   leading: editingStorage
-                      ? Icon(storageTypeIcon[widget.storage.type])
+                      ? DropdownMenu<String>(
+                          leadingIcon: Icon(storageTypeIcon[storage.type]),
+                          initialSelection: storage.type,
+                          onSelected: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            setState(() {
+                              storage.type = value;
+                            });
+                          },
+                          inputDecorationTheme:
+                              Theme.of(context).inputDecorationTheme,
+                          dropdownMenuEntries:
+                              storageTypeIcon.entries.map((entry) {
+                            return DropdownMenuEntry<String>(
+                                value: entry.key,
+                                label: entry.key,
+                                leadingIcon: Icon(entry.value));
+                          }).toList())
                       : Icon(storageTypeIcon[widget.storage.type]),
                   title: editingStorage
                       ? TextField(
                           controller: controller,
-                          onChanged: (value) {
-                            setState(() {
-                              storage.alias = value;
-                            });
-                          })
+                        )
                       : Text(widget.storage.alias ?? 'No name',
                           style: Theme.of(context).textTheme.titleMedium),
                   trailing: editingStorage
@@ -128,6 +143,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                           IconButton(
                               icon: const Icon(Icons.check_circle, size: 20),
                               onPressed: () {
+                                storage.alias = controller.text;
                                 ref
                                     .read(storagesProvider.notifier)
                                     .edit(storage);
