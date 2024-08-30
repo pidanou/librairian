@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:librairian/constants/keys.dart';
 
 class SearchConfig extends StatefulWidget {
   final void Function(String) onChangeSearchMode;
@@ -32,6 +33,7 @@ class SearchConfigState extends State<SearchConfig> {
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             MenuAnchor(
+                key: searchFilterKey,
                 menuChildren: [
                   MenuItemButton(
                     onPressed: () {

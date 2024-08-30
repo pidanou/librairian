@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/widgets/default_storage_selector.dart';
 import 'package:librairian/widgets/navigation_destinations.dart';
+import 'package:librairian/widgets/tutorial.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class ScaffoldWithSideBar extends ConsumerStatefulWidget {
   const ScaffoldWithSideBar({
@@ -24,9 +26,18 @@ class ScaffoldWithSideBar extends ConsumerStatefulWidget {
 class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
   final activeSession = Supabase.instance.client.auth.currentSession;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late TutorialCoachMark tutorialCoachMark;
 
   bool _extendedRail = false;
   bool _fixedRail = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      tutorialCoachMark = createTutorial(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +61,15 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
                     });
                   }),
               leadingWidth: 80,
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    tutorialCoachMark.show(context: context);
+                  },
+                  icon: const Icon(Icons.help),
+                ),
+                const SizedBox(width: 10),
+              ],
             ),
             body: SafeArea(
               child: Container(
@@ -96,8 +116,8 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
                                       NavigationRailDestination(
                                           label:
                                               Text(navigationDestination.label),
-                                          icon:
-                                              Icon(navigationDestination.icon)),
+                                          icon: Icon(navigationDestination.icon,
+                                              key: navigationDestination.key)),
                                     // NavigationDestination(
                                     //     label: 'Paramètres', icon: Icon(Icons.settings)),
                                   ],

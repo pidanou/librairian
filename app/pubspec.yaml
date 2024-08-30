@@ -51,6 +51,7 @@ dependencies:
   adaptive_theme: ^3.6.0
   google_sign_in: ^6.2.1
   flutter_native_splash: ^2.4.1
+  tutorial_coach_mark: ^1.2.11
 
 dev_dependencies:
   flutter_test:
