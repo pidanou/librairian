@@ -58,7 +58,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
       }
       if (selectAll == true) {
         for (var item in items) {
-          selected.add(item.id ?? item.tmpId ?? "");
+          selected.add(item.id ?? "");
         }
       }
     }
@@ -79,49 +79,37 @@ class ItemsListState extends ConsumerState<ItemsList> {
                     onTap: () {
                       widget.onTap?.call(item);
                       setState(() {
-                        editing = item.id ?? item.tmpId ?? "";
+                        editing = item.id ?? "";
                         selected = [];
                         selectAll = false;
                       });
                     },
-                    selected: selected.contains(item.id) ||
-                        selected.contains(item.tmpId) ||
-                        editing == item.id ||
-                        editing == item.tmpId,
+                    selected: selected.contains(item.id) || editing == item.id,
                     selectedColor: Theme.of(context).colorScheme.onSurface,
                     selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
                     leading: widget.onSelected != null
                         ? Checkbox(
-                            value: selected.contains(item.id) ||
-                                selected.contains(item.tmpId),
+                            value: selected.contains(item.id),
                             onChanged: (value) {
                               setState(() {
                                 editing = "";
                                 selected.contains(item.id)
                                     ? selected.remove(item.id)
-                                    : selected.add(item.id ?? item.tmpId ?? "");
+                                    : selected.add(item.id ?? "");
                               });
                               widget.onSelected?.call(selected);
                             },
                           )
                         : null,
-                    title: item.tmpId == null
-                        ? Text(item.name ?? "")
-                        : Text("(Not saved) ${item.name}"),
-                    trailing: item.tmpId == null
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text("Last modified:"),
-                              Text(formatTimestamp(
-                                  item.updatedAt?.toString() ?? ""))
-                            ],
-                          )
-                        : const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator()))),
+                    title: Text(item.name ?? ""),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text("Last modified:"),
+                        Text(formatTimestamp(item.updatedAt?.toString() ?? ""))
+                      ],
+                    ))),
         ]));
   }
 }

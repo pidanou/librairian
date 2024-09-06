@@ -26,7 +26,7 @@ class SearchConfigState extends State<SearchConfig> {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.of(context).size.width < 840) {
       return Padding(
           padding:
               const EdgeInsets.only(left: 16, top: 1, bottom: 1, right: 16),

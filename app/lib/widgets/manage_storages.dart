@@ -51,7 +51,7 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
                                 selectedTileColor:
                                     Theme.of(context).colorScheme.surfaceDim,
                                 onTap: () {
-                                  if (MediaQuery.of(context).size.width > 600) {
+                                  if (MediaQuery.of(context).size.width > 840) {
                                     setState(() {
                                       editing = storage;
                                     });
@@ -88,7 +88,7 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
                               ))
                       ])))
             ])),
-        if (MediaQuery.of(context).size.width > 600) ...[
+        if (MediaQuery.of(context).size.width > 840) ...[
           VerticalDivider(
             color: Theme.of(context).colorScheme.surfaceDim,
             width: 1,

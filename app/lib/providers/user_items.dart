@@ -49,7 +49,7 @@ class UserItems extends _$UserItems {
   void remove(String id) {
     if (state.value != null) {
       var tmp = state.value;
-      tmp!.data.removeWhere((i) => i.tmpId == id || i.id == id);
+      tmp!.data.removeWhere((i) => i.id == id);
       state = AsyncValue.data(tmp); // Assuming AsyncValue or similar wrapper
     }
   }
@@ -93,27 +93,6 @@ class UserItems extends _$UserItems {
     for (var sl in item.storageLocations ?? []) {
       sl.userId = Supabase.instance.client.auth.currentUser!.id;
       sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
-    }
-    if (item.id == null) {
-      url = '${const String.fromEnvironment('API_URL')}/api/v1/items';
-      try {
-        final response = await http.post(Uri.parse(url),
-            headers: headers, body: jsonEncode([item]));
-        if (response.statusCode < 300) {
-          final Map<String, dynamic> data = jsonDecode(response.body);
-          final newItem = Item.fromJson(data["successes"][0]);
-          final tmp = state.value;
-          tmp?.data.insert(0, newItem);
-          tmp?.data.removeWhere((i) => i.tmpId == item.tmpId);
-          state = AsyncValue.data(tmp);
-
-          return;
-        }
-      } catch (e) {
-        print("Exception : $e");
-        return;
-      }
-      return;
     }
 
     url = '${const String.fromEnvironment('API_URL')}/api/v1/item';

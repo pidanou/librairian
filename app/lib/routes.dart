@@ -6,7 +6,6 @@ import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 import 'package:librairian/widgets/scaffold_with_nested_navigation.dart';
 import 'package:librairian/pages/login_page.dart';
-import 'package:librairian/pages/add_page.dart';
 import 'package:librairian/pages/settings_page.dart';
 import 'package:librairian/pages/inventory_page.dart';
 import 'package:librairian/pages/storage_page.dart';
@@ -67,25 +66,6 @@ final goRouter = GoRouter(
           ],
         ),
         // first branch (A)
-        StatefulShellBranch(
-          navigatorKey: _shellNavigatorAdd,
-          routes: [
-            // top route inside branch
-            GoRoute(
-              path: '/add',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: AddPage(),
-              ),
-              routes: const [
-                // child route
-                // GoRoute(
-                //   path: '/move',
-                //   builder: (context, state) => DetailsScreen(label: 'A'),
-                // ),
-              ],
-            ),
-          ],
-        ),
         // second branch (B)
         StatefulShellBranch(
           navigatorKey: _shellNavigatorStorage,

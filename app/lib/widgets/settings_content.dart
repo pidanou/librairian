@@ -11,7 +11,7 @@ class SettingsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     var _googleSignIn = GoogleSignIn();
     return Column(
-        mainAxisSize: MediaQuery.of(context).size.height < 600
+        mainAxisSize: MediaQuery.of(context).size.height < 840
             ? MainAxisSize.min
             : MainAxisSize.max,
         children: [
@@ -96,7 +96,7 @@ class SettingsContent extends StatelessWidget {
                 const ListTile(
                   dense: true,
                 ),
-                if (MediaQuery.of(context).size.width < 600)
+                if (MediaQuery.of(context).size.width < 840)
                   ListTile(
                     leading: const Icon(Icons.logout),
                     title: const Text(

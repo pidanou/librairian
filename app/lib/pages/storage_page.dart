@@ -50,12 +50,13 @@ class StoragePageState extends ConsumerState<StoragePage> {
                       return const DialogAddStorage();
                     });
               }),
-          IconButton(
-              tooltip: 'Refresh data',
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                ref.invalidate(storagesProvider);
-              })
+          if (MediaQuery.of(context).size.width > 600)
+            IconButton(
+                tooltip: 'Refresh data',
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  ref.invalidate(storagesProvider);
+                })
         ]),
       ),
       Divider(

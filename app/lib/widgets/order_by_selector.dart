@@ -13,13 +13,8 @@ class OrderBySelector extends StatelessWidget {
       controller: controller,
       menuChildren: options,
       builder: (context, controller, child) {
-        return FilledButton(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all<Color>(Theme.of(context)
-                .colorScheme
-                .secondary), // Change this color as needed
-          ),
-          child: child,
+        return ActionChip(
+          label: child ?? const Text("Sort"),
           onPressed: () {
             if (controller.isOpen) {
               controller.close();

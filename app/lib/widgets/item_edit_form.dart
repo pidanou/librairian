@@ -126,7 +126,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                         })),
             Divider(
               color: Theme.of(context).colorScheme.surfaceDim,
-              height: 1,
+              height: 0,
             ),
             const SizedBox(height: 10),
             ListTile(

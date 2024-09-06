@@ -46,12 +46,7 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
         builder: (context, controller, child) {
           return FilledButton.icon(
             icon: defaultStorage == null
-                ? SizedBox(
-                    width: 10,
-                    height: 10,
-                    child: CircularProgressIndicator(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ))
+                ? null
                 : Icon(storageTypeIcon[defaultStorage.type]),
             label: Text(defaultStorage != null
                 ? defaultStorage.alias ?? ""

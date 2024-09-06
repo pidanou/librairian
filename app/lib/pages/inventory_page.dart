@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
+import 'package:librairian/models/storage.dart';
+import 'package:librairian/providers/item.dart' as provider;
+import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/user_items.dart';
+import 'package:librairian/widgets/alert_dialog_confirm.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/items_list.dart';
@@ -23,6 +28,20 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
   String orderBy = "created_at";
   Item? editingItem;
   String orderByLabel = "New items to old";
+  List<String> selected = [];
+  bool deleting = false;
+
+  Future<void> save(Item item) async {
+    bool success = await ref.read(provider.itemProvider.notifier).save(item);
+
+    if (!mounted) return;
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Item could not be saved")));
+      return;
+    }
+    ref.invalidate(userItemsProvider(page, pageSize, null, orderBy, asc));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,12 +134,96 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                 ],
                 child: Text(orderByLabel),
               ),
+              deleting
+                  ? const SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator())
+                  : IconButton(
+                      tooltip: 'Delete selected',
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialogConfirm(
+                                  icon: const Icon(Icons.warning),
+                                  title: const Text(
+                                      "Are you sure you want to delete these items?"),
+                                  message: const Text(
+                                      "This action cannot be undone"),
+                                  confirmMessage: const Text("Delete"),
+                                  action: () async {
+                                    setState(() {
+                                      deleting = true;
+                                    });
+                                    for (String id in selected) {
+                                      await ref
+                                          .read(provider.itemProvider.notifier)
+                                          .deleteById(id);
+                                    }
+                                    setState(() {
+                                      deleting = false;
+                                    });
+                                    if (mounted) {
+                                      SchedulerBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        if (mounted) {
+                                          Navigator.pop(
+                                              context); // Safely pop after async operation
+                                        }
+                                      });
+                                    }
+                                    ref.invalidate(userItemsProvider(
+                                        page, pageSize, null, orderBy, asc));
+                                  });
+                            });
+                      }),
               IconButton(
-                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Add item',
+                  icon: const Icon(Icons.add_circle),
                   onPressed: () {
-                    ref.invalidate(
-                        userItemsProvider(page, pageSize, null, orderBy, asc));
-                  })
+                    if (MediaQuery.of(context).size.width < 600) {
+                      showModalBottomSheet<void>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Expanded(
+                                      child: ItemEditForm(
+                                    item: Item(
+                                        name: "New Item",
+                                        storageLocations: [
+                                          StorageLocation(
+                                              storage: ref
+                                                  .read(defaultStorageProvider))
+                                        ]),
+                                    onSave: (item) {
+                                      save(item);
+                                      Navigator.pop(context);
+                                    },
+                                  )),
+                                ],
+                              ),
+                            );
+                          });
+                    }
+                    setState(() {
+                      editingItem = Item(name: "New Item", storageLocations: [
+                        StorageLocation(
+                            storage: ref.read(defaultStorageProvider))
+                      ]);
+                    });
+                  }),
+              if (MediaQuery.of(context).size.width > 600)
+                IconButton(
+                    tooltip: "Refresh data",
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      ref.invalidate(userItemsProvider(
+                          page, pageSize, null, orderBy, asc));
+                    })
             ])
           ])),
       Divider(
@@ -139,6 +242,11 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             onRefresh: () => ref.refresh(userItemsProvider(
                                     page, pageSize, null, orderBy, asc)
                                 .future),
+                            onSelected: (List<String> selectedItem) {
+                              setState(() {
+                                selected = selectedItem;
+                              });
+                            },
                             onTap: (item) {
                               setState(() {
                                 editingItem = item;

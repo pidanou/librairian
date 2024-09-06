@@ -40,7 +40,7 @@ func (s *Server) Start() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"https://app.librairian.io"},
+		AllowOrigins: []string{"https://app.librairian.io", "http://localhost:3000"},
 	}))
 
 	api := e.Group("/api/v1")

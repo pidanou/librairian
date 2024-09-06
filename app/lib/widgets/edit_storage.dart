@@ -1,17 +1,15 @@
-import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/providers/item.dart' as provider;
 import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/user_items.dart';
+import 'package:librairian/widgets/alert_dialog_confirm.dart';
 import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
-import 'package:librairian/widgets/file_picker.dart';
-import 'package:librairian/widgets/alert_form_edit_storage.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/items_list.dart';
-import 'package:librairian/helpers/uuid.dart';
 import 'package:librairian/widgets/page_switcher.dart';
 
 class EditStorage extends ConsumerStatefulWidget {
@@ -32,38 +30,34 @@ class EditStorageState extends ConsumerState<EditStorage> {
   int limit = 20;
   List<String> selected = [];
   bool selectAll = false;
-  List<Item> newItems = [];
   bool editingStorage = false;
+  bool deleting = false;
 
-  void _addItemsFromFiles(List<XFile>? listItems) async {
-    List<Item> files = [];
-    for (var pfile in listItems ?? []) {
-      var file = await Item.fromXFile(pfile);
-      file.storageLocations = [
-        StorageLocation(
-            storage: storage, location: pfile.path, storageId: storage.id)
-      ];
-      files.add(file);
+  Future<bool> save(Item item) async {
+    bool success = await ref.read(provider.itemProvider.notifier).save(item);
+
+    if (!mounted) return true;
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Item could not be saved")));
+      return false;
     }
-    setState(() {
-      newItems.addAll(files);
-    });
+    ref.invalidate(userItemsProvider(page, limit, widget.storage.id));
+    return true;
   }
 
-  void deleteSelected() {
+  void deleteSelected() async {
+    setState(() {
+      deleting = true;
+    });
     for (var itemId in selected) {
-      if (!isValidUUID(itemId)) {
-        ref
-            .read(userItemsProvider(page, limit, storage.id).notifier)
-            .remove(itemId);
-        continue;
-      }
-      ref
+      await ref
           .read(userItemsProvider(page, limit, storage.id).notifier)
           .delete(itemId);
     }
     setState(() {
       selectAll = false;
+      deleting = false;
       selected.clear();
     });
   }
@@ -82,7 +76,6 @@ class EditStorageState extends ConsumerState<EditStorage> {
       controller.text = widget.storage.alias ?? "";
       storage = widget.storage;
       selectAll = false;
-      newItems = [];
       editingItem = null;
     }
   }
@@ -101,7 +94,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-            if (MediaQuery.of(context).size.width > 600)
+            if (MediaQuery.of(context).size.width > 840)
               ListTile(
                   leading: editingStorage
                       ? DropdownMenu<String>(
@@ -188,7 +181,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                           selectAll = !selectAll;
                           if (selectAll == true) {
                             for (var item in items.value!.data) {
-                              selected.add(item.id ?? item.tmpId ?? "");
+                              selected.add(item.id ?? "");
                             }
                           } else {
                             selected = [];
@@ -198,33 +191,80 @@ class EditStorageState extends ConsumerState<EditStorage> {
                       value: selectAll,
                     ),
                     const SizedBox(width: 48),
-                    IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          deleteSelected();
-                        },
-                        tooltip: 'Delete selected'),
+                    deleting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator())
+                        : IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialogConfirm(
+                                      icon: const Icon(Icons.warning),
+                                      title: const Text(
+                                          "Are you sure you want to delete these items?"),
+                                      message:
+                                          const Text("This cannot be undone."),
+                                      confirmMessage: const Text("Delete"),
+                                      action: deleteSelected,
+                                    );
+                                  });
+                            },
+                            tooltip: 'Delete selected'),
                     IconButton(
                         tooltip: 'Add item',
                         icon: const Icon(Icons.add_circle),
                         onPressed: () {
+                          if (MediaQuery.of(context).size.width < 840) {
+                            showModalBottomSheet<void>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: <Widget>[
+                                        Expanded(
+                                            child: ItemEditForm(
+                                          item: Item(
+                                              name: "New Item",
+                                              storageLocations: [
+                                                StorageLocation(
+                                                    storage: widget.storage)
+                                              ]),
+                                          onSave: (item) {
+                                            save(item);
+                                            Navigator.pop(context);
+                                          },
+                                        )),
+                                      ],
+                                    ),
+                                  );
+                                });
+                          }
                           setState(() {
-                            final newItem = Item.newPhysicalItem();
-                            newItem.storageLocations = [
-                              StorageLocation(storage: widget.storage)
-                            ];
-                            newItems.add(newItem);
+                            editingItem = Item(
+                                name: "New Item",
+                                storageLocations: [
+                                  StorageLocation(storage: widget.storage)
+                                ]);
                           });
                         }),
                     // FilePicker(onSelect: (List<XFile>? files) {
                     //   _addItemsFromFiles(files);
                     // }),
-                    IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          ref.invalidate(
-                              userItemsProvider(page, limit, storage.id));
-                        })
+                    if (MediaQuery.of(context).size.width > 840)
+                      IconButton(
+                          tooltip: 'Refresh data',
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            ref.invalidate(
+                                userItemsProvider(page, limit, storage.id));
+                          })
                   ]),
                   Divider(
                     color: Theme.of(context).colorScheme.surfaceDim,
@@ -233,7 +273,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                   items is AsyncData
                       ? Expanded(
                           child: ItemsList(
-                              items: [...newItems, ...items.value?.data ?? []],
+                              items: [...items.value?.data ?? []],
                               onRefresh: () => ref.refresh(
                                   userItemsProvider(page, limit, storage.id)
                                       .future),
@@ -248,7 +288,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                 setState(() {
                                   editingItem = item;
                                 });
-                                if (MediaQuery.of(context).size.width < 600) {
+                                if (MediaQuery.of(context).size.width < 840) {
                                   showModalBottomSheet<void>(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -271,14 +311,6 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                                                             .id)
                                                                     .notifier)
                                                             .save(item);
-                                                        if (!isValidUUID(
-                                                            item.id)) {
-                                                          newItems.removeWhere(
-                                                              (element) =>
-                                                                  element
-                                                                      .tmpId ==
-                                                                  item.tmpId);
-                                                        }
                                                         ref.invalidate(
                                                             userItemsProvider(
                                                                 page,
@@ -312,8 +344,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                       },
                       pageSize: limit,
                       currentPage: page,
-                      totalItem:
-                          (items.value?.metadata.total ?? 0) + newItems.length)
+                      totalItem: (items.value?.metadata.total ?? 0))
                 ])),
           ]))),
       if (MediaQuery.of(context).size.width > 840)
@@ -327,14 +358,23 @@ class EditStorageState extends ConsumerState<EditStorage> {
           Expanded(
               child: ItemEditForm(
                   item: editingItem!,
-                  onSave: (item) {
-                    ref
-                        .read(
-                            userItemsProvider(page, limit, storage.id).notifier)
-                        .save(item);
-                    if (!isValidUUID(item.id)) {
-                      newItems.removeWhere(
-                          (element) => element.tmpId == item.tmpId);
+                  onSave: (item) async {
+                    bool success = false;
+                    if (item.id != null) {
+                      await ref
+                          .read(userItemsProvider(page, limit, storage.id)
+                              .notifier)
+                          .save(item);
+                      success = true;
+                    } else {
+                      success = await ref
+                          .read(provider.itemProvider.notifier)
+                          .save(item);
+                    }
+                    if (!mounted) return;
+                    if (!success) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text("Item could not be saved")));
                     }
                     ref.invalidate(userItemsProvider(page, limit, storage.id));
                     editingItem = null;

@@ -61,15 +61,15 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
                     });
                   }),
               leadingWidth: 80,
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    tutorialCoachMark.show(context: context);
-                  },
-                  icon: const Icon(Icons.help),
-                ),
-                const SizedBox(width: 10),
-              ],
+              // actions: [
+              //   IconButton(
+              //     onPressed: () {
+              //       tutorialCoachMark.show(context: context);
+              //     },
+              //     icon: const Icon(Icons.help),
+              //   ),
+              //   const SizedBox(width: 10),
+              // ],
             ),
             body: SafeArea(
               child: Container(

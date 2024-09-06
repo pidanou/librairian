@@ -30,7 +30,6 @@ class PaginatedItemsList {
 }
 
 class Item {
-  String? tmpId;
   String? id;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -44,13 +43,12 @@ class Item {
   int? wordCount;
 
   Item({
-    this.tmpId,
     this.id,
     this.createdAt,
     this.updatedAt,
     this.userId,
     this.name,
-    required this.isDigital,
+    this.isDigital,
     this.analysisDate,
     this.description,
     this.storageLocations,
@@ -62,12 +60,11 @@ class Item {
   }
 
   static newPhysicalItem() {
-    return Item(tmpId: getRandString(5), isDigital: false, name: 'New Item');
+    return Item(isDigital: false, name: 'New Item');
   }
 
   static Future<Item> fromXFile(XFile xfile) async {
     return Item(
-      tmpId: getRandString(5),
       name: xfile.name,
       isDigital: true,
       storageLocations: [
