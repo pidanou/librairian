@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/providers/storage.dart' as storage_provider;
 import 'package:librairian/providers/storage.dart';
+import 'package:librairian/widgets/dialog_add_storage.dart';
 
 class DefaultStorageSelector extends ConsumerStatefulWidget {
   final EdgeInsets? expandedInsets;
@@ -45,9 +45,6 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
         controller: controller,
         builder: (context, controller, child) {
           return FilledButton.icon(
-            icon: defaultStorage == null
-                ? null
-                : Icon(storageTypeIcon[defaultStorage.type]),
             label: Text(defaultStorage != null
                 ? defaultStorage.alias ?? ""
                 : "No default storage"),
@@ -63,7 +60,6 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
         menuChildren: [
           for (var storage in storages.value ?? [])
             ListTile(
-                leading: Icon(storageTypeIcon[storage.type]),
                 title: Text(storage.alias ?? ""),
                 onTap: () {
                   controller.close();
@@ -81,7 +77,11 @@ class _DeviceSelectorState extends ConsumerState<DefaultStorageSelector> {
               leading: const Icon(Icons.add_circle),
               onTap: () {
                 controller.close();
-                GoRouter.of(context).go("/storage");
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const DialogAddStorage();
+                    });
               })
         ]);
   }

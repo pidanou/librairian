@@ -24,8 +24,8 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	tx := r.DB.MustBegin()
 
 	query := `INSERT INTO item
-  (user_id, name, is_digital, analysis_date)
-  VALUES (:user_id, :name, :is_digital, :analysis_date) returning id`
+  (user_id, name, analysis_date, description, description_embedding)
+  VALUES (:user_id, :name, :analysis_date, :description, :description_embedding) returning id`
 	rows, err := tx.NamedQuery(query, item)
 	if err != nil {
 		log.Printf(`Cannot create item %s`, err)
@@ -40,14 +40,6 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 		return nil, err
 	}
 	rows.Close()
-
-	query = `INSERT INTO description (item_id, data, embedding, user_id) VALUES ($1, $2, $3, $4)`
-	_, err = tx.Exec(query, insertedItemId, item.Description.Data, item.Description.Embedding, item.Description.UserID)
-	if err != nil {
-		log.Printf(`Cannot create description %s`, err)
-		tx.Rollback()
-		return nil, err
-	}
 
 	for _, sl := range item.StorageLocation {
 		query = `INSERT INTO storage_location (location, storage_id, item_id, user_id) VALUES ($1, $2, $3, $4)`
@@ -158,18 +150,16 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 	tx := r.DB.MustBegin()
 
 	query := `UPDATE item
-    set name = :name, analysis_date = :analysis_date, is_digital = :is_digital, updated_at = now() where id = :id`
+    set 
+  name = :name, 
+  analysis_date = :analysis_date, 
+  description = :description, 
+  description_embedding = :description_embedding, 
+  updated_at = now() 
+  where id = :id`
 	_, err := tx.NamedExec(query, item)
 	if err != nil {
 		log.Printf(`Cannot update item %s`, err)
-		return nil, err
-	}
-
-	query = `UPDATE description set data = :data, embedding = :embedding, updated_at = now() where id = :id`
-	_, err = tx.NamedExec(query, item.Description)
-	if err != nil {
-		log.Printf(`Cannot update description %s`, err)
-		tx.Rollback()
 		return nil, err
 	}
 
@@ -222,7 +212,6 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 
 func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, error) {
 	item := &types.Item{}
-	description := &types.Description{}
 	storageLocation := []types.StorageLocation{}
 	storage := &types.Storage{}
 
@@ -231,12 +220,6 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 	if err != nil {
 		log.Printf("Cannot get item: %s", err)
 		return nil, err
-	}
-
-	query = `SELECT * FROM description WHERE item_id = $1`
-	err = r.DB.Get(description, query, item.ID)
-	if err != nil {
-		log.Printf("Cannot get description: %s", err)
 	}
 
 	query = `SELECT * FROM storage_location WHERE item_id = $1`
@@ -255,7 +238,6 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 		storageLocation[i] = sl
 	}
 
-	item.Description = description
 	item.StorageLocation = storageLocation
 
 	return item, nil
@@ -315,7 +297,7 @@ func (r *PostgresArchiveRepository) GetStorageByID(id *uuid.UUID) (*types.Storag
 }
 
 func (r *PostgresArchiveRepository) AddStorage(storage *types.Storage) (*types.Storage, error) {
-	query := `INSERT INTO storage (user_id, type, alias, created_at, updated_at) VALUES (:user_id, :type, :alias, now(), now()) RETURNING *`
+	query := `INSERT INTO storage (user_id, alias, created_at, updated_at) VALUES (:user_id, :alias, now(), now()) RETURNING *`
 	rows, err := r.DB.NamedQuery(query, storage)
 	if err != nil {
 		log.Printf("Cannot add storage: %s", err)
@@ -329,7 +311,7 @@ func (r *PostgresArchiveRepository) AddStorage(storage *types.Storage) (*types.S
 }
 
 func (r *PostgresArchiveRepository) EditStorage(storage *types.Storage) (*types.Storage, error) {
-	query := `UPDATE storage SET type = :type, alias = :alias, updated_at = now() WHERE id = :id`
+	query := `UPDATE storage SET alias = :alias, updated_at = now() WHERE id = :id`
 	_, err := r.DB.NamedExec(query, storage)
 	if err != nil {
 		log.Printf("Cannot add storage: %s", err)

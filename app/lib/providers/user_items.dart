@@ -86,9 +86,6 @@ class UserItems extends _$UserItems {
       "content-type": "application/json"
     };
 
-    item.description ??= Description(
-        userId: Supabase.instance.client.auth.currentUser!.id, data: "");
-    item.description!.userId = Supabase.instance.client.auth.currentUser!.id;
     item.userId = Supabase.instance.client.auth.currentUser!.id;
     for (var sl in item.storageLocations ?? []) {
       sl.userId = Supabase.instance.client.auth.currentUser!.id;
@@ -104,7 +101,6 @@ class UserItems extends _$UserItems {
         int index = state.value!.data.indexWhere((e) => e.id == item.id);
         var tmp = state;
         tmp.value!.data[index] = Item.fromJson(data);
-        print(tmp);
         state = tmp;
       }
     } catch (e) {

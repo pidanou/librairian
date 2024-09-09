@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/storage.dart' as sp;
 
@@ -17,26 +16,6 @@ class DialogAddStorageState extends ConsumerState<DialogAddStorage> {
 
   Widget content(context) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      DropdownMenu<String>(
-          expandedInsets: EdgeInsets.zero,
-          leadingIcon: Icon(storageTypeIcon[type]),
-          initialSelection: type,
-          onSelected: (value) {
-            if (value == null) {
-              return;
-            }
-            setState(() {
-              type = value;
-            });
-          },
-          inputDecorationTheme: Theme.of(context).inputDecorationTheme,
-          dropdownMenuEntries: storageTypeIcon.entries.map((entry) {
-            return DropdownMenuEntry<String>(
-                value: entry.key,
-                label: entry.key,
-                leadingIcon: Icon(entry.value));
-          }).toList()),
-      const SizedBox(height: 10),
       TextFormField(
         decoration: const InputDecoration(
           labelText: 'Storage Name',
@@ -58,7 +37,7 @@ class DialogAddStorageState extends ConsumerState<DialogAddStorage> {
         ),
         TextButton(
           onPressed: () {
-            Storage newStorage = Storage(type: type, alias: controller.text);
+            Storage newStorage = Storage(alias: controller.text);
             ref
                 .read(sp.storagesProvider.notifier)
                 .add(newStorage)

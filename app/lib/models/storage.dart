@@ -63,7 +63,6 @@ class Storage {
     this.createdAt,
     this.updatedAt,
     this.userId,
-    this.type,
     this.alias,
     this.username,
   });
@@ -74,7 +73,6 @@ class Storage {
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       userId: json['user_id'],
-      type: json['type'],
       alias: json['alias'],
       username: json['username'],
     );

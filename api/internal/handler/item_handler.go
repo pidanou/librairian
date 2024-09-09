@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -59,7 +58,6 @@ func (h *Handler) GetItems(c echo.Context) error {
 func (h *Handler) PostItems(c echo.Context) error {
 	var items = &[]types.Item{}
 	c.Bind(items)
-	fmt.Println(items)
 
 	userID := getUserIDFromJWT(c)
 
@@ -67,9 +65,6 @@ func (h *Handler) PostItems(c echo.Context) error {
 	errors := []types.Item{}
 
 	for _, item := range *items {
-		if item.Description == nil {
-			item.Description = &types.Description{}
-		}
 
 		cleanedStorageLocation := []types.StorageLocation{}
 		if item.StorageLocation == nil {
@@ -93,14 +88,13 @@ func (h *Handler) PostItems(c echo.Context) error {
 
 		item.StorageLocation = cleanedStorageLocation
 
-		item.Description.UserID = userID
-		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description.Data)
+		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description)
 		if err != nil {
 			log.Println("Cannot create description embedding: ", err)
 			errors = append(errors, item)
 			continue
 		}
-		item.Description.Embedding = descriptionEmbedding
+		item.DescriptionEmbedding = descriptionEmbedding
 
 		titem, err := h.ArchiveService.AddItem(&item)
 		if err != nil {
@@ -177,11 +171,11 @@ func (h *Handler) PutItem(c echo.Context) error {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
-	descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description.Data)
+	descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 	}
-	item.Description.Embedding = descriptionEmbedding
+	item.DescriptionEmbedding = descriptionEmbedding
 
 	item, err = h.ArchiveService.UpdateItem(item)
 	if err != nil {

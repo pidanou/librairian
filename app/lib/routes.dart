@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/pages/item_edit_form_page.dart';
 import 'package:librairian/pages/storage_detail_page.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
@@ -61,7 +63,15 @@ final goRouter = GoRouter(
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: SearchPage(),
               ),
-              routes: const [],
+              routes: [
+                GoRoute(
+                    path: "detail/:id",
+                    builder: (context, state) {
+                      Item item = state.extra as Item;
+                      final itemId = state.pathParameters['id'];
+                      return ItemEditFormPage(item: item, itemId: itemId ?? "");
+                    })
+              ],
             ),
           ],
         ),

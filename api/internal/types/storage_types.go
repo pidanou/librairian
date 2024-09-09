@@ -21,8 +21,7 @@ func (sl *StorageLocation) UserHasAccess(userID *uuid.UUID) bool {
 
 type Storage struct {
 	Base
-	Type  PlatformType `json:"type" db:"type"`
-	Alias string       `json:"alias" db:"alias"`
+	Alias string `json:"alias" db:"alias"`
 }
 
 func (s *Storage) UserHasAccess(userID *uuid.UUID) bool {
@@ -31,11 +30,3 @@ func (s *Storage) UserHasAccess(userID *uuid.UUID) bool {
 	}
 	return *s.UserID == *userID
 }
-
-type PlatformType string
-
-const (
-	Device   PlatformType = "Device"
-	Physical PlatformType = "Physical Storage"
-	Cloud    PlatformType = "Cloud"
-)

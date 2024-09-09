@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/providers/storage.dart' as sp;
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/widgets/edit_storage.dart';
@@ -65,7 +64,6 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
                                         ref.watch(sp.defaultStorageProvider)?.id
                                     ? Text("${storage.alias} (default)")
                                     : Text(storage.alias),
-                                leading: Icon(storageTypeIcon[storage.type]),
                                 trailing: IconButton(
                                   onPressed: () {
                                     ref

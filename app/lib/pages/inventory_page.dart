@@ -47,8 +47,96 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
   Widget build(BuildContext context) {
     if (MediaQuery.of(context).size.width < 600) {
       return Scaffold(
-        appBar: const CustomAppBar(
-          title: Text("All Items"),
+        backgroundColor: Theme.of(context).colorScheme.surfaceBright,
+        appBar: CustomAppBar(
+          title: const Text("My Items"),
+          actions: [
+            deleting
+                ? const SizedBox(
+                    width: 20, height: 20, child: CircularProgressIndicator())
+                : IconButton(
+                    tooltip: 'Delete selected',
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      selected.isNotEmpty
+                          ? showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialogConfirm(
+                                    icon: const Icon(Icons.warning),
+                                    title: const Text(
+                                        "Are you sure you want to delete these items?"),
+                                    message: const Text(
+                                        "This action cannot be undone"),
+                                    confirmMessage: const Text("Delete"),
+                                    action: () async {
+                                      setState(() {
+                                        deleting = true;
+                                      });
+                                      for (String id in selected) {
+                                        await ref
+                                            .read(
+                                                provider.itemProvider.notifier)
+                                            .deleteById(id);
+                                      }
+                                      setState(() {
+                                        deleting = false;
+                                      });
+                                      if (mounted) {
+                                        SchedulerBinding.instance
+                                            .addPostFrameCallback((_) {
+                                          if (mounted) {
+                                            Navigator.pop(
+                                                context); // Safely pop after async operation
+                                          }
+                                        });
+                                      }
+                                      ref.invalidate(userItemsProvider(
+                                          page, pageSize, null, orderBy, asc));
+                                    });
+                              })
+                          : ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("No item selected")));
+                    }),
+            IconButton(
+                tooltip: 'Add item',
+                icon: const Icon(Icons.add_circle),
+                onPressed: () {
+                  if (MediaQuery.of(context).size.width < 600) {
+                    showModalBottomSheet<void>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                Expanded(
+                                    child: ItemEditForm(
+                                  item:
+                                      Item(name: "New Item", storageLocations: [
+                                    StorageLocation(
+                                        storage:
+                                            ref.read(defaultStorageProvider))
+                                  ]),
+                                  onSave: (item) {
+                                    save(item);
+                                    Navigator.pop(context);
+                                  },
+                                )),
+                              ],
+                            ),
+                          );
+                        });
+                  }
+                  setState(() {
+                    editingItem = Item(name: "New Item", storageLocations: [
+                      StorageLocation(storage: ref.read(defaultStorageProvider))
+                    ]);
+                  });
+                }),
+          ],
         ),
         body: content(context),
       );
@@ -68,164 +156,88 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
     var items =
         ref.watch(userItemsProvider(page, pageSize, null, orderBy, asc));
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-          padding: const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Row(children: [
-              OrderBySelector(
-                controller: menuController,
-                options: [
-                  ListTile(
-                      onTap: () {
-                        setState(() {
-                          asc = false;
-                          orderBy = "name";
-                          orderByLabel = "Name A-Z";
-                        });
-                        menuController.close();
-                      },
-                      dense: true,
-                      title: const Text("Name A-Z")),
-                  ListTile(
-                      onTap: () {
-                        setState(() {
-                          asc = true;
-                          orderBy = "name";
-                          orderByLabel = "Name Z-A";
-                        });
-                        menuController.close();
-                      },
-                      dense: true,
-                      title: const Text("Name Z-A")),
-                  ListTile(
-                      onTap: () {
-                        setState(() {
-                          asc = false;
-                          orderBy = "created_at";
-                          orderByLabel = "Old items to new";
-                        });
-                        menuController.close();
-                      },
-                      dense: true,
-                      title: const Text("Old items to new")),
-                  ListTile(
-                      onTap: () {
-                        setState(() {
-                          asc = true;
-                          orderBy = "created_at";
-                          orderByLabel = "New items to old";
-                        });
-                        menuController.close();
-                      },
-                      dense: true,
-                      title: const Text("New items to old")),
-                  ListTile(
-                      onTap: () {
-                        setState(() {
-                          asc = true;
-                          orderBy = "updated_at";
-                          orderByLabel = "Last updated";
-                        });
-                        menuController.close();
-                      },
-                      dense: true,
-                      title: const Text("Last updated")),
-                ],
-                child: Text(orderByLabel),
-              ),
-              deleting
-                  ? const SizedBox(
-                      width: 20, height: 20, child: CircularProgressIndicator())
-                  : IconButton(
-                      tooltip: 'Delete selected',
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialogConfirm(
-                                  icon: const Icon(Icons.warning),
-                                  title: const Text(
-                                      "Are you sure you want to delete these items?"),
-                                  message: const Text(
-                                      "This action cannot be undone"),
-                                  confirmMessage: const Text("Delete"),
-                                  action: () async {
-                                    setState(() {
-                                      deleting = true;
-                                    });
-                                    for (String id in selected) {
-                                      await ref
-                                          .read(provider.itemProvider.notifier)
-                                          .deleteById(id);
-                                    }
-                                    setState(() {
-                                      deleting = false;
-                                    });
-                                    if (mounted) {
-                                      SchedulerBinding.instance
-                                          .addPostFrameCallback((_) {
-                                        if (mounted) {
-                                          Navigator.pop(
-                                              context); // Safely pop after async operation
-                                        }
-                                      });
-                                    }
-                                    ref.invalidate(userItemsProvider(
-                                        page, pageSize, null, orderBy, asc));
-                                  });
-                            });
-                      }),
-              IconButton(
-                  tooltip: 'Add item',
-                  icon: const Icon(Icons.add_circle),
-                  onPressed: () {
-                    if (MediaQuery.of(context).size.width < 600) {
-                      showModalBottomSheet<void>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  Expanded(
-                                      child: ItemEditForm(
-                                    item: Item(
-                                        name: "New Item",
-                                        storageLocations: [
-                                          StorageLocation(
-                                              storage: ref
-                                                  .read(defaultStorageProvider))
-                                        ]),
-                                    onSave: (item) {
-                                      save(item);
-                                      Navigator.pop(context);
-                                    },
-                                  )),
-                                ],
-                              ),
-                            );
-                          });
-                    }
-                    setState(() {
-                      editingItem = Item(name: "New Item", storageLocations: [
-                        StorageLocation(
-                            storage: ref.read(defaultStorageProvider))
-                      ]);
-                    });
-                  }),
-              if (MediaQuery.of(context).size.width > 600)
-                IconButton(
-                    tooltip: "Refresh data",
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () {
-                      ref.invalidate(userItemsProvider(
-                          page, pageSize, null, orderBy, asc));
-                    })
-            ])
-          ])),
+      Container(
+          color: MediaQuery.of(context).size.width < 600
+              ? Theme.of(context).colorScheme.surfaceDim
+              : null,
+          child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      OrderBySelector(
+                        controller: menuController,
+                        options: [
+                          ListTile(
+                              onTap: () {
+                                setState(() {
+                                  asc = false;
+                                  orderBy = "name";
+                                  orderByLabel = "Name A-Z";
+                                });
+                                menuController.close();
+                              },
+                              dense: true,
+                              title: const Text("Name A-Z")),
+                          ListTile(
+                              onTap: () {
+                                setState(() {
+                                  asc = true;
+                                  orderBy = "name";
+                                  orderByLabel = "Name Z-A";
+                                });
+                                menuController.close();
+                              },
+                              dense: true,
+                              title: const Text("Name Z-A")),
+                          ListTile(
+                              onTap: () {
+                                setState(() {
+                                  asc = false;
+                                  orderBy = "created_at";
+                                  orderByLabel = "Old items to new";
+                                });
+                                menuController.close();
+                              },
+                              dense: true,
+                              title: const Text("Old items to new")),
+                          ListTile(
+                              onTap: () {
+                                setState(() {
+                                  asc = true;
+                                  orderBy = "created_at";
+                                  orderByLabel = "New items to old";
+                                });
+                                menuController.close();
+                              },
+                              dense: true,
+                              title: const Text("New items to old")),
+                          ListTile(
+                              onTap: () {
+                                setState(() {
+                                  asc = true;
+                                  orderBy = "updated_at";
+                                  orderByLabel = "Last updated";
+                                });
+                                menuController.close();
+                              },
+                              dense: true,
+                              title: const Text("Last updated")),
+                        ],
+                        child: Text(orderByLabel),
+                      ),
+                      if (MediaQuery.of(context).size.width > 600)
+                        IconButton(
+                            tooltip: "Refresh data",
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () {
+                              ref.invalidate(userItemsProvider(
+                                  page, pageSize, null, orderBy, asc));
+                            })
+                    ])
+                  ]))),
       Divider(
         color: Theme.of(context).colorScheme.surfaceDim,
         height: 0,
@@ -239,6 +251,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                 Expanded(
                     child: items is AsyncData
                         ? ItemsList(
+                            selected: selected,
+                            editing: editingItem?.id?.toString() ?? "",
                             onRefresh: () => ref.refresh(userItemsProvider(
                                     page, pageSize, null, orderBy, asc)
                                 .future),
@@ -247,12 +261,12 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                 selected = selectedItem;
                               });
                             },
-                            onTap: (item) {
+                            onTap: (item) async {
                               setState(() {
                                 editingItem = item;
                               });
                               if (MediaQuery.of(context).size.width < 600) {
-                                showModalBottomSheet<void>(
+                                await showModalBottomSheet<void>(
                                     context: context,
                                     builder: (BuildContext context) {
                                       return Center(
@@ -279,12 +293,16 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                                             asc));
                                                     setState(() {
                                                       editingItem = null;
+                                                      selected = [];
+                                                      editingItem = null;
                                                     });
                                                     Navigator.pop(context);
                                                   });
                                                 },
                                                 onCancel: () {
                                                   setState(() {
+                                                    editingItem = null;
+                                                    selected = [];
                                                     editingItem = null;
                                                   });
                                                   Navigator.pop(context);
@@ -333,12 +351,14 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             page, pageSize, null, orderBy, asc));
                         setState(() {
                           editingItem = null;
+                          selected = [];
                         });
                       });
                     },
                     onCancel: () {
                       setState(() {
                         editingItem = null;
+                        selected = [];
                       });
                     },
                     item: editingItem!,

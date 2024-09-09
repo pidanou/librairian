@@ -35,9 +35,7 @@ class Item {
   DateTime? updatedAt;
   String? userId;
   String? name;
-  bool? isDigital;
-  DateTime? analysisDate;
-  Description? description;
+  String? description;
   List<StorageLocation>? storageLocations;
   int? size;
   int? wordCount;
@@ -48,8 +46,6 @@ class Item {
     this.updatedAt,
     this.userId,
     this.name,
-    this.isDigital,
-    this.analysisDate,
     this.description,
     this.storageLocations,
   });
@@ -59,22 +55,6 @@ class Item {
     return toJson().toString();
   }
 
-  static newPhysicalItem() {
-    return Item(isDigital: false, name: 'New Item');
-  }
-
-  static Future<Item> fromXFile(XFile xfile) async {
-    return Item(
-      name: xfile.name,
-      isDigital: true,
-      storageLocations: [
-        StorageLocation(
-            location:
-                kIsWeb == true ? "Please add location of the file" : xfile.path)
-      ],
-    );
-  }
-
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
       id: json['id'],
@@ -82,13 +62,7 @@ class Item {
       updatedAt: DateTime.parse(json['updated_at']).toLocal(),
       userId: json['user_id'],
       name: json['name'],
-      isDigital: json['is_digital'],
-      analysisDate: json['analysis_date'] != null
-          ? DateTime.parse(json['analysis_date'])
-          : null,
-      description: json['description'] != null
-          ? Description.fromJson(json['description'])
-          : null,
+      description: json['description'],
       storageLocations: (json['storage_locations'] as List)
           .map((e) => StorageLocation.fromJson(e))
           .toList(),
@@ -100,51 +74,8 @@ class Item {
       'id': id,
       'user_id': userId,
       'name': name,
-      'is_digital': isDigital,
-      'analysis_date': analysisDate?.toIso8601String(),
-      'description': description?.toJson(),
+      'description': description,
       'storage_locations': storageLocations?.map((e) => e.toJson()).toList(),
-    };
-  }
-}
-
-class Description {
-  String? id;
-  DateTime? createdAt;
-  DateTime? updatedAt;
-  String userId;
-  String? itemId;
-  String data;
-  // Assuming `embedding` is not needed as it is not included in JSON serialization
-
-  Description({
-    this.id,
-    this.createdAt,
-    this.updatedAt,
-    required this.userId,
-    this.itemId,
-    required this.data,
-  });
-
-  factory Description.fromJson(Map<String, dynamic> json) {
-    return Description(
-      id: json['id'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      userId: json['user_id'],
-      itemId: json['item_id'],
-      data: json['data'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'user_id': userId,
-      'item_id': itemId,
-      'data': data,
     };
   }
 }

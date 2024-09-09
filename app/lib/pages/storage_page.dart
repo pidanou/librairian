@@ -18,8 +18,21 @@ class StoragePageState extends ConsumerState<StoragePage> {
   Widget build(BuildContext context) {
     if (MediaQuery.of(context).size.width < 600) {
       return Scaffold(
-        appBar: const CustomAppBar(
-          title: Text("My storages"),
+        backgroundColor: Theme.of(context).colorScheme.surfaceBright,
+        appBar: CustomAppBar(
+          title: const Text("My storages"),
+          actions: [
+            IconButton(
+                tooltip: 'Add storage',
+                icon: const Icon(Icons.add_circle),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return const DialogAddStorage();
+                      });
+                }),
+          ],
         ),
         body: content(context),
       );
@@ -37,28 +50,29 @@ class StoragePageState extends ConsumerState<StoragePage> {
 
   Widget content(BuildContext context) {
     return Column(children: [
-      Padding(
-        padding: const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
-        child: Row(children: [
-          IconButton(
-              tooltip: 'Add storage',
-              icon: const Icon(Icons.add_circle),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return const DialogAddStorage();
-                    });
-              }),
-          if (MediaQuery.of(context).size.width > 600)
+      if (MediaQuery.of(context).size.width > 600)
+        Padding(
+          padding: const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
+          child: Row(children: [
             IconButton(
-                tooltip: 'Refresh data',
-                icon: const Icon(Icons.refresh),
+                tooltip: 'Add storage',
+                icon: const Icon(Icons.add_circle),
                 onPressed: () {
-                  ref.invalidate(storagesProvider);
-                })
-        ]),
-      ),
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return const DialogAddStorage();
+                      });
+                }),
+            if (MediaQuery.of(context).size.width > 600)
+              IconButton(
+                  tooltip: 'Refresh data',
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    ref.invalidate(storagesProvider);
+                  })
+          ]),
+        ),
       Divider(
         color: Theme.of(context).colorScheme.surfaceDim,
         height: 0,

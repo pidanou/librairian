@@ -55,7 +55,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
   @override
   build(BuildContext context) {
     Item item = widget.item;
-    descriptionController.text = widget.item.description?.data ?? '';
+    descriptionController.text = widget.item.description ?? '';
     return ListView(children: [
       FocusTraversalGroup(
           child: Form(
@@ -201,15 +201,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                     maxLength: 1000,
                     maxLines: null,
                     onChanged: (value) {
-                      if (item.description == null) {
-                        item.description = Description(
-                            data: value,
-                            userId:
-                                Supabase.instance.client.auth.currentUser!.id);
-                        widget.onEdit?.call(item);
-                        return;
-                      }
-                      item.description!.data = value;
+                      item.description = value;
                     },
                     controller: descriptionController,
                     decoration: const InputDecoration(

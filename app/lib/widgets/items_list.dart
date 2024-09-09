@@ -13,6 +13,8 @@ class ItemsList extends ConsumerStatefulWidget {
       this.onTap,
       this.onDelete,
       this.onRefresh,
+      this.selected,
+      this.editing,
       super.key});
 
   final Storage? storage;
@@ -21,6 +23,8 @@ class ItemsList extends ConsumerStatefulWidget {
   final Function(Item)? onTap;
   final Function(List<String>)? onDelete;
   final Function(List<String>)? onSelected;
+  final List<String>? selected;
+  final String? editing;
   final List<Item>? items;
 
   @override
@@ -37,6 +41,8 @@ class ItemsListState extends ConsumerState<ItemsList> {
   @override
   void initState() {
     super.initState();
+    selected = widget.selected ?? [];
+    editing = widget.editing ?? "";
     storage = widget.storage;
     items = widget.items ?? [];
     selectAll = widget.selectAll;
@@ -45,6 +51,12 @@ class ItemsListState extends ConsumerState<ItemsList> {
   @override
   void didUpdateWidget(ItemsList oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.editing != oldWidget.editing) {
+      editing = widget.editing ?? "";
+    }
+    if (widget.selected != oldWidget.selected) {
+      selected = widget.selected ?? [];
+    }
     if (widget.storage?.id != oldWidget.storage?.id) {
       storage = widget.storage;
     }
@@ -76,8 +88,14 @@ class ItemsListState extends ConsumerState<ItemsList> {
             Material(
                 type: MaterialType.transparency,
                 child: ListTile(
-                    onTap: () {
-                      widget.onTap?.call(item);
+                    onTap: () async {
+                      widget.onTap?.call(item).whenComplete(() {
+                        if (MediaQuery.sizeOf(context).width < 600) {
+                          setState(() {
+                            editing = "";
+                          });
+                        }
+                      });
                       setState(() {
                         editing = item.id ?? "";
                         selected = [];
@@ -106,7 +124,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text("Last modified:"),
+                        const Text("Last updated:"),
                         Text(formatTimestamp(item.updatedAt?.toString() ?? ""))
                       ],
                     ))),

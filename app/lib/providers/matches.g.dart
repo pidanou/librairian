@@ -191,7 +191,7 @@ class _MatchesByDescriptionProviderElement
   int get maxResults => (origin as MatchesByDescriptionProvider).maxResults;
 }
 
-String _$matchesByNameHash() => r'770eced801e51eefb7b121caa4eaa9829c08f6b1';
+String _$matchesByNameHash() => r'894a89118d83d42d787b409638900c7521da9b85';
 
 /// See also [matchesByName].
 @ProviderFor(matchesByName)
@@ -336,5 +336,21 @@ class _MatchesByNameProviderElement
   @override
   int get maxResults => (origin as MatchesByNameProvider).maxResults;
 }
+
+String _$matchesHash() => r'9c0b3fc63e8384886b5e31fe3a656ae54bc5ef65';
+
+/// See also [Matches].
+@ProviderFor(Matches)
+final matchesProvider =
+    AutoDisposeNotifierProvider<Matches, List<MatchItem>>.internal(
+  Matches.new,
+  name: r'matchesProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$matchesHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$Matches = AutoDisposeNotifier<List<MatchItem>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

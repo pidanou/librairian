@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:librairian/constants/storage_type.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/item.dart' as provider;
@@ -96,28 +95,6 @@ class EditStorageState extends ConsumerState<EditStorage> {
                   children: [
             if (MediaQuery.of(context).size.width > 840)
               ListTile(
-                  leading: editingStorage
-                      ? DropdownMenu<String>(
-                          leadingIcon: Icon(storageTypeIcon[storage.type]),
-                          initialSelection: storage.type,
-                          onSelected: (value) {
-                            if (value == null) {
-                              return;
-                            }
-                            setState(() {
-                              storage.type = value;
-                            });
-                          },
-                          inputDecorationTheme:
-                              Theme.of(context).inputDecorationTheme,
-                          dropdownMenuEntries:
-                              storageTypeIcon.entries.map((entry) {
-                            return DropdownMenuEntry<String>(
-                                value: entry.key,
-                                label: entry.key,
-                                leadingIcon: Icon(entry.value));
-                          }).toList())
-                      : Icon(storageTypeIcon[widget.storage.type]),
                   title: editingStorage
                       ? TextField(
                           controller: controller,
