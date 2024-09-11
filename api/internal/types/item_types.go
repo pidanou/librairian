@@ -2,19 +2,19 @@ package types
 
 import (
 	"log"
-	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/pgvector/pgvector-go"
 )
 
 type Item struct {
 	Base
-	Name                 string            `json:"name" db:"name"`
-	AnalysisDate         *time.Time        `json:"analysis_date" db:"analysis_date"`
-	Description          string            `json:"description" db:"description"`
-	DescriptionEmbedding *pgvector.Vector  `json:"-" db:"description_embedding"`
-	StorageLocation      []StorageLocation `json:"storage_locations"`
+	Name                 string           `json:"name" db:"name"`
+	Description          string           `json:"description" db:"description"`
+	DescriptionEmbedding *pgvector.Vector `json:"-" db:"description_embedding"`
+	Locations            []Location       `json:"locations"`
+	Attachments          pq.StringArray   `json:"attachments" db:"attachments"`
 }
 
 func (f *Item) UserHasAccess(userID *uuid.UUID) bool {
@@ -23,7 +23,7 @@ func (f *Item) UserHasAccess(userID *uuid.UUID) bool {
 		return false
 	}
 
-	for _, sl := range f.StorageLocation {
+	for _, sl := range f.Locations {
 		if !sl.UserHasAccess(userID) {
 			log.Println("Unauthorized access to item")
 			return false

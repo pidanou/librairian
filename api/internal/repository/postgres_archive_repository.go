@@ -24,8 +24,8 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	tx := r.DB.MustBegin()
 
 	query := `INSERT INTO item
-  (user_id, name, analysis_date, description, description_embedding)
-  VALUES (:user_id, :name, :analysis_date, :description, :description_embedding) returning id`
+  (user_id, name, description, description_embedding, attachments)
+  VALUES (:user_id, :name, :description, :description_embedding, :attachments) returning id`
 	rows, err := tx.NamedQuery(query, item)
 	if err != nil {
 		log.Printf(`Cannot create item %s`, err)
@@ -41,8 +41,8 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	}
 	rows.Close()
 
-	for _, sl := range item.StorageLocation {
-		query = `INSERT INTO storage_location (location, storage_id, item_id, user_id) VALUES ($1, $2, $3, $4)`
+	for _, sl := range item.Locations {
+		query = `INSERT INTO location (location, storage_id, item_id, user_id) VALUES ($1, $2, $3, $4)`
 		_, err = tx.Exec(query, sl.Location, sl.Storage.ID, insertedItemId, sl.UserID)
 		if err != nil {
 			log.Printf(`Cannot create storage location %s`, err)
@@ -75,7 +75,7 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 	if *storageID != uuid.Nil {
 		query := fmt.Sprintf(`SELECT i.id 
                       FROM item i 
-                      JOIN storage_location sl 
+                      JOIN location sl 
                       ON i.id = sl.item_id 
                       WHERE i.user_id = $1 
                       AND sl.storage_id = $2  
@@ -95,7 +95,7 @@ func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.
 			items = append(items, *item)
 		}
 
-		query = `SELECT count(*) FROM item i JOIN storage_location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2                       AND i.name ILIKE $3
+		query = `SELECT count(*) FROM item i JOIN location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2                       AND i.name ILIKE $3
             AND i.name ILIKE $3`
 		err = r.DB.Get(&total, query, userID, storageID, "%"+name+"%")
 		if err != nil {
@@ -152,9 +152,9 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 	query := `UPDATE item
     set 
   name = :name, 
-  analysis_date = :analysis_date, 
   description = :description, 
   description_embedding = :description_embedding, 
+  attachments = :attachments,
   updated_at = now() 
   where id = :id`
 	_, err := tx.NamedExec(query, item)
@@ -165,13 +165,13 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 
 	slList := []uuid.UUID{}
 
-	for _, sl := range item.StorageLocation {
+	for _, sl := range item.Locations {
 		if sl.ID == nil {
 			sl.ItemID = item.ID
 			sl.UserID = item.UserID
-			query = `INSERT INTO storage_location(item_id, user_id, location, storage_id, created_at, updated_at) VALUES (:item_id, :user_id, :location, :storage_id, now(), now()) RETURNING id`
+			query = `INSERT INTO location(item_id, user_id, location, storage_id, created_at, updated_at) VALUES (:item_id, :user_id, :location, :storage_id, now(), now()) RETURNING id`
 		} else {
-			query = `UPDATE storage_location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id returning id`
+			query = `UPDATE location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id returning id`
 		}
 		rows, err := tx.NamedQuery(query, sl)
 		defer rows.Close()
@@ -187,7 +187,7 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 		}
 	}
 
-	query, args, err := sqlx.In(`DELETE FROM storage_location where id NOT IN (?)`, slList)
+	query, args, err := sqlx.In(`DELETE FROM location where id NOT IN (?)`, slList)
 	query = tx.Rebind(query)
 	_, err = tx.Exec(query, args...)
 	if err != nil {
@@ -212,7 +212,7 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 
 func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, error) {
 	item := &types.Item{}
-	storageLocation := []types.StorageLocation{}
+	storageLocation := []types.Location{}
 	storage := &types.Storage{}
 
 	query := `SELECT * FROM item WHERE id = $1 ORDER BY updated_at DESC`
@@ -222,7 +222,7 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 		return nil, err
 	}
 
-	query = `SELECT * FROM storage_location WHERE item_id = $1`
+	query = `SELECT * FROM location WHERE item_id = $1`
 	err = r.DB.Select(&storageLocation, query, item.ID)
 	if err != nil {
 		log.Printf("Cannot get storage location: %s", err)
@@ -238,14 +238,14 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 		storageLocation[i] = sl
 	}
 
-	item.StorageLocation = storageLocation
+	item.Locations = storageLocation
 
 	return item, nil
 }
 
 func (r *PostgresArchiveRepository) EditItemMetadata(item *types.Item) (*types.Item, error) {
 	tx := r.DB.MustBegin()
-	query := `UPDATE item set user_id = :user_id, name = :name, analysis_date = :analysis_date, updated_at = now() where id = :id`
+	query := `UPDATE item set user_id = :user_id, name = :name, attachments = :attachments, updated_at = now() where id = :id`
 	_, err := tx.NamedExec(query, item)
 	if err != nil {
 		log.Printf("Cannot edit item: %s", err)
@@ -253,8 +253,8 @@ func (r *PostgresArchiveRepository) EditItemMetadata(item *types.Item) (*types.I
 		return nil, err
 	}
 
-	for _, sl := range item.StorageLocation {
-		query = `UPDATE storage_location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id`
+	for _, sl := range item.Locations {
+		query = `UPDATE location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id`
 		_, err = tx.NamedExec(query, sl)
 		if err != nil {
 			log.Printf("Cannot edit storage location: %s", err)
@@ -329,7 +329,7 @@ func (r *PostgresArchiveRepository) DeleteStorageByID(id *uuid.UUID) error {
 		return err
 	}
 
-	query := `SELECT i.* FROM item i JOIN storage_location sl on i.id = sl.item_id WHERE sl.storage_id = $1`
+	query := `SELECT i.* FROM item i JOIN location sl on i.id = sl.item_id WHERE sl.storage_id = $1`
 	_ = r.DB.Select(&itemsInStorage, query, id)
 
 	for _, item := range itemsInStorage {

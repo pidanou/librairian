@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/providers/item.dart' as provider;
@@ -9,24 +8,6 @@ import 'package:librairian/widgets/chat_response.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/search_config.dart';
-
-class MatchRequest {
-  final String prompt;
-  final double matchThreshold;
-  final int maxResults;
-  Future<List<MatchItem>> matches;
-
-  MatchRequest(
-      {required this.prompt,
-      required this.matchThreshold,
-      required this.maxResults,
-      required this.matches});
-
-  @override
-  String toString() {
-    return prompt;
-  }
-}
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -44,48 +25,41 @@ class SearchPageState extends ConsumerState<SearchPage> {
   int maxResults = 10;
   String searchMode = "by description";
   Item? selectedItem;
+  bool textFieldEnabled = true;
 
   void update(Item item) async {
-    for (var mr in matchRequests) {
-      var matches = await mr.matches;
-      for (var match in matches) {
-        if (match.item?.id == item.id) {
-          match.item = item;
-        }
-      }
-      setState(() {
-        mr.matches = Future.value(matches);
-      });
-    }
+    ref.read(matchesProvider.notifier).update(item);
   }
 
-  void search() {
+  void search() async {
+    setState(() {
+      textFieldEnabled = false;
+    });
     if (controller.text != "") {
       if (searchMode == "by description") {
-        setState(() {
-          matchRequests.insert(
-              0,
-              MatchRequest(
-                  prompt: controller.text,
-                  matchThreshold: matchThreshold,
-                  maxResults: maxResults,
-                  matches: ref.read(matchesByDescriptionProvider(
-                          controller.text, matchThreshold, maxResults)
-                      .future)));
-          controller.clear();
+        ref
+            .read(matchesProvider.notifier)
+            .matchesByDescription(controller.text, matchThreshold, maxResults)
+            .then((value) {
+          setState(() {
+            textFieldEnabled = true;
+            if (MediaQuery.of(context).size.width > 600) {
+              focusNode.requestFocus();
+            }
+          });
         });
+        controller.clear();
       } else {
-        setState(() {
-          matchRequests.insert(
-              0,
-              MatchRequest(
-                  prompt: controller.text,
-                  matchThreshold: matchThreshold,
-                  maxResults: maxResults,
-                  matches: ref.read(
-                      matchesByNameProvider(controller.text, maxResults)
-                          .future)));
-          controller.clear();
+        ref
+            .read(matchesProvider.notifier)
+            .matchesByName(controller.text, maxResults)
+            .then((value) {
+          setState(() {
+            textFieldEnabled = true;
+            if (MediaQuery.of(context).size.width > 600) {
+              focusNode.requestFocus();
+            }
+          });
         });
       }
       scrollController.animateTo(
@@ -119,6 +93,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget content(BuildContext context) {
+    var matches = ref.watch(matchesProvider);
     return Column(children: [
       Container(
           color: MediaQuery.of(context).size.width < 600
@@ -166,53 +141,41 @@ class SearchPageState extends ConsumerState<SearchPage> {
                                   reverse: true,
                                   children: [
                                     for (var i = 0;
-                                        i < matchRequests.length;
+                                        i < matches.length;
                                         i++) ...[
-                                      FutureBuilder(
-                                          future: matchRequests[i].matches,
-                                          builder: (context, snapshot) {
-                                            if (snapshot.connectionState ==
-                                                ConnectionState.waiting) {
-                                              return const Padding(
-                                                  padding: EdgeInsets.all(10),
-                                                  child: Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: SizedBox(
-                                                          width: 20,
-                                                          height: 20,
-                                                          child:
-                                                              CircularProgressIndicator())));
-                                            }
-                                            if (snapshot.hasData) {
-                                              return Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: ChatResponse(
-                                                      selected: selectedItem,
-                                                      onSelect: (item) {
-                                                        setState(() {
-                                                          selectedItem = item;
-                                                        });
-                                                      },
-                                                      matches:
-                                                          snapshot.data ?? []));
-                                            }
-                                            if (snapshot.hasError) {
-                                              return Text(
-                                                  snapshot.error.toString());
-                                            }
-                                            return Container();
-                                          }),
+                                      if (matches[i].matches is AsyncError)
+                                        const Text("Error"),
+                                      if (matches[i].matches is AsyncLoading)
+                                        const Padding(
+                                            padding: EdgeInsets.all(10),
+                                            child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ))),
+                                      if (matches[i].matches is AsyncData)
+                                        Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: ChatResponse(
+                                                selected: selectedItem,
+                                                onSelect: (item) {
+                                                  setState(() {
+                                                    selectedItem = item;
+                                                  });
+                                                },
+                                                matches:
+                                                    matches[i].matches.value ??
+                                                        [])),
                                       Align(
                                           alignment: Alignment.centerLeft,
                                           child: ChatPrompt(
-                                              prompt: matchRequests[i].prompt)),
-                                      if (i < matchRequests.length - 1) ...[
+                                              prompt: matches[i].prompt)),
+                                      if (i < matches.length - 1) ...[
                                         const Divider(),
-                                        const SizedBox(height: 10),
-                                      ],
-                                      const SizedBox(height: 10),
+                                      ]
                                     ]
                                   ]))),
                       if (selectedItem != null) ...[
@@ -256,17 +219,21 @@ class SearchPageState extends ConsumerState<SearchPage> {
                               padding: const EdgeInsets.only(right: 5),
                               child: IconButton(
                                 icon: const Icon(Icons.send, size: 20),
-                                onPressed: () async {
-                                  search();
-                                },
+                                onPressed: !textFieldEnabled
+                                    ? null
+                                    : () async {
+                                        search();
+                                      },
                               ))),
                       keyboardType: TextInputType.text,
                       maxLines: 5,
                       minLines: 1,
-                      onFieldSubmitted: (_) async {
-                        focusNode.requestFocus();
-                        search();
-                      }))
+                      onFieldSubmitted: !textFieldEnabled
+                          ? null
+                          : (_) async {
+                              focusNode.requestFocus();
+                              search();
+                            }))
             ]))
       ]))
     ]);

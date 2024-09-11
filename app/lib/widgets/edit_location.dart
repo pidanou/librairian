@@ -6,14 +6,14 @@ import 'package:librairian/widgets/file_picker.dart';
 import 'package:librairian/widgets/storage_selector.dart';
 
 class EditStorageLocation extends ConsumerStatefulWidget {
-  final StorageLocation? storageLocation;
+  final StorageLocation? location;
   final Widget title;
   final void Function(StorageLocation?)? onSave;
   final String? itemID;
 
   const EditStorageLocation(
       {super.key,
-      this.storageLocation,
+      this.location,
       required this.title,
       this.onSave,
       this.itemID});
@@ -40,9 +40,9 @@ class EditStorageLocationState extends ConsumerState<EditStorageLocation> {
   @override
   void initState() {
     super.initState();
-    storage = widget.storageLocation?.storage;
-    controller.text = widget.storageLocation?.location ?? "";
-    storageID = widget.storageLocation?.storageId;
+    storage = widget.location?.storage;
+    controller.text = widget.location?.location ?? "";
+    storageID = widget.location?.storageId;
   }
 
   void save() {

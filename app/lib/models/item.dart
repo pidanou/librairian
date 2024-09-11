@@ -1,5 +1,3 @@
-import 'package:cross_file/cross_file.dart';
-import 'package:flutter/foundation.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/models/common.dart';
 import 'dart:math';
@@ -36,9 +34,8 @@ class Item {
   String? userId;
   String? name;
   String? description;
-  List<StorageLocation>? storageLocations;
-  int? size;
-  int? wordCount;
+  List<StorageLocation>? locations;
+  List<String>? attachments;
 
   Item({
     this.id,
@@ -47,7 +44,8 @@ class Item {
     this.userId,
     this.name,
     this.description,
-    this.storageLocations,
+    this.locations,
+    this.attachments,
   });
 
   @override
@@ -63,9 +61,11 @@ class Item {
       userId: json['user_id'],
       name: json['name'],
       description: json['description'],
-      storageLocations: (json['storage_locations'] as List)
+      locations: (json['locations'] as List)
           .map((e) => StorageLocation.fromJson(e))
           .toList(),
+      attachments:
+          (json['attachments'] as List).map((e) => e.toString()).toList(),
     );
   }
 
@@ -75,7 +75,8 @@ class Item {
       'user_id': userId,
       'name': name,
       'description': description,
-      'storage_locations': storageLocations?.map((e) => e.toJson()).toList(),
+      'locations': locations?.map((e) => e.toJson()).toList(),
+      'attachments': attachments
     };
   }
 }

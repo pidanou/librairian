@@ -7,115 +7,88 @@ import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 part 'matches.g.dart';
 
+class MatchRequest {
+  final String prompt;
+  AsyncValue<List<MatchItem>> matches;
+
+  MatchRequest({required this.prompt, required this.matches});
+
+  @override
+  String toString() {
+    return prompt;
+  }
+}
+
 @riverpod
 class Matches extends _$Matches {
   @override
-  List<MatchItem> build() {
+  List<MatchRequest> build() {
     return [];
   }
 
-  void getMatchesByDescription(MatchesByDescriptionRef ref, String input,
-      double threshold, int maxResults) async {
+  void update(Item item) async {
+    List<MatchRequest> newState = state;
+    for (var mr in newState) {
+      var matches = mr.matches.value ?? [];
+      for (var match in matches) {
+        if (match.item?.id == item.id) {
+          match.item = item;
+        }
+        mr.matches = AsyncValue.data(matches);
+      }
+    }
+    state = newState;
+  }
+
+  Future<void> matchesByDescription(
+      String input, double threshold, int maxResults) async {
     String url;
     url =
         '${const String.fromEnvironment('API_URL')}/api/v1/items/matches?search=$input&threshold=$threshold&max_results=$maxResults';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
 
-    try {
-      final response = await http.get(Uri.parse(url), headers: headers);
-      if (response.statusCode < 300) {
-        final List<dynamic> data = jsonDecode(response.body);
-        state = [
-          ...state,
-          ...data.map<MatchItem>((json) => MatchItem.fromJson(json))
-        ];
-      } else {
-        print("Erreur HTTP getting all storages : ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Exception : $e");
-      return;
-    }
-    return;
+    state = [
+      MatchRequest(prompt: input, matches: const AsyncValue.loading()),
+      ...state
+    ];
+
+    state = [
+      MatchRequest(
+          prompt: input,
+          matches: await AsyncValue.guard(() async {
+            var response = await http.get(Uri.parse(url), headers: headers);
+            var data = jsonDecode(response.body);
+            return data
+                .map<MatchItem>((json) => MatchItem.fromJson(json))
+                .toList();
+          })),
+      ...state.sublist(1)
+    ];
   }
 
-  Future<List<MatchItem>> matchesByName(
-      MatchesByNameRef ref, String input, int maxResults) async {
+  Future<void> matchesByName(String input, int maxResults) async {
     String url;
     url =
         '${const String.fromEnvironment('API_URL')}/api/v1/items?name=$input&page=1&limit=$maxResults&order_by=name&order=asc';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
+    state = [
+      MatchRequest(prompt: input, matches: const AsyncValue.loading()),
+      ...state
+    ];
 
-    try {
-      final response = await http.get(Uri.parse(url), headers: headers);
-      if (response.statusCode < 300) {
-        final List<dynamic> data = jsonDecode(response.body)["data"];
-        var test = data
-            .map<Item>((json) => Item.fromJson(json))
-            .map((item) => MatchItem(item: item, descriptionSimilarity: 1))
-            .toList();
-        return test;
-      } else {
-        print("Erreur HTTP getting all storages : ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Exception : $e");
-      return [];
-    }
-    return [];
+    state = [
+      MatchRequest(
+          prompt: input,
+          matches: await AsyncValue.guard(() async {
+            var response = await http.get(Uri.parse(url), headers: headers);
+            var data = jsonDecode(response.body);
+            return data
+                .map<MatchItem>((json) => MatchItem.fromJson(json))
+                .toList();
+          })),
+      ...state.sublist(1)
+    ];
   }
-}
-
-@riverpod
-Future<List<MatchItem>> matchesByDescription(MatchesByDescriptionRef ref,
-    String input, double threshold, int maxResults) async {
-  String url;
-  url =
-      '${const String.fromEnvironment('API_URL')}/api/v1/items/matches?search=$input&threshold=$threshold&max_results=$maxResults';
-  final token = Supabase.instance.client.auth.currentSession?.accessToken;
-  final headers = {"Authorization": "Bearer $token"};
-
-  try {
-    final response = await http.get(Uri.parse(url), headers: headers);
-    if (response.statusCode < 300) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map<MatchItem>((json) => MatchItem.fromJson(json)).toList();
-    } else {
-      print("Erreur HTTP getting all storages : ${response.statusCode}");
-    }
-  } catch (e) {
-    print("Exception : $e");
-    return [];
-  }
-  return [];
-}
-
-@riverpod
-Future<List<MatchItem>> matchesByName(
-    MatchesByNameRef ref, String input, int maxResults) async {
-  String url;
-  url =
-      '${const String.fromEnvironment('API_URL')}/api/v1/items?name=$input&page=1&limit=$maxResults&order_by=name&order=asc';
-  final token = Supabase.instance.client.auth.currentSession?.accessToken;
-  final headers = {"Authorization": "Bearer $token"};
-
-  try {
-    final response = await http.get(Uri.parse(url), headers: headers);
-    if (response.statusCode < 300) {
-      final List<dynamic> data = jsonDecode(response.body)["data"];
-      var test = data
-          .map<Item>((json) => Item.fromJson(json))
-          .map((item) => MatchItem(item: item, descriptionSimilarity: 1))
-          .toList();
-      return test;
-    } else {
-      print("Erreur HTTP getting all storages : ${response.statusCode}");
-    }
-  } catch (e) {
-    print("Exception : $e");
-    return [];
-  }
-  return [];
 }

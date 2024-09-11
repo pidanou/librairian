@@ -87,7 +87,7 @@ class UserItems extends _$UserItems {
     };
 
     item.userId = Supabase.instance.client.auth.currentUser!.id;
-    for (var sl in item.storageLocations ?? []) {
+    for (var sl in item.locations ?? []) {
       sl.userId = Supabase.instance.client.auth.currentUser!.id;
       sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
     }

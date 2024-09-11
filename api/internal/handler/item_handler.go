@@ -66,11 +66,11 @@ func (h *Handler) PostItems(c echo.Context) error {
 
 	for _, item := range *items {
 
-		cleanedStorageLocation := []types.StorageLocation{}
-		if item.StorageLocation == nil {
-			item.StorageLocation = []types.StorageLocation{}
+		cleanedLocation := []types.Location{}
+		if item.Locations == nil {
+			item.Locations = []types.Location{}
 		}
-		for _, sl := range item.StorageLocation {
+		for _, sl := range item.Locations {
 			if sl.Storage == nil {
 				continue
 			}
@@ -83,10 +83,10 @@ func (h *Handler) PostItems(c echo.Context) error {
 				continue
 			}
 			sl.UserID = userID
-			cleanedStorageLocation = append(cleanedStorageLocation, sl)
+			cleanedLocation = append(cleanedLocation, sl)
 		}
 
-		item.StorageLocation = cleanedStorageLocation
+		item.Locations = cleanedLocation
 
 		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description)
 		if err != nil {

@@ -73,7 +73,7 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
               children: [
                 Text(match.item?.description ?? 'No description'),
                 Column(children: [
-                  for (var sl in match.item?.storageLocations ?? [])
+                  for (var sl in match.item?.locations ?? [])
                     Wrap(children: [
                       Text(sl.storage?.alias),
                       const Text(' - '),

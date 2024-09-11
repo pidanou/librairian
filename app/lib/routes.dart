@@ -14,7 +14,6 @@ import 'package:librairian/pages/storage_page.dart';
 import 'package:librairian/pages/search_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorAdd = GlobalKey<NavigatorState>(debugLabel: 'shellAdd');
 final _shellNavigatorSearch =
     GlobalKey<NavigatorState>(debugLabel: 'shellSearch');
 final _shellNavigatorStorage =
@@ -110,7 +109,15 @@ final goRouter = GoRouter(
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: InventoryPage(),
               ),
-              routes: const [],
+              routes: [
+                GoRoute(
+                    path: ":id",
+                    builder: (context, state) {
+                      Item item = state.extra as Item;
+                      final itemId = state.pathParameters['id'];
+                      return ItemEditFormPage(item: item, itemId: itemId ?? "");
+                    })
+              ],
             ),
           ],
         ),

@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type StorageLocation struct {
+type Location struct {
 	Base
 	ItemID    *uuid.UUID `json:"item_id" db:"item_id"`
 	Storage   *Storage   `json:"storage"`
@@ -12,7 +12,7 @@ type StorageLocation struct {
 	Location  string     `json:"location"`
 }
 
-func (sl *StorageLocation) UserHasAccess(userID *uuid.UUID) bool {
+func (sl *Location) UserHasAccess(userID *uuid.UUID) bool {
 	if userID == nil || sl.UserID == nil {
 		return false
 	}

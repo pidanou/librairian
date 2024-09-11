@@ -13,6 +13,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 
 Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
   await Supabase.initialize(
     url: const String.fromEnvironment("SUPABASE_URL"),

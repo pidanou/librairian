@@ -209,7 +209,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                             child: ItemEditForm(
                                           item: Item(
                                               name: "New Item",
-                                              storageLocations: [
+                                              locations: [
                                                 StorageLocation(
                                                     storage: widget.storage)
                                               ]),
@@ -226,7 +226,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                           setState(() {
                             editingItem = Item(
                                 name: "New Item",
-                                storageLocations: [
+                                locations: [
                                   StorageLocation(storage: widget.storage)
                                 ]);
                           });

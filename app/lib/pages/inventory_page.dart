@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/item.dart' as provider;
@@ -104,34 +105,16 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                 icon: const Icon(Icons.add_circle),
                 onPressed: () {
                   if (MediaQuery.of(context).size.width < 600) {
-                    showModalBottomSheet<void>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.max,
-                              children: <Widget>[
-                                Expanded(
-                                    child: ItemEditForm(
-                                  item:
-                                      Item(name: "New Item", storageLocations: [
-                                    StorageLocation(
-                                        storage:
-                                            ref.read(defaultStorageProvider))
-                                  ]),
-                                  onSave: (item) {
-                                    save(item);
-                                    Navigator.pop(context);
-                                  },
-                                )),
-                              ],
-                            ),
-                          );
-                        });
+                    GoRouter.of(context).go(
+                      '/inventory/new',
+                      extra: Item(name: "New Item", locations: [
+                        StorageLocation(
+                            storage: ref.read(defaultStorageProvider))
+                      ]),
+                    );
                   }
                   setState(() {
-                    editingItem = Item(name: "New Item", storageLocations: [
+                    editingItem = Item(name: "New Item", locations: [
                       StorageLocation(storage: ref.read(defaultStorageProvider))
                     ]);
                   });
@@ -162,7 +145,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
               : null,
           child: Padding(
               padding:
-                  const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
+                  const EdgeInsets.only(left: 8, top: 1, bottom: 1, right: 16),
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -262,58 +245,63 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               });
                             },
                             onTap: (item) async {
-                              setState(() {
-                                editingItem = item;
-                              });
+                              if (MediaQuery.of(context).size.width > 600) {
+                                setState(() {
+                                  editingItem = item;
+                                });
+                              }
                               if (MediaQuery.of(context).size.width < 600) {
-                                await showModalBottomSheet<void>(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: <Widget>[
-                                            Expanded(
-                                              child: ItemEditForm(
-                                                onSave: (item) {
-                                                  ref
-                                                      .read(userItemsProvider(
-                                                              page, pageSize)
-                                                          .notifier)
-                                                      .save(item)
-                                                      .then((value) {
-                                                    ref.invalidate(
-                                                        userItemsProvider(
-                                                            page,
-                                                            pageSize,
-                                                            null,
-                                                            orderBy,
-                                                            asc));
-                                                    setState(() {
-                                                      editingItem = null;
-                                                      selected = [];
-                                                      editingItem = null;
-                                                    });
-                                                    Navigator.pop(context);
-                                                  });
-                                                },
-                                                onCancel: () {
-                                                  setState(() {
-                                                    editingItem = null;
-                                                    selected = [];
-                                                    editingItem = null;
-                                                  });
-                                                  Navigator.pop(context);
-                                                },
-                                                item: editingItem!,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      );
-                                    });
+                                GoRouter.of(context)
+                                    .go('/inventory/${item.id}', extra: item);
+
+                                // await showModalBottomSheet<void>(
+                                //     context: context,
+                                //     builder: (BuildContext context) {
+                                //       return Center(
+                                //         child: Column(
+                                //           mainAxisAlignment:
+                                //               MainAxisAlignment.center,
+                                //           mainAxisSize: MainAxisSize.max,
+                                //           children: <Widget>[
+                                //             Expanded(
+                                //               child: ItemEditForm(
+                                //                 onSave: (item) {
+                                //                   ref
+                                //                       .read(userItemsProvider(
+                                //                               page, pageSize)
+                                //                           .notifier)
+                                //                       .save(item)
+                                //                       .then((value) {
+                                //                     ref.invalidate(
+                                //                         userItemsProvider(
+                                //                             page,
+                                //                             pageSize,
+                                //                             null,
+                                //                             orderBy,
+                                //                             asc));
+                                //                     setState(() {
+                                //                       editingItem = null;
+                                //                       selected = [];
+                                //                       editingItem = null;
+                                //                     });
+                                //                     Navigator.pop(context);
+                                //                   });
+                                //                 },
+                                //                 onCancel: () {
+                                //                   setState(() {
+                                //                     editingItem = null;
+                                //                     selected = [];
+                                //                     editingItem = null;
+                                //                   });
+                                //                   Navigator.pop(context);
+                                //                 },
+                                //                 item: editingItem!,
+                                //               ),
+                                //             )
+                                //           ],
+                                //         ),
+                                //       );
+                                //     });
                               }
                             },
                             items: items.value?.data ?? [],

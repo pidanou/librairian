@@ -54,6 +54,7 @@ dependencies:
   tutorial_coach_mark: ^1.2.11
   flutter_launcher_icons: ^0.13.1
   avatar_glow: ^3.0.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
