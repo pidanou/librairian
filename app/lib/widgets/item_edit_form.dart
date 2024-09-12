@@ -60,9 +60,15 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
 
   @override
   build(BuildContext context) {
-    Item item = widget.item;
+    var itemProv = ref.watch(provider.itemProvider(widget.item.id));
     descriptionController.text = widget.item.description ?? '';
-    ref.watch(provider.itemProvider(item.id));
+    if (itemProv is AsyncError) {
+      return const Center(child: Text("Error"));
+    }
+    if (itemProv is AsyncLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    var item = itemProv.value!;
     return Column(children: [
       Expanded(
           child: ListView(children: [

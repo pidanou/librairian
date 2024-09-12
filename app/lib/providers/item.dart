@@ -37,6 +37,10 @@ class Item extends _$Item {
     return im.Item();
   }
 
+  void set(im.Item item) {
+    state = AsyncValue.data(item);
+  }
+
   Future<bool> delete(String id) async {
     String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/$id';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;

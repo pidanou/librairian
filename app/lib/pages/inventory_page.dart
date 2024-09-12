@@ -253,6 +253,9 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               });
                             },
                             onTap: (item) async {
+                              ref
+                                  .read(provider.itemProvider(item.id).notifier)
+                                  .set(item);
                               if (MediaQuery.of(context).size.width > 840) {
                                 setState(() {
                                   editingItem = item;
