@@ -9,5 +9,5 @@ part 'attachment.g.dart';
 Future<Uint8List> attachment(AttachmentRef ref, String fileName) async {
   return await Supabase.instance.client.storage
       .from("attachments")
-      .download("${Supabase.instance.client.auth.currentUser?.id}/$fileName");
+      .download(fileName);
 }

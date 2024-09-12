@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_items.dart';
+part of 'items_in_storage.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userItemsHash() => r'8fc9da5e67599972aba69cbe9cfd091bef4a817a';
+String _$itemsInStorageHash() => r'df0cfdab86e41a5971f98419cc16c30a87a62d65';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,7 +29,7 @@ class _SystemHash {
   }
 }
 
-abstract class _$UserItems
+abstract class _$ItemsInStorage
     extends BuildlessAutoDisposeAsyncNotifier<PaginatedItemsList?> {
   late final int page;
   late final int limit;
@@ -46,24 +46,24 @@ abstract class _$UserItems
   ]);
 }
 
-/// See also [UserItems].
-@ProviderFor(UserItems)
-const userItemsProvider = UserItemsFamily();
+/// See also [ItemsInStorage].
+@ProviderFor(ItemsInStorage)
+const itemsInStorageProvider = ItemsInStorageFamily();
 
-/// See also [UserItems].
-class UserItemsFamily extends Family<AsyncValue<PaginatedItemsList?>> {
-  /// See also [UserItems].
-  const UserItemsFamily();
+/// See also [ItemsInStorage].
+class ItemsInStorageFamily extends Family<AsyncValue<PaginatedItemsList?>> {
+  /// See also [ItemsInStorage].
+  const ItemsInStorageFamily();
 
-  /// See also [UserItems].
-  UserItemsProvider call(
+  /// See also [ItemsInStorage].
+  ItemsInStorageProvider call(
     int page,
     int limit, [
     String? storageID,
     String? orderBy = "name",
     bool? asc = false,
   ]) {
-    return UserItemsProvider(
+    return ItemsInStorageProvider(
       page,
       limit,
       storageID,
@@ -73,8 +73,8 @@ class UserItemsFamily extends Family<AsyncValue<PaginatedItemsList?>> {
   }
 
   @override
-  UserItemsProvider getProviderOverride(
-    covariant UserItemsProvider provider,
+  ItemsInStorageProvider getProviderOverride(
+    covariant ItemsInStorageProvider provider,
   ) {
     return call(
       provider.page,
@@ -97,34 +97,35 @@ class UserItemsFamily extends Family<AsyncValue<PaginatedItemsList?>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'userItemsProvider';
+  String? get name => r'itemsInStorageProvider';
 }
 
-/// See also [UserItems].
-class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
-    PaginatedItemsList?> {
-  /// See also [UserItems].
-  UserItemsProvider(
+/// See also [ItemsInStorage].
+class ItemsInStorageProvider extends AutoDisposeAsyncNotifierProviderImpl<
+    ItemsInStorage, PaginatedItemsList?> {
+  /// See also [ItemsInStorage].
+  ItemsInStorageProvider(
     int page,
     int limit, [
     String? storageID,
     String? orderBy = "name",
     bool? asc = false,
   ]) : this._internal(
-          () => UserItems()
+          () => ItemsInStorage()
             ..page = page
             ..limit = limit
             ..storageID = storageID
             ..orderBy = orderBy
             ..asc = asc,
-          from: userItemsProvider,
-          name: r'userItemsProvider',
+          from: itemsInStorageProvider,
+          name: r'itemsInStorageProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$userItemsHash,
-          dependencies: UserItemsFamily._dependencies,
-          allTransitiveDependencies: UserItemsFamily._allTransitiveDependencies,
+                  : _$itemsInStorageHash,
+          dependencies: ItemsInStorageFamily._dependencies,
+          allTransitiveDependencies:
+              ItemsInStorageFamily._allTransitiveDependencies,
           page: page,
           limit: limit,
           storageID: storageID,
@@ -132,7 +133,7 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
           asc: asc,
         );
 
-  UserItemsProvider._internal(
+  ItemsInStorageProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -154,7 +155,7 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
 
   @override
   FutureOr<PaginatedItemsList?> runNotifierBuild(
-    covariant UserItems notifier,
+    covariant ItemsInStorage notifier,
   ) {
     return notifier.build(
       page,
@@ -166,10 +167,10 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
   }
 
   @override
-  Override overrideWith(UserItems Function() create) {
+  Override overrideWith(ItemsInStorage Function() create) {
     return ProviderOverride(
       origin: this,
-      override: UserItemsProvider._internal(
+      override: ItemsInStorageProvider._internal(
         () => create()
           ..page = page
           ..limit = limit
@@ -191,14 +192,14 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<UserItems, PaginatedItemsList?>
+  AutoDisposeAsyncNotifierProviderElement<ItemsInStorage, PaginatedItemsList?>
       createElement() {
-    return _UserItemsProviderElement(this);
+    return _ItemsInStorageProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is UserItemsProvider &&
+    return other is ItemsInStorageProvider &&
         other.page == page &&
         other.limit == limit &&
         other.storageID == storageID &&
@@ -219,7 +220,8 @@ class UserItemsProvider extends AutoDisposeAsyncNotifierProviderImpl<UserItems,
   }
 }
 
-mixin UserItemsRef on AutoDisposeAsyncNotifierProviderRef<PaginatedItemsList?> {
+mixin ItemsInStorageRef
+    on AutoDisposeAsyncNotifierProviderRef<PaginatedItemsList?> {
   /// The parameter `page` of this provider.
   int get page;
 
@@ -236,20 +238,21 @@ mixin UserItemsRef on AutoDisposeAsyncNotifierProviderRef<PaginatedItemsList?> {
   bool? get asc;
 }
 
-class _UserItemsProviderElement extends AutoDisposeAsyncNotifierProviderElement<
-    UserItems, PaginatedItemsList?> with UserItemsRef {
-  _UserItemsProviderElement(super.provider);
+class _ItemsInStorageProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<ItemsInStorage,
+        PaginatedItemsList?> with ItemsInStorageRef {
+  _ItemsInStorageProviderElement(super.provider);
 
   @override
-  int get page => (origin as UserItemsProvider).page;
+  int get page => (origin as ItemsInStorageProvider).page;
   @override
-  int get limit => (origin as UserItemsProvider).limit;
+  int get limit => (origin as ItemsInStorageProvider).limit;
   @override
-  String? get storageID => (origin as UserItemsProvider).storageID;
+  String? get storageID => (origin as ItemsInStorageProvider).storageID;
   @override
-  String? get orderBy => (origin as UserItemsProvider).orderBy;
+  String? get orderBy => (origin as ItemsInStorageProvider).orderBy;
   @override
-  bool? get asc => (origin as UserItemsProvider).asc;
+  bool? get asc => (origin as ItemsInStorageProvider).asc;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

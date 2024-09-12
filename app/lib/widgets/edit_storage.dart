@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
-import 'package:librairian/providers/item.dart' as provider;
 import 'package:librairian/providers/storage.dart';
-import 'package:librairian/providers/user_items.dart';
+import 'package:librairian/providers/items_in_storage.dart';
 import 'package:librairian/widgets/alert_dialog_confirm.dart';
 import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
@@ -33,15 +32,17 @@ class EditStorageState extends ConsumerState<EditStorage> {
   bool deleting = false;
 
   Future<bool> save(Item item) async {
-    bool success = await ref.read(provider.itemProvider.notifier).save(item);
+    Item? newItem = await ref
+        .read(itemsInStorageProvider(page, limit, widget.storage.id).notifier)
+        .save(item);
 
     if (!mounted) return true;
-    if (!success) {
+    if (newItem == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Item could not be saved")));
       return false;
     }
-    ref.invalidate(userItemsProvider(page, limit, widget.storage.id));
+    // ref.invalidate(itemsInStorageProvider(page, limit, widget.storage.id));
     return true;
   }
 
@@ -51,7 +52,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
     });
     for (var itemId in selected) {
       await ref
-          .read(userItemsProvider(page, limit, storage.id).notifier)
+          .read(itemsInStorageProvider(page, limit, storage.id).notifier)
           .delete(itemId);
     }
     setState(() {
@@ -86,7 +87,8 @@ class EditStorageState extends ConsumerState<EditStorage> {
 
   @override
   Widget build(BuildContext context) {
-    var items = ref.watch(userItemsProvider(page, limit, widget.storage.id));
+    var items =
+        ref.watch(itemsInStorageProvider(page, limit, widget.storage.id));
     return Row(children: [
       Expanded(
           child: FocusTraversalGroup(
@@ -224,23 +226,18 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                 });
                           }
                           setState(() {
-                            editingItem = Item(
-                                name: "New Item",
-                                locations: [
-                                  StorageLocation(storage: widget.storage)
-                                ]);
+                            editingItem = Item(name: "New Item", locations: [
+                              StorageLocation(storage: widget.storage)
+                            ]);
                           });
                         }),
-                    // FilePicker(onSelect: (List<XFile>? files) {
-                    //   _addItemsFromFiles(files);
-                    // }),
                     if (MediaQuery.of(context).size.width > 840)
                       IconButton(
                           tooltip: 'Refresh data',
                           icon: const Icon(Icons.refresh),
                           onPressed: () {
-                            ref.invalidate(
-                                userItemsProvider(page, limit, storage.id));
+                            ref.invalidate(itemsInStorageProvider(
+                                page, limit, storage.id));
                           })
                   ]),
                   Divider(
@@ -252,7 +249,8 @@ class EditStorageState extends ConsumerState<EditStorage> {
                           child: ItemsList(
                               items: [...items.value?.data ?? []],
                               onRefresh: () => ref.refresh(
-                                  userItemsProvider(page, limit, storage.id)
+                                  itemsInStorageProvider(
+                                          page, limit, storage.id)
                                       .future),
                               storage: storage,
                               selectAll: selectAll,
@@ -279,20 +277,21 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                                   child: ItemEditForm(
                                                       item: editingItem!,
                                                       onSave: (item) {
-                                                        ref
-                                                            .read(
-                                                                userItemsProvider(
-                                                                        page,
-                                                                        limit,
-                                                                        storage
-                                                                            .id)
-                                                                    .notifier)
-                                                            .save(item);
-                                                        ref.invalidate(
-                                                            userItemsProvider(
-                                                                page,
-                                                                limit,
-                                                                storage.id));
+                                                        save(item);
+                                                        // ref
+                                                        //     .read(
+                                                        //         itemsInStorageProvider(
+                                                        //                 page,
+                                                        //                 limit,
+                                                        //                 storage
+                                                        //                     .id)
+                                                        //             .notifier)
+                                                        //     .save(item);
+                                                        // ref.invalidate(
+                                                        //     itemsInStorageProvider(
+                                                        //         page,
+                                                        //         limit,
+                                                        //         storage.id));
                                                         editingItem = null;
                                                       },
                                                       onCancel: () {
@@ -336,26 +335,21 @@ class EditStorageState extends ConsumerState<EditStorage> {
               child: ItemEditForm(
                   item: editingItem!,
                   onSave: (item) async {
-                    bool success = false;
-                    if (item.id != null) {
-                      await ref
-                          .read(userItemsProvider(page, limit, storage.id)
-                              .notifier)
-                          .save(item);
-                      success = true;
-                    } else {
-                      success = await ref
-                          .read(provider.itemProvider.notifier)
-                          .save(item);
-                    }
-                    if (!mounted) return;
-                    if (!success) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Item could not be saved")));
-                    }
-                    ref.invalidate(userItemsProvider(page, limit, storage.id));
-                    editingItem = null;
+                    save(item);
                   },
+                  // onSave: (item) async {
+                  //   Item? newItem = await ref
+                  //       .read(
+                  //           itemsInStorageProvider(page, limit, storage.id).notifier)
+                  //       .save(item);
+                  //   if (!mounted) return;
+                  //   if (newItem == null) {
+                  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  //         content: Text("Item could not be saved")));
+                  //   }
+                  //   // ref.invalidate(itemsInStorageProvider(page, limit, storage.id));
+                  //   editingItem = null;
+                  // },
                   onCancel: () {
                     setState(() {
                       editingItem = null;

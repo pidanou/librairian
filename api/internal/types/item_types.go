@@ -10,8 +10,8 @@ import (
 
 type Item struct {
 	Base
-	Name                 string           `json:"name" db:"name"`
-	Description          string           `json:"description" db:"description"`
+	Name                 *string          `json:"name" db:"name"`
+	Description          *string          `json:"description" db:"description"`
 	DescriptionEmbedding *pgvector.Vector `json:"-" db:"description_embedding"`
 	Locations            []Location       `json:"locations"`
 	Attachments          pq.StringArray   `json:"attachments" db:"attachments"`

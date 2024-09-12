@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:librairian/models/item.dart';
+import 'package:librairian/providers/item.dart' as ip;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
-part 'user_items.g.dart';
+part 'items_in_storage.g.dart';
 
 @riverpod
-class UserItems extends _$UserItems {
+class ItemsInStorage extends _$ItemsInStorage {
   @override
   Future<PaginatedItemsList?> build(int page, int limit,
       [String? storageID, String? orderBy = "name", bool? asc = false]) async {
@@ -29,29 +30,13 @@ class UserItems extends _$UserItems {
         final dynamic data = jsonDecode(response.body);
         return PaginatedItemsList.fromJson(data);
       } else {
-        print("Erreur HTTP getting all items : ${response.statusCode}");
+        print("Http error : ${response.body}");
       }
     } catch (e) {
       print("Exception : $e");
       return null;
     }
     return null;
-  }
-
-  void add(List<Item> items) {
-    if (state.value != null) {
-      var tmp = state.value;
-      tmp!.data.insertAll(0, items);
-      state = AsyncValue.data(tmp); // Assuming AsyncValue or similar wrapper
-    }
-  }
-
-  void remove(String id) {
-    if (state.value != null) {
-      var tmp = state.value;
-      tmp!.data.removeWhere((i) => i.id == id);
-      state = AsyncValue.data(tmp); // Assuming AsyncValue or similar wrapper
-    }
   }
 
   Future<void> delete(String itemID) async {
@@ -69,7 +54,7 @@ class UserItems extends _$UserItems {
         state = tmp;
         return;
       } else {
-        print("Erreur HTTP getting all items : ${response.statusCode}");
+        print("Http error : ${response.body}");
       }
     } catch (e) {
       print("Exception : $e");
@@ -78,35 +63,29 @@ class UserItems extends _$UserItems {
     return;
   }
 
-  Future<void> save(Item item) async {
-    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/';
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    final headers = {
-      "Authorization": "Bearer $token",
-      "content-type": "application/json"
-    };
-
+  Future<Item?> save(Item item) async {
     item.userId = Supabase.instance.client.auth.currentUser!.id;
     for (var sl in item.locations ?? []) {
       sl.userId = Supabase.instance.client.auth.currentUser!.id;
       sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
     }
 
-    url = '${const String.fromEnvironment('API_URL')}/api/v1/item';
-    try {
-      final response = await http.put(Uri.parse(url),
-          headers: headers, body: jsonEncode(item));
-      if (response.statusCode < 300) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        int index = state.value!.data.indexWhere((e) => e.id == item.id);
-        var tmp = state;
-        tmp.value!.data[index] = Item.fromJson(data);
-        state = tmp;
-      }
-    } catch (e) {
-      print("Exception : $e");
-      return;
+    Item? newItem;
+    if (item.id == null) {
+      newItem = await ref.read(ip.itemProvider(item.id).notifier).add(item);
+    } else {
+      newItem = await ref.read(ip.itemProvider(item.id).notifier).patch(item);
     }
-    return;
+
+    int index = state.value!.data.indexWhere((e) => e.id == item.id);
+    var tmp = state;
+    if (index == -1) {
+      tmp.value!.data.insert(0, newItem ?? Item());
+    } else {
+      tmp.value!.data[index] = newItem ?? Item();
+    }
+    tmp.value!.metadata.total = tmp.value!.data.length;
+    state = tmp;
+    return newItem;
   }
 }

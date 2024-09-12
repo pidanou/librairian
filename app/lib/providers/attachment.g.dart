@@ -6,7 +6,7 @@ part of 'attachment.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$attachmentHash() => r'ec911fb6a54da3be10806e2424981422f354f433';
+String _$attachmentHash() => r'5520555a59b7a06576f7146f0b190f98fbfa0c8f';
 
 /// Copied from Dart SDK
 class _SystemHash {

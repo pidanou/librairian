@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:librairian/models/item.dart' as im;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,11 +12,10 @@ part 'item.g.dart';
 @riverpod
 class Item extends _$Item {
   @override
-  Item build() {
-    return Item();
-  }
-
-  Future<im.Item> getById(String id) async {
+  Future<im.Item> build(String? id) async {
+    if (id == null) {
+      return im.Item();
+    }
     String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/$id';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
@@ -27,7 +28,7 @@ class Item extends _$Item {
         final dynamic data = jsonDecode(response.body);
         return im.Item.fromJson(data);
       } else {
-        print("Erreur HTTP getting all items : ${response.statusCode}");
+        print("Http error : ${response.body}");
       }
     } catch (e) {
       print("Exception : $e");
@@ -36,7 +37,7 @@ class Item extends _$Item {
     return im.Item();
   }
 
-  Future<bool> deleteById(String id) async {
+  Future<bool> delete(String id) async {
     String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/$id';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
@@ -46,7 +47,7 @@ class Item extends _$Item {
     try {
       final response = await http.delete(Uri.parse(url), headers: headers);
       if (response.statusCode < 300) {
-        state = Item();
+        state = AsyncValue.data(im.Item());
         return true;
       }
     } catch (e) {
@@ -56,8 +57,9 @@ class Item extends _$Item {
     return false;
   }
 
-  Future<bool> save(im.Item item) async {
-    String url = '${const String.fromEnvironment('API_URL')}/api/v1/items';
+  Future<im.Item?> patch(im.Item item) async {
+    String url =
+        '${const String.fromEnvironment('API_URL')}/api/v1/item/${item.id}';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {
       "Authorization": "Bearer $token",
@@ -70,32 +72,100 @@ class Item extends _$Item {
       sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
     }
 
-    if (item.id == null) {
-      try {
-        final response = await http.post(Uri.parse(url),
-            headers: headers, body: jsonEncode([item]));
-        if (response.statusCode < 300) {
-          state = Item();
-          return true;
-        }
-      } catch (e) {
-        print("Exception : $e");
-        return false;
+    try {
+      final response = await http.patch(Uri.parse(url),
+          headers: headers, body: jsonEncode(item));
+      if (response.statusCode < 300) {
+        im.Item newItem = im.Item.fromJson(jsonDecode(response.body));
+        state = AsyncValue.data(newItem);
+        return newItem;
+      }
+    } catch (e) {
+      print("Exception : $e");
+      return null;
+    }
+    return null;
+  }
+
+  Future<im.Item?> add(im.Item item) async {
+    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item';
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final headers = {
+      "Authorization": "Bearer $token",
+      "content-type": "application/json"
+    };
+
+    item.userId = Supabase.instance.client.auth.currentUser!.id;
+    for (var sl in item.locations ?? []) {
+      sl.userId = Supabase.instance.client.auth.currentUser!.id;
+      sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
+    }
+
+    try {
+      final response = await http.post(Uri.parse(url),
+          headers: headers, body: jsonEncode(item));
+      if (response.statusCode < 300) {
+        im.Item newItem = im.Item.fromJson(jsonDecode(response.body));
+        state = AsyncValue.data(newItem);
+        return newItem;
+      }
+    } catch (e) {
+      print("Exception : $e");
+      return null;
+    }
+
+    return null;
+  }
+
+  Future<void> addAttachment(String? itemId, String fileName,
+      {File? file, Uint8List? bytes}) async {
+    String userId = Supabase.instance.client.auth.currentUser!.id;
+    fileName = fileName.split("/").last;
+    String itemName = "$userId/$itemId/$fileName";
+    if (file != null) {
+      await Supabase.instance.client.storage.from("attachments").upload(
+            itemName,
+            file,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+          );
+    }
+    if (bytes != null) {
+      await Supabase.instance.client.storage.from("attachments").uploadBinary(
+            itemName,
+            bytes,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+          );
+    }
+
+    im.Item oldItem = state.value ?? im.Item();
+    if (itemId == null) {
+      oldItem.attachments = [itemName, ...oldItem.attachments ?? []];
+      if (await add(oldItem) == null) {
+        await Supabase.instance.client.storage
+            .from("attachments")
+            .remove([itemName]);
       }
     } else {
-      try {
-        String url = '${const String.fromEnvironment('API_URL')}/api/v1/item';
-        final response = await http.put(Uri.parse(url),
-            headers: headers, body: jsonEncode(item));
-        if (response.statusCode < 300) {
-          state = Item();
-          return true;
-        }
-      } catch (e) {
-        print("Exception : $e");
-        return false;
+      oldItem.attachments = [itemName, ...oldItem.attachments ?? []];
+      if (await patch(oldItem) == null) {
+        await Supabase.instance.client.storage
+            .from("attachments")
+            .remove([itemName]);
       }
+      state = AsyncValue.data(oldItem);
     }
-    return false;
+
+    return;
+  }
+
+  Future<void> removeAttachment(String? itemId, String fileName) async {
+    await Supabase.instance.client.storage
+        .from("attachments")
+        .remove([fileName]);
+    im.Item oldItem = state.value ?? im.Item();
+    oldItem.attachments =
+        oldItem.attachments?.where((element) => element != fileName).toList();
+    await patch(oldItem);
+    state = AsyncValue.data(oldItem);
   }
 }

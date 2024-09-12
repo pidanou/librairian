@@ -90,7 +90,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
                 child: ListTile(
                     onTap: () async {
                       widget.onTap?.call(item).whenComplete(() {
-                        if (MediaQuery.sizeOf(context).width < 600) {
+                        if (MediaQuery.sizeOf(context).width < 840) {
                           setState(() {
                             editing = "";
                           });

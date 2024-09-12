@@ -45,7 +45,7 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
                           ? Theme.of(context).colorScheme.primary
                           : null),
                   onPressed: () {
-                    if (MediaQuery.of(context).size.width < 600) {
+                    if (MediaQuery.of(context).size.width < 840) {
                       GoRouter.of(context).go(
                           "/search/detail/${match.item?.id}",
                           extra: match.item);

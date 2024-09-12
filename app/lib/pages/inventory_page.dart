@@ -6,7 +6,7 @@ import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/item.dart' as provider;
 import 'package:librairian/providers/storage.dart';
-import 'package:librairian/providers/user_items.dart';
+import 'package:librairian/providers/items_in_storage.dart';
 import 'package:librairian/widgets/alert_dialog_confirm.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
@@ -33,20 +33,27 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
   bool deleting = false;
 
   Future<void> save(Item item) async {
-    bool success = await ref.read(provider.itemProvider.notifier).save(item);
+    Item? newItem;
+    if (item.id == null) {
+      newItem =
+          await ref.read(provider.itemProvider(item.id).notifier).add(item);
+    } else {
+      newItem =
+          await ref.read(provider.itemProvider(item.id).notifier).patch(item);
+    }
 
     if (!mounted) return;
-    if (!success) {
+    if (newItem == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Item could not be saved")));
       return;
     }
-    ref.invalidate(userItemsProvider(page, pageSize, null, orderBy, asc));
+    ref.invalidate(itemsInStorageProvider(page, pageSize, null, orderBy, asc));
   }
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.of(context).size.width < 840) {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,
         appBar: CustomAppBar(
@@ -76,9 +83,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                       });
                                       for (String id in selected) {
                                         await ref
-                                            .read(
-                                                provider.itemProvider.notifier)
-                                            .deleteById(id);
+                                            .read(provider
+                                                .itemProvider(id)
+                                                .notifier)
+                                            .delete(id);
                                       }
                                       setState(() {
                                         deleting = false;
@@ -92,7 +100,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                           }
                                         });
                                       }
-                                      ref.invalidate(userItemsProvider(
+                                      ref.invalidate(itemsInStorageProvider(
                                           page, pageSize, null, orderBy, asc));
                                     });
                               })
@@ -104,7 +112,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                 tooltip: 'Add item',
                 icon: const Icon(Icons.add_circle),
                 onPressed: () {
-                  if (MediaQuery.of(context).size.width < 600) {
+                  if (MediaQuery.of(context).size.width < 840) {
                     GoRouter.of(context).go(
                       '/inventory/new',
                       extra: Item(name: "New Item", locations: [
@@ -127,7 +135,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
     return Container(
         decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceBright,
-            borderRadius: MediaQuery.of(context).size.width < 600
+            borderRadius: MediaQuery.of(context).size.width < 840
                 ? const BorderRadius.all(Radius.circular(0))
                 : const BorderRadius.only(
                     topLeft: Radius.circular(20.0),
@@ -137,10 +145,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
 
   Widget content(BuildContext context) {
     var items =
-        ref.watch(userItemsProvider(page, pageSize, null, orderBy, asc));
+        ref.watch(itemsInStorageProvider(page, pageSize, null, orderBy, asc));
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
-          color: MediaQuery.of(context).size.width < 600
+          color: MediaQuery.of(context).size.width < 840
               ? Theme.of(context).colorScheme.surfaceDim
               : null,
           child: Padding(
@@ -211,12 +219,12 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         ],
                         child: Text(orderByLabel),
                       ),
-                      if (MediaQuery.of(context).size.width > 600)
+                      if (MediaQuery.of(context).size.width > 840)
                         IconButton(
                             tooltip: "Refresh data",
                             icon: const Icon(Icons.refresh),
                             onPressed: () {
-                              ref.invalidate(userItemsProvider(
+                              ref.invalidate(itemsInStorageProvider(
                                   page, pageSize, null, orderBy, asc));
                             })
                     ])
@@ -236,7 +244,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         ? ItemsList(
                             selected: selected,
                             editing: editingItem?.id?.toString() ?? "",
-                            onRefresh: () => ref.refresh(userItemsProvider(
+                            onRefresh: () => ref.refresh(itemsInStorageProvider(
                                     page, pageSize, null, orderBy, asc)
                                 .future),
                             onSelected: (List<String> selectedItem) {
@@ -245,63 +253,14 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               });
                             },
                             onTap: (item) async {
-                              if (MediaQuery.of(context).size.width > 600) {
+                              if (MediaQuery.of(context).size.width > 840) {
                                 setState(() {
                                   editingItem = item;
                                 });
                               }
-                              if (MediaQuery.of(context).size.width < 600) {
+                              if (MediaQuery.of(context).size.width < 840) {
                                 GoRouter.of(context)
                                     .go('/inventory/${item.id}', extra: item);
-
-                                // await showModalBottomSheet<void>(
-                                //     context: context,
-                                //     builder: (BuildContext context) {
-                                //       return Center(
-                                //         child: Column(
-                                //           mainAxisAlignment:
-                                //               MainAxisAlignment.center,
-                                //           mainAxisSize: MainAxisSize.max,
-                                //           children: <Widget>[
-                                //             Expanded(
-                                //               child: ItemEditForm(
-                                //                 onSave: (item) {
-                                //                   ref
-                                //                       .read(userItemsProvider(
-                                //                               page, pageSize)
-                                //                           .notifier)
-                                //                       .save(item)
-                                //                       .then((value) {
-                                //                     ref.invalidate(
-                                //                         userItemsProvider(
-                                //                             page,
-                                //                             pageSize,
-                                //                             null,
-                                //                             orderBy,
-                                //                             asc));
-                                //                     setState(() {
-                                //                       editingItem = null;
-                                //                       selected = [];
-                                //                       editingItem = null;
-                                //                     });
-                                //                     Navigator.pop(context);
-                                //                   });
-                                //                 },
-                                //                 onCancel: () {
-                                //                   setState(() {
-                                //                     editingItem = null;
-                                //                     selected = [];
-                                //                     editingItem = null;
-                                //                   });
-                                //                   Navigator.pop(context);
-                                //                 },
-                                //                 item: editingItem!,
-                                //               ),
-                                //             )
-                                //           ],
-                                //         ),
-                                //       );
-                                //     });
                               }
                             },
                             items: items.value?.data ?? [],
@@ -320,9 +279,9 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                     },
                     pageSize: pageSize,
                     currentPage: page,
-                    totalItem: (items.value?.metadata.total ?? 0))
+                    totalItem: (items.value?.metadata.total ?? 0)),
               ])),
-              if (MediaQuery.of(context).size.width > 600)
+              if (MediaQuery.of(context).size.width > 840)
                 if (editingItem != null) ...[
                   VerticalDivider(
                     color: Theme.of(context).colorScheme.surfaceDim,
@@ -332,10 +291,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                       child: ItemEditForm(
                     onSave: (item) {
                       ref
-                          .read(userItemsProvider(page, pageSize).notifier)
+                          .read(itemsInStorageProvider(page, pageSize).notifier)
                           .save(item)
                           .then((value) {
-                        ref.invalidate(userItemsProvider(
+                        ref.invalidate(itemsInStorageProvider(
                             page, pageSize, null, orderBy, asc));
                         setState(() {
                           editingItem = null;

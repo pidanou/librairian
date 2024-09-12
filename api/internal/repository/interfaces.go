@@ -21,7 +21,7 @@ type ArchiveRepository interface {
 }
 
 type EmbeddingRepository interface {
-	CreateEmbedding(text string) (*pgvector.Vector, error)
+	CreateEmbedding(text *string) (*pgvector.Vector, error)
 }
 
 type SimilarityRepository interface {

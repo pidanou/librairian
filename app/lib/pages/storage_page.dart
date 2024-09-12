@@ -16,7 +16,7 @@ class StoragePageState extends ConsumerState<StoragePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.of(context).size.width < 840) {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,
         appBar: CustomAppBar(
@@ -40,7 +40,7 @@ class StoragePageState extends ConsumerState<StoragePage> {
     return Container(
         decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceBright,
-            borderRadius: MediaQuery.of(context).size.width < 600
+            borderRadius: MediaQuery.of(context).size.width < 840
                 ? const BorderRadius.all(Radius.circular(0))
                 : const BorderRadius.only(
                     topLeft: Radius.circular(20.0),
@@ -50,7 +50,7 @@ class StoragePageState extends ConsumerState<StoragePage> {
 
   Widget content(BuildContext context) {
     return Column(children: [
-      if (MediaQuery.of(context).size.width > 600)
+      if (MediaQuery.of(context).size.width > 840)
         Padding(
           padding: const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
           child: Row(children: [
@@ -64,7 +64,7 @@ class StoragePageState extends ConsumerState<StoragePage> {
                         return const DialogAddStorage();
                       });
                 }),
-            if (MediaQuery.of(context).size.width > 600)
+            if (MediaQuery.of(context).size.width > 840)
               IconButton(
                   tooltip: 'Refresh data',
                   icon: const Icon(Icons.refresh),

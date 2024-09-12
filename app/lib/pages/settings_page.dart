@@ -7,7 +7,7 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.of(context).size.width < 840) {
       return const Scaffold(
         appBar: CustomAppBar(title: Text('Settings')),
         body: SettingsContent(),
@@ -17,7 +17,7 @@ class SettingsPage extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceBright,
-          borderRadius: MediaQuery.of(context).size.width < 600
+          borderRadius: MediaQuery.of(context).size.width < 840
               ? const BorderRadius.all(Radius.circular(0))
               : const BorderRadius.only(
                   topLeft: Radius.circular(20.0),

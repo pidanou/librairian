@@ -21,12 +21,15 @@ func NewOpenaiEmbeddingRepository(token string, model string) *OpenaiEmbeddingRe
 	}
 }
 
-func (r *OpenaiEmbeddingRepository) CreateEmbedding(text string) (*pgvector.Vector, error) {
-	if text == "" {
-		text = " "
+func (r *OpenaiEmbeddingRepository) CreateEmbedding(text *string) (*pgvector.Vector, error) {
+	textToEmbed := " "
+	if text != nil {
+		if *text != "" {
+			textToEmbed = *text
+		}
 	}
 	queryReq := openai.EmbeddingRequest{
-		Input: []string{text},
+		Input: []string{textToEmbed},
 		Model: openai.SmallEmbedding3,
 	}
 

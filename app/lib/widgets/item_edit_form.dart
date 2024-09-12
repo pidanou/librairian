@@ -1,8 +1,12 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:librairian/models/item.dart';
+import 'package:librairian/providers/item.dart' as provider;
 import 'package:librairian/widgets/attachment_display.dart';
 import 'package:librairian/widgets/attachments_picker.dart';
 import 'package:librairian/widgets/edit_location.dart';
@@ -30,7 +34,6 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
   TextEditingController descriptionController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   FocusNode nameFocusNode = FocusNode();
-  List<String> newAttachments = [];
 
   FocusNode descriptionFocusNode = FocusNode();
 
@@ -59,6 +62,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
   build(BuildContext context) {
     Item item = widget.item;
     descriptionController.text = widget.item.description ?? '';
+    ref.watch(provider.itemProvider(item.id));
     return Column(children: [
       Expanded(
           child: ListView(children: [
@@ -216,24 +220,27 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
               if (item.attachments?.isNotEmpty ?? false)
                 ListTile(
                   title: AttachmentDisplay(
-                      newAttachments: newAttachments,
                       attachments: item.attachments ?? [],
-                      onRemoveNew: (attachments) {
-                        setState(() {
-                          newAttachments = attachments;
-                        });
-                      },
-                      onRemove: (attachments) {
-                        setState(() {
-                          item.attachments = attachments;
-                        });
+                      onRemove: (fileName) {
+                        ref
+                            .read(provider.itemProvider(item.id).notifier)
+                            .removeAttachment(item.id, fileName);
                       }),
                 ),
               const SizedBox(height: 10),
-              ListTile(trailing: AttachmentsPicker(onAdd: (List<XFile> files) {
-                setState(() {
-                  newAttachments.insertAll(0, files.map((e) => e.path));
-                });
+              ListTile(
+                  trailing: AttachmentsPicker(onAdd: (List<XFile> files) async {
+                for (var file in files) {
+                  if (kIsWeb) {
+                    var bytes = await file.readAsBytes();
+                    ref
+                        .read(provider.itemProvider(item.id).notifier)
+                        .addAttachment(item.id, file.path, bytes: bytes);
+                  }
+                  ref
+                      .read(provider.itemProvider(item.id).notifier)
+                      .addAttachment(item.id, file.path, file: File(file.path));
+                }
               }))
             ])))
       ])),

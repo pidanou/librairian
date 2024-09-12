@@ -21,7 +21,7 @@ func (sl *Location) UserHasAccess(userID *uuid.UUID) bool {
 
 type Storage struct {
 	Base
-	Alias string `json:"alias" db:"alias"`
+	Alias *string `json:"alias" db:"alias"`
 }
 
 func (s *Storage) UserHasAccess(userID *uuid.UUID) bool {

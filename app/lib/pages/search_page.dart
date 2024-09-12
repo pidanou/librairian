@@ -43,7 +43,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
             .then((value) {
           setState(() {
             textFieldEnabled = true;
-            if (MediaQuery.of(context).size.width > 600) {
+            if (MediaQuery.of(context).size.width > 840) {
               focusNode.requestFocus();
             }
           });
@@ -56,7 +56,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
             .then((value) {
           setState(() {
             textFieldEnabled = true;
-            if (MediaQuery.of(context).size.width > 600) {
+            if (MediaQuery.of(context).size.width > 840) {
               focusNode.requestFocus();
             }
           });
@@ -72,7 +72,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.of(context).size.width < 840) {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,
         appBar: const CustomAppBar(
@@ -84,7 +84,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
     return Container(
         decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceBright,
-            borderRadius: MediaQuery.of(context).size.width < 600
+            borderRadius: MediaQuery.of(context).size.width < 840
                 ? const BorderRadius.all(Radius.circular(0))
                 : const BorderRadius.only(
                     topLeft: Radius.circular(20.0),
@@ -96,7 +96,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
     var matches = ref.watch(matchesProvider);
     return Column(children: [
       Container(
-          color: MediaQuery.of(context).size.width < 600
+          color: MediaQuery.of(context).size.width < 840
               ? Theme.of(context).colorScheme.surfaceDim
               : null,
           child: SearchConfig(
@@ -144,7 +144,10 @@ class SearchPageState extends ConsumerState<SearchPage> {
                                         i < matches.length;
                                         i++) ...[
                                       if (matches[i].matches is AsyncError)
-                                        const Text("Error"),
+                                        Text(matches[i]
+                                            .matches
+                                            .error
+                                            .toString()),
                                       if (matches[i].matches is AsyncLoading)
                                         const Padding(
                                             padding: EdgeInsets.all(10),
@@ -187,9 +190,19 @@ class SearchPageState extends ConsumerState<SearchPage> {
                             child: ItemEditForm(
                                 item: selectedItem!,
                                 onSave: (item) {
-                                  ref
-                                      .read(provider.itemProvider.notifier)
-                                      .save(item);
+                                  if (item.id == null) {
+                                    ref
+                                        .read(provider
+                                            .itemProvider(item.id)
+                                            .notifier)
+                                        .add(item);
+                                  } else {
+                                    ref
+                                        .read(provider
+                                            .itemProvider(item.id)
+                                            .notifier)
+                                        .patch(item);
+                                  }
                                   update(item);
                                   setState(() {
                                     selectedItem = null;

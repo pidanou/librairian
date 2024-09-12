@@ -187,7 +187,7 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
 		}
 	}
 
-	query, args, err := sqlx.In(`DELETE FROM location where id NOT IN (?)`, slList)
+	query, args, err := sqlx.In(`DELETE FROM location where id NOT IN (?) and item_id = ?`, slList, item.ID)
 	query = tx.Rebind(query)
 	_, err = tx.Exec(query, args...)
 	if err != nil {

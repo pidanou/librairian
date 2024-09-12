@@ -83,10 +83,12 @@ class Matches extends _$Matches {
           prompt: input,
           matches: await AsyncValue.guard(() async {
             var response = await http.get(Uri.parse(url), headers: headers);
-            var data = jsonDecode(response.body);
-            return data
-                .map<MatchItem>((json) => MatchItem.fromJson(json))
+            var data = jsonDecode(response.body)["data"];
+            List<MatchItem> test = (data as List<dynamic>)
+                .map<Item>((json) => Item.fromJson(json))
+                .map((item) => MatchItem(item: item, descriptionSimilarity: 1))
                 .toList();
+            return test;
           })),
       ...state.sublist(1)
     ];

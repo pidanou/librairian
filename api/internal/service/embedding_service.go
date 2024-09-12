@@ -13,6 +13,6 @@ func NewEmbeddingService(repo repository.EmbeddingRepository) *EmbeddingService 
 	return &EmbeddingService{EmbeddingRepository: repo}
 }
 
-func (s *EmbeddingService) CreateEmbedding(text string) (*pgvector.Vector, error) {
+func (s *EmbeddingService) CreateEmbedding(text *string) (*pgvector.Vector, error) {
 	return s.EmbeddingRepository.CreateEmbedding(text)
 }

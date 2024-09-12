@@ -1,13 +1,5 @@
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/models/common.dart';
-import 'dart:math';
-import 'dart:convert';
-
-String getRandString(int len) {
-  var random = Random.secure();
-  var values = List<int>.generate(len, (i) => random.nextInt(255));
-  return base64UrlEncode(values);
-}
 
 class PaginatedItemsList {
   List<Item> data;
@@ -65,7 +57,8 @@ class Item {
           .map((e) => StorageLocation.fromJson(e))
           .toList(),
       attachments:
-          (json['attachments'] as List).map((e) => e.toString()).toList(),
+          (json['attachments'] as List?)?.map((e) => e.toString()).toList() ??
+              [],
     );
   }
 
