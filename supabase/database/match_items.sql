@@ -10,11 +10,11 @@ create or replace function match_item (
   )
   language sql stable
   as $$
-    select
+  select
       item.id as item_id,
-      1 - (description_embedding <=> query_embedding) as description_similarity
+      1 - (description_embeddings <=> query_embedding) as description_similarity
     from item
-    where description_embedding <=> query_embedding <= 1 - match_threshold AND item.user_id = owner_id
-    order by description.embedding <=> query_embedding
+    where description_embeddings <=> query_embedding <= 1 - match_threshold AND item.user_id = owner_id
+    order by description_embeddings <=> query_embedding
     limit match_count;
   $$;

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
-import 'package:librairian/providers/item.dart' as provider;
+import 'package:librairian/providers/item.dart';
 import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/items_in_storage.dart';
 import 'package:librairian/widgets/alert_dialog_confirm.dart';
@@ -36,10 +36,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
     Item? newItem;
     if (item.id == null) {
       newItem =
-          await ref.read(provider.itemProvider(item.id).notifier).add(item);
+          await ref.read(itemControllerProvider(item.id).notifier).add(item);
     } else {
       newItem =
-          await ref.read(provider.itemProvider(item.id).notifier).patch(item);
+          await ref.read(itemControllerProvider(item.id).notifier).patch(item);
     }
 
     if (!mounted) return;
@@ -83,8 +83,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                       });
                                       for (String id in selected) {
                                         await ref
-                                            .read(provider
-                                                .itemProvider(id)
+                                            .read(itemControllerProvider(id)
                                                 .notifier)
                                             .delete(id);
                                       }
@@ -253,9 +252,6 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               });
                             },
                             onTap: (item) async {
-                              ref
-                                  .read(provider.itemProvider(item.id).notifier)
-                                  .set(item);
                               if (MediaQuery.of(context).size.width > 840) {
                                 setState(() {
                                   editingItem = item;

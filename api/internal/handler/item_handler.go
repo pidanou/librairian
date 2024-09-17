@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -90,7 +91,7 @@ func (h *Handler) PostItem(c echo.Context) error {
 	if err != nil {
 		log.Println("Cannot create description embedding: ", err)
 	}
-	item.DescriptionEmbedding = descriptionEmbedding
+	item.DescriptionEmbeddings = descriptionEmbedding
 
 	titem, err := h.ArchiveService.AddItem(&item)
 	if err != nil {
@@ -100,7 +101,7 @@ func (h *Handler) PostItem(c echo.Context) error {
 	return c.JSON(http.StatusCreated, titem)
 }
 
-func (h *Handler) GetItemById(c echo.Context) error {
+func (h *Handler) GetItemByID(c echo.Context) error {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println(err)
@@ -109,7 +110,7 @@ func (h *Handler) GetItemById(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	item, err := h.ArchiveService.GetItemById(&id)
+	item, err := h.ArchiveService.GetItemByID(&id)
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot get item")
@@ -130,7 +131,7 @@ func (h *Handler) DeleteItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
-	item, err := h.ArchiveService.GetItemById(&id)
+	item, err := h.ArchiveService.GetItemByID(&id)
 	if err != nil || item == nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot delete item: item does not exist")
@@ -153,7 +154,7 @@ func (h *Handler) PutItem(c echo.Context) error {
 	c.Bind(item)
 
 	userID := getUserIDFromJWT(c)
-	itemCheck, err := h.ArchiveService.GetItemById(item.ID)
+	itemCheck, err := h.ArchiveService.GetItemByID(item.ID)
 	if err != nil || itemCheck == nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item: item does not exist")
@@ -168,7 +169,7 @@ func (h *Handler) PutItem(c echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
-		item.DescriptionEmbedding = descriptionEmbedding
+		item.DescriptionEmbeddings = descriptionEmbedding
 	}
 
 	item, err = h.ArchiveService.UpdateItem(item)
@@ -183,10 +184,11 @@ func (h *Handler) PatchItem(c echo.Context) error {
 	userID := getUserIDFromJWT(c)
 	item := &types.Item{}
 	c.Bind(item)
+	fmt.Println(item)
 
 	id := uuid.MustParse(c.Param("id"))
 
-	oldItem, err := h.ArchiveService.GetItemById(&id)
+	oldItem, err := h.ArchiveService.GetItemByID(&id)
 	if err != nil || oldItem == nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item: item does not exist")
@@ -200,7 +202,7 @@ func (h *Handler) PatchItem(c echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
-		item.DescriptionEmbedding = descriptionEmbedding
+		item.DescriptionEmbeddings = descriptionEmbedding
 	}
 
 	emptyNewAttachments := len(item.Attachments) == 0
@@ -213,27 +215,6 @@ func (h *Handler) PatchItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot update item")
 	}
 
-	return c.JSON(http.StatusOK, item)
-}
-
-func (h *Handler) PatchItemMetadata(c echo.Context) error {
-	var item = &types.Item{}
-	c.Bind(item)
-
-	id := uuid.MustParse(c.Param("id"))
-	if &id != item.ID {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing ID")
-	}
-
-	userID := getUserIDFromJWT(c)
-	if !UserHasAccess(item, userID) {
-		return c.NoContent(http.StatusUnauthorized)
-	}
-
-	item, err := h.ArchiveService.EditItemMetadata(item)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot update item")
-	}
 	return c.JSON(http.StatusOK, item)
 }
 
@@ -280,7 +261,7 @@ func (h *Handler) GetMatches(c echo.Context) error {
 	}
 
 	for i, match := range matches {
-		item, err := h.ArchiveService.GetItemById(match.ItemID)
+		item, err := h.ArchiveService.GetItemByID(match.ItemID)
 		if err != nil {
 			log.Printf("Cannot get item %s: %s", item.ID, err)
 			continue

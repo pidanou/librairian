@@ -193,13 +193,13 @@ class SearchPageState extends ConsumerState<SearchPage> {
                                   if (item.id == null) {
                                     ref
                                         .read(provider
-                                            .itemProvider(item.id)
+                                            .itemControllerProvider(item.id)
                                             .notifier)
                                         .add(item);
                                   } else {
                                     ref
                                         .read(provider
-                                            .itemProvider(item.id)
+                                            .itemControllerProvider(item.id)
                                             .notifier)
                                         .patch(item);
                                   }

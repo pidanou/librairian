@@ -72,9 +72,12 @@ class ItemsInStorage extends _$ItemsInStorage {
 
     Item? newItem;
     if (item.id == null) {
-      newItem = await ref.read(ip.itemProvider(item.id).notifier).add(item);
+      newItem =
+          await ref.read(ip.itemControllerProvider(item.id).notifier).add(item);
     } else {
-      newItem = await ref.read(ip.itemProvider(item.id).notifier).patch(item);
+      newItem = await ref
+          .read(ip.itemControllerProvider(item.id).notifier)
+          .patch(item);
     }
 
     int index = state.value!.data.indexWhere((e) => e.id == item.id);

@@ -1,14 +1,12 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:librairian/models/item.dart";
-import "package:librairian/providers/item.dart" as provider;
+import "package:librairian/providers/item.dart";
 import "package:librairian/widgets/item_edit_form.dart";
 
 class ItemEditFormPage extends ConsumerStatefulWidget {
-  final Item? item;
   final String itemId;
 
-  const ItemEditFormPage({super.key, this.item, required this.itemId});
+  const ItemEditFormPage({super.key, required this.itemId});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -16,11 +14,9 @@ class ItemEditFormPage extends ConsumerStatefulWidget {
 }
 
 class ItemEditFormPageState extends ConsumerState<ItemEditFormPage> {
-  late Item item;
-
   @override
   Widget build(BuildContext context) {
-    var item = ref.watch(provider.itemProvider(widget.itemId));
+    var item = ref.watch(itemControllerProvider(widget.itemId));
     if (item is AsyncData) {
       return Scaffold(
           appBar: AppBar(

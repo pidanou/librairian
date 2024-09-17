@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -24,8 +25,8 @@ func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, erro
 	tx := r.DB.MustBegin()
 
 	query := `INSERT INTO item
-  (user_id, name, description, description_embedding, attachments)
-  VALUES (:user_id, :name, :description, :description_embedding, :attachments) returning id`
+  (user_id, name, description, description_embeddings, attachments)
+  VALUES (:user_id, :name, :description, :description_embeddings, :attachments) returning id`
 	rows, err := tx.NamedQuery(query, item)
 	if err != nil {
 		log.Printf(`Cannot create item %s`, err)
@@ -153,7 +154,7 @@ func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, e
     set 
   name = :name, 
   description = :description, 
-  description_embedding = :description_embedding, 
+  description_embeddings = :description_embeddings, 
   attachments = :attachments,
   updated_at = now() 
   where id = :id`
@@ -243,36 +244,6 @@ func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, err
 	return item, nil
 }
 
-func (r *PostgresArchiveRepository) EditItemMetadata(item *types.Item) (*types.Item, error) {
-	tx := r.DB.MustBegin()
-	query := `UPDATE item set user_id = :user_id, name = :name, attachments = :attachments, updated_at = now() where id = :id`
-	_, err := tx.NamedExec(query, item)
-	if err != nil {
-		log.Printf("Cannot edit item: %s", err)
-		tx.Rollback()
-		return nil, err
-	}
-
-	for _, sl := range item.Locations {
-		query = `UPDATE location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id`
-		_, err = tx.NamedExec(query, sl)
-		if err != nil {
-			log.Printf("Cannot edit storage location: %s", err)
-			tx.Rollback()
-			return nil, err
-		}
-	}
-	tx.Commit()
-
-	item, err = r.GetItemByID(item.ID)
-	if err != nil {
-		log.Printf("Cannot get item: %s", err)
-		return nil, err
-	}
-
-	return item, nil
-}
-
 func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {
 	storages := []types.Storage{}
 	query := `SELECT * FROM storage WHERE user_id = $1 ORDER BY updated_at DESC`
@@ -354,4 +325,65 @@ func (r *PostgresArchiveRepository) DeleteStorageByID(id *uuid.UUID) error {
 
 	tx.Commit()
 	return nil
+}
+
+func (r *PostgresArchiveRepository) GetAttachmentByID(id *uuid.UUID) (*types.Attachment, error) {
+	attachment := &types.Attachment{}
+	query := `SELECT * FROM attachment WHERE id = $1`
+	err := r.DB.Get(attachment, query, id)
+	if err != nil {
+		log.Printf(`Cannot get attachment by id %s`, err)
+		return nil, err
+	}
+	return attachment, nil
+}
+
+func (r *PostgresArchiveRepository) GetItemAttachments(id *uuid.UUID) ([]types.Attachment, error) {
+	attachments := []types.Attachment{}
+	query := `SELECT * FROM attachment WHERE item_id = $1`
+	err := r.DB.Select(&attachments, query, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return []types.Attachment{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return attachments, nil
+}
+
+func (r *PostgresArchiveRepository) AddAttachments(attachments []types.Attachment) []types.Attachment {
+	insertedAttachments := []types.Attachment{}
+	query := `INSERT INTO attachment (user_id, created_at, updated_at, item_id, path, labels, labels_embeddings) 
+  VALUES (:user_id, now(), now(), :item_id, :path, :labels, :labels_embeddings) RETURNING *`
+
+	for _, attachment := range attachments {
+		rows, err := r.DB.NamedQuery(query, attachment)
+		if err != nil {
+			log.Printf(`Cannot add attachment %s`, err)
+			continue
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			var inserted types.Attachment
+			if err := rows.StructScan(&inserted); err != nil {
+				log.Printf(`Cannot scan inserted attachment %s`, err)
+				continue
+			}
+			insertedAttachments = append(insertedAttachments, inserted)
+		} else {
+			log.Printf("No attachment inserted for user_id %d", attachment.UserID)
+		}
+	}
+
+	return insertedAttachments
+}
+
+func (r *PostgresArchiveRepository) DeleteAttachmentByID(id *uuid.UUID) error {
+	query := `DELETE FROM attachment WHERE id = $1`
+	_, err := r.DB.Exec(query, id)
+	if err != nil {
+		log.Printf(`Cannot delete attachment %s`, err)
+	}
+	return err
 }

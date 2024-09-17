@@ -6,7 +6,24 @@ part of 'attachment.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$attachmentHash() => r'5520555a59b7a06576f7146f0b190f98fbfa0c8f';
+String _$attachmentRepositoryHash() =>
+    r'b77c76e60655408ece244d4740f5489f3c6885b4';
+
+/// See also [attachmentRepository].
+@ProviderFor(attachmentRepository)
+final attachmentRepositoryProvider =
+    AutoDisposeProvider<AttachmentRepository>.internal(
+  attachmentRepository,
+  name: r'attachmentRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$attachmentRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AttachmentRepositoryRef = AutoDisposeProviderRef<AttachmentRepository>;
+String _$attachmentHash() => r'944e29a5ec1263fa93bd0e11705524db90c3bdab';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -153,6 +170,154 @@ class _AttachmentProviderElement
 
   @override
   String get fileName => (origin as AttachmentProvider).fileName;
+}
+
+String _$itemAttachmentsControllerHash() =>
+    r'c937ec8f81794f8f20f25561037ea7571751f097';
+
+abstract class _$ItemAttachmentsController
+    extends BuildlessAutoDisposeAsyncNotifier<List<Attachment>> {
+  late final String? itemId;
+
+  FutureOr<List<Attachment>> build(
+    String? itemId,
+  );
+}
+
+/// See also [ItemAttachmentsController].
+@ProviderFor(ItemAttachmentsController)
+const itemAttachmentsControllerProvider = ItemAttachmentsControllerFamily();
+
+/// See also [ItemAttachmentsController].
+class ItemAttachmentsControllerFamily
+    extends Family<AsyncValue<List<Attachment>>> {
+  /// See also [ItemAttachmentsController].
+  const ItemAttachmentsControllerFamily();
+
+  /// See also [ItemAttachmentsController].
+  ItemAttachmentsControllerProvider call(
+    String? itemId,
+  ) {
+    return ItemAttachmentsControllerProvider(
+      itemId,
+    );
+  }
+
+  @override
+  ItemAttachmentsControllerProvider getProviderOverride(
+    covariant ItemAttachmentsControllerProvider provider,
+  ) {
+    return call(
+      provider.itemId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'itemAttachmentsControllerProvider';
+}
+
+/// See also [ItemAttachmentsController].
+class ItemAttachmentsControllerProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<ItemAttachmentsController,
+        List<Attachment>> {
+  /// See also [ItemAttachmentsController].
+  ItemAttachmentsControllerProvider(
+    String? itemId,
+  ) : this._internal(
+          () => ItemAttachmentsController()..itemId = itemId,
+          from: itemAttachmentsControllerProvider,
+          name: r'itemAttachmentsControllerProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$itemAttachmentsControllerHash,
+          dependencies: ItemAttachmentsControllerFamily._dependencies,
+          allTransitiveDependencies:
+              ItemAttachmentsControllerFamily._allTransitiveDependencies,
+          itemId: itemId,
+        );
+
+  ItemAttachmentsControllerProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.itemId,
+  }) : super.internal();
+
+  final String? itemId;
+
+  @override
+  FutureOr<List<Attachment>> runNotifierBuild(
+    covariant ItemAttachmentsController notifier,
+  ) {
+    return notifier.build(
+      itemId,
+    );
+  }
+
+  @override
+  Override overrideWith(ItemAttachmentsController Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: ItemAttachmentsControllerProvider._internal(
+        () => create()..itemId = itemId,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        itemId: itemId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeAsyncNotifierProviderElement<ItemAttachmentsController,
+      List<Attachment>> createElement() {
+    return _ItemAttachmentsControllerProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ItemAttachmentsControllerProvider && other.itemId == itemId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, itemId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin ItemAttachmentsControllerRef
+    on AutoDisposeAsyncNotifierProviderRef<List<Attachment>> {
+  /// The parameter `itemId` of this provider.
+  String? get itemId;
+}
+
+class _ItemAttachmentsControllerProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<ItemAttachmentsController,
+        List<Attachment>> with ItemAttachmentsControllerRef {
+  _ItemAttachmentsControllerProviderElement(super.provider);
+
+  @override
+  String? get itemId => (origin as ItemAttachmentsControllerProvider).itemId;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

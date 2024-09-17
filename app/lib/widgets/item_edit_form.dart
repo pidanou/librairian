@@ -1,12 +1,10 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:librairian/models/item.dart';
-import 'package:librairian/providers/item.dart' as provider;
+import 'package:librairian/providers/attachment.dart';
+import 'package:librairian/providers/item.dart';
 import 'package:librairian/widgets/attachment_display.dart';
 import 'package:librairian/widgets/attachments_picker.dart';
 import 'package:librairian/widgets/edit_location.dart';
@@ -60,7 +58,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
 
   @override
   build(BuildContext context) {
-    var itemProv = ref.watch(provider.itemProvider(widget.item.id));
+    var itemProv = ref.watch(itemControllerProvider(widget.item.id));
     descriptionController.text = widget.item.description ?? '';
     if (itemProv is AsyncError) {
       return const Center(child: Text("Error"));
@@ -223,29 +221,17 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                         labelText: 'Description',
                       ))),
               const SizedBox(height: 10),
-              if (item.attachments?.isNotEmpty ?? false)
-                ListTile(
-                  title: AttachmentDisplay(
-                      attachments: item.attachments ?? [],
-                      onRemove: (fileName) {
-                        ref
-                            .read(provider.itemProvider(item.id).notifier)
-                            .removeAttachment(item.id, fileName);
-                      }),
-                ),
+              AttachmentDisplay(
+                itemId: item.id ?? "",
+              ),
               const SizedBox(height: 10),
               ListTile(
                   trailing: AttachmentsPicker(onAdd: (List<XFile> files) async {
                 for (var file in files) {
-                  if (kIsWeb) {
-                    var bytes = await file.readAsBytes();
-                    ref
-                        .read(provider.itemProvider(item.id).notifier)
-                        .addAttachment(item.id, file.path, bytes: bytes);
-                  }
+                  var bytes = await file.readAsBytes();
                   ref
-                      .read(provider.itemProvider(item.id).notifier)
-                      .addAttachment(item.id, file.path, file: File(file.path));
+                      .read(itemAttachmentsControllerProvider(item.id).notifier)
+                      .postAttachment(item.id!, file.path, bytes: bytes);
                 }
               }))
             ])))

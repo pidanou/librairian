@@ -6,7 +6,22 @@ part of 'item.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$itemHash() => r'22c1978f37a7890bdcf5ab3fbe8fa8c873f6ce0a';
+String _$itemRepositoryHash() => r'bdb3cc76b9b088ddef0da6cf5ef22c332c7a8394';
+
+/// See also [itemRepository].
+@ProviderFor(itemRepository)
+final itemRepositoryProvider = AutoDisposeProvider<ItemRepository>.internal(
+  itemRepository,
+  name: r'itemRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$itemRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef ItemRepositoryRef = AutoDisposeProviderRef<ItemRepository>;
+String _$itemControllerHash() => r'e229f92777070afb5241e6d1b43b481f6bb8dcd0';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,35 +44,36 @@ class _SystemHash {
   }
 }
 
-abstract class _$Item extends BuildlessAutoDisposeAsyncNotifier<im.Item> {
+abstract class _$ItemController
+    extends BuildlessAutoDisposeAsyncNotifier<Item?> {
   late final String? id;
 
-  FutureOr<im.Item> build(
+  FutureOr<Item?> build(
     String? id,
   );
 }
 
-/// See also [Item].
-@ProviderFor(Item)
-const itemProvider = ItemFamily();
+/// See also [ItemController].
+@ProviderFor(ItemController)
+const itemControllerProvider = ItemControllerFamily();
 
-/// See also [Item].
-class ItemFamily extends Family<AsyncValue<im.Item>> {
-  /// See also [Item].
-  const ItemFamily();
+/// See also [ItemController].
+class ItemControllerFamily extends Family<AsyncValue<Item?>> {
+  /// See also [ItemController].
+  const ItemControllerFamily();
 
-  /// See also [Item].
-  ItemProvider call(
+  /// See also [ItemController].
+  ItemControllerProvider call(
     String? id,
   ) {
-    return ItemProvider(
+    return ItemControllerProvider(
       id,
     );
   }
 
   @override
-  ItemProvider getProviderOverride(
-    covariant ItemProvider provider,
+  ItemControllerProvider getProviderOverride(
+    covariant ItemControllerProvider provider,
   ) {
     return call(
       provider.id,
@@ -76,26 +92,30 @@ class ItemFamily extends Family<AsyncValue<im.Item>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'itemProvider';
+  String? get name => r'itemControllerProvider';
 }
 
-/// See also [Item].
-class ItemProvider extends AutoDisposeAsyncNotifierProviderImpl<Item, im.Item> {
-  /// See also [Item].
-  ItemProvider(
+/// See also [ItemController].
+class ItemControllerProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<ItemController, Item?> {
+  /// See also [ItemController].
+  ItemControllerProvider(
     String? id,
   ) : this._internal(
-          () => Item()..id = id,
-          from: itemProvider,
-          name: r'itemProvider',
+          () => ItemController()..id = id,
+          from: itemControllerProvider,
+          name: r'itemControllerProvider',
           debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product') ? null : _$itemHash,
-          dependencies: ItemFamily._dependencies,
-          allTransitiveDependencies: ItemFamily._allTransitiveDependencies,
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$itemControllerHash,
+          dependencies: ItemControllerFamily._dependencies,
+          allTransitiveDependencies:
+              ItemControllerFamily._allTransitiveDependencies,
           id: id,
         );
 
-  ItemProvider._internal(
+  ItemControllerProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -108,8 +128,8 @@ class ItemProvider extends AutoDisposeAsyncNotifierProviderImpl<Item, im.Item> {
   final String? id;
 
   @override
-  FutureOr<im.Item> runNotifierBuild(
-    covariant Item notifier,
+  FutureOr<Item?> runNotifierBuild(
+    covariant ItemController notifier,
   ) {
     return notifier.build(
       id,
@@ -117,10 +137,10 @@ class ItemProvider extends AutoDisposeAsyncNotifierProviderImpl<Item, im.Item> {
   }
 
   @override
-  Override overrideWith(Item Function() create) {
+  Override overrideWith(ItemController Function() create) {
     return ProviderOverride(
       origin: this,
-      override: ItemProvider._internal(
+      override: ItemControllerProvider._internal(
         () => create()..id = id,
         from: from,
         name: null,
@@ -133,13 +153,14 @@ class ItemProvider extends AutoDisposeAsyncNotifierProviderImpl<Item, im.Item> {
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<Item, im.Item> createElement() {
-    return _ItemProviderElement(this);
+  AutoDisposeAsyncNotifierProviderElement<ItemController, Item?>
+      createElement() {
+    return _ItemControllerProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ItemProvider && other.id == id;
+    return other is ItemControllerProvider && other.id == id;
   }
 
   @override
@@ -151,18 +172,18 @@ class ItemProvider extends AutoDisposeAsyncNotifierProviderImpl<Item, im.Item> {
   }
 }
 
-mixin ItemRef on AutoDisposeAsyncNotifierProviderRef<im.Item> {
+mixin ItemControllerRef on AutoDisposeAsyncNotifierProviderRef<Item?> {
   /// The parameter `id` of this provider.
   String? get id;
 }
 
-class _ItemProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<Item, im.Item>
-    with ItemRef {
-  _ItemProviderElement(super.provider);
+class _ItemControllerProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<ItemController, Item?>
+    with ItemControllerRef {
+  _ItemControllerProviderElement(super.provider);
 
   @override
-  String? get id => (origin as ItemProvider).id;
+  String? get id => (origin as ItemControllerProvider).id;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

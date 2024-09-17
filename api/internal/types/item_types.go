@@ -12,7 +12,7 @@ type Item struct {
 	Base
 	Name                 *string          `json:"name" db:"name"`
 	Description          *string          `json:"description" db:"description"`
-	DescriptionEmbedding *pgvector.Vector `json:"-" db:"description_embedding"`
+	DescriptionEmbeddings *pgvector.Vector `json:"-" db:"description_embeddings"`
 	Locations            []Location       `json:"locations"`
 	Attachments          pq.StringArray   `json:"attachments" db:"attachments"`
 }

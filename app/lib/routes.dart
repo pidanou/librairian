@@ -66,9 +66,8 @@ final goRouter = GoRouter(
                 GoRoute(
                     path: "detail/:id",
                     builder: (context, state) {
-                      Item item = state.extra as Item;
                       final itemId = state.pathParameters['id'];
-                      return ItemEditFormPage(item: item, itemId: itemId ?? "");
+                      return ItemEditFormPage(itemId: itemId ?? "");
                     })
               ],
             ),
@@ -113,9 +112,8 @@ final goRouter = GoRouter(
                 GoRoute(
                     path: ":id",
                     builder: (context, state) {
-                      Item item = state.extra as Item;
                       final itemId = state.pathParameters['id'];
-                      return ItemEditFormPage(item: item, itemId: itemId ?? "");
+                      return ItemEditFormPage(itemId: itemId ?? "");
                     })
               ],
             ),
