@@ -6,7 +6,7 @@ part of 'matches.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$matchesHash() => r'abc65b5e6e567c170dfb80a73b494b92b5b65c54';
+String _$matchesHash() => r'504b9740d9ee04dc27d39b51412193d82619da19';
 
 /// See also [Matches].
 @ProviderFor(Matches)

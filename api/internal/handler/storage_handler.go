@@ -14,25 +14,31 @@ func (h *Handler) GetStorageByID(c echo.Context) error {
 	userID := getUserIDFromJWT(c)
 	id := uuid.MustParse(c.Param("id"))
 
-	storage, err := h.ArchiveService.GetStorageByID(&id)
+	storage, err := h.StorageService.GetStorageByID(&id, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get storage")
-	}
-
-	if !UserHasAccess(storage, userID) {
-		return echo.NewHTTPError(http.StatusForbidden)
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot get storage")
+		}
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, storage)
 }
 
-func (h *Handler) GetStorage(c echo.Context) error {
+func (h *Handler) GetStoragesByUserID(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	storages, err := h.ArchiveService.GetStorageByUserID(userID)
+	storages, err := h.StorageService.GetStorageByUserID(userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get storage")
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot get storage")
+		}
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, storages)
@@ -50,10 +56,14 @@ func (h *Handler) PostStorage(c echo.Context) error {
 	}
 
 	storage.UserID = userID
-	storage, err = h.ArchiveService.AddStorage(storage)
+	storage, err = h.StorageService.AddStorage(storage)
 	if err != nil {
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot add storage")
+		}
 		log.Println(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot add storage")
+		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusCreated, storage)
@@ -70,13 +80,14 @@ func (h *Handler) PutStorage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid storage")
 	}
 
-	if !storage.UserHasAccess(userID) {
-		return echo.NewHTTPError(http.StatusForbidden)
-	}
-
-	storage, err = h.ArchiveService.EditStorage(storage)
+	storage, err = h.StorageService.EditStorage(storage, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot edit storage")
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot edit storage")
+		}
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, storage)
@@ -90,17 +101,14 @@ func (h *Handler) DeleteStorage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
-	storage, err := h.ArchiveService.GetStorageByID(&storageID)
-	if err != nil || storage == nil {
-		return echo.NewHTTPError(http.StatusNotFound, "Storage not found")
-	}
-	if !storage.UserHasAccess(userID) {
-		return echo.NewHTTPError(http.StatusForbidden)
-	}
-
-	err = h.ArchiveService.DeleteStorageByID(&storageID)
+	err = h.StorageService.DeleteStorageByID(&storageID, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot delete storage")
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot delete storage")
+		}
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
 	return c.NoContent(http.StatusOK)

@@ -1,17 +1,15 @@
-import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/storage.dart';
-import 'package:librairian/widgets/file_picker.dart';
 import 'package:librairian/widgets/storage_selector.dart';
 
-class EditStorageLocation extends ConsumerStatefulWidget {
-  final StorageLocation? location;
+class EditLocation extends ConsumerStatefulWidget {
+  final Location? location;
   final Widget title;
-  final void Function(StorageLocation?)? onSave;
+  final void Function(Location?)? onSave;
   final String? itemID;
 
-  const EditStorageLocation(
+  const EditLocation(
       {super.key,
       this.location,
       required this.title,
@@ -19,10 +17,10 @@ class EditStorageLocation extends ConsumerStatefulWidget {
       this.itemID});
 
   @override
-  ConsumerState createState() => EditStorageLocationState();
+  ConsumerState createState() => EditLocationState();
 }
 
-class EditStorageLocationState extends ConsumerState<EditStorageLocation> {
+class EditLocationState extends ConsumerState<EditLocation> {
   Storage? storage;
   String? storageID;
   TextEditingController controller = TextEditingController();
@@ -49,7 +47,7 @@ class EditStorageLocationState extends ConsumerState<EditStorageLocation> {
     if (storage == null || storageID == null || controller.text == "") {
       return;
     }
-    widget.onSave?.call(StorageLocation(
+    widget.onSave?.call(Location(
         storage: storage, location: controller.text, storageId: storageID));
   }
 
@@ -89,18 +87,6 @@ class EditStorageLocationState extends ConsumerState<EditStorageLocation> {
                   textInputAction: TextInputAction.none,
                   decoration: const InputDecoration(
                     hintText: "Location",
-                    // suffixIcon: (storage != null &&
-                    //         (storage?.type == "Device" ||
-                    //             storage?.type == "Local"))
-                    //     ? FilePicker(
-                    //         allowMultiple: false,
-                    //         onSelect: (List<XFile>? files) {
-                    //           setState(() {
-                    //             controller.text = files?[0].path ?? '';
-                    //           });
-                    //           focus.requestFocus();
-                    //         })
-                    //     : const SizedBox(),
                   ),
                   focusNode: focus,
                   onFieldSubmitted: (s) {

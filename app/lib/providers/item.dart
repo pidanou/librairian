@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:librairian/models/item.dart';
 import 'package:librairian/repositories/item.dart';
@@ -104,5 +102,13 @@ class ItemController extends _$ItemController {
     }
 
     return null;
+  }
+
+  Future<Item?> save(Item item) async {
+    if (item.id == null) {
+      return add(item);
+    } else {
+      return patch(item);
+    }
   }
 }

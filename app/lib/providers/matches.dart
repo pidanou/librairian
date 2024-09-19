@@ -86,7 +86,7 @@ class Matches extends _$Matches {
             var data = jsonDecode(response.body)["data"];
             List<MatchItem> test = (data as List<dynamic>)
                 .map<Item>((json) => Item.fromJson(json))
-                .map((item) => MatchItem(item: item, descriptionSimilarity: 1))
+                .map((item) => MatchItem(item: item, similarity: 1))
                 .toList();
             return test;
           })),

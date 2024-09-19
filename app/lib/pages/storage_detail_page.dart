@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/storage.dart';
 import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
 import 'package:librairian/widgets/edit_storage.dart';
 
 class StorageDetailPage extends ConsumerStatefulWidget {
-  const StorageDetailPage(
-      {required this.storageID, required this.storage, super.key});
+  const StorageDetailPage({required this.storageID, super.key});
 
   final String storageID;
-  final Storage storage;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -23,12 +20,63 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
 
   @override
   void initState() {
-    controller.text = widget.storage.alias ?? 'No name';
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    var storage = ref.watch(storageByIDProvider(widget.storageID));
+    if (storage is AsyncLoading) {
+      return Scaffold(
+          appBar: AppBar(
+              scrolledUnderElevation: 0,
+              backgroundColor: Theme.of(context).colorScheme.surfaceDim,
+              centerTitle: true),
+          body: Container(
+            decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceBright,
+                borderRadius: MediaQuery.of(context).size.width < 840
+                    ? const BorderRadius.all(Radius.circular(0))
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        bottomLeft: Radius.circular(20.0))),
+            child: const Center(child: CircularProgressIndicator()),
+          ));
+    }
+    if (storage is AsyncError) {
+      return Scaffold(
+          appBar: AppBar(
+              scrolledUnderElevation: 0,
+              backgroundColor: Theme.of(context).colorScheme.surfaceDim,
+              centerTitle: true),
+          body: Container(
+            decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceBright,
+                borderRadius: MediaQuery.of(context).size.width < 840
+                    ? const BorderRadius.all(Radius.circular(0))
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        bottomLeft: Radius.circular(20.0))),
+            child: const Center(child: Text("Error")),
+          ));
+    }
+    if (storage.value == null) {
+      return Scaffold(
+          appBar: AppBar(
+              scrolledUnderElevation: 0,
+              backgroundColor: Theme.of(context).colorScheme.surfaceDim,
+              centerTitle: true),
+          body: Container(
+            decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceBright,
+                borderRadius: MediaQuery.of(context).size.width < 840
+                    ? const BorderRadius.all(Radius.circular(0))
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        bottomLeft: Radius.circular(20.0))),
+            child: const Center(child: Text("Item not found")),
+          ));
+    }
     return Scaffold(
         appBar: AppBar(
             scrolledUnderElevation: 0,
@@ -58,7 +106,7 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                               context: context,
                               builder: (context) {
                                 return AlertDialogDeleteStorage(
-                                    storageID: widget.storage.id ?? "");
+                                    storageID: storage.value?.id ?? "");
                               });
                         })
                   ],
@@ -70,32 +118,33 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                             onPressed: () {
                               ref
                                   .read(storagesProvider.notifier)
-                                  .edit(widget.storage);
+                                  .edit(storage.value!);
                               setState(() {
-                                widget.storage.alias = controller.text;
+                                storage.value?.alias = controller.text;
                                 editingName = false;
                               });
                             })),
                     controller: controller,
                     onFieldSubmitted: (value) {
-                      ref.read(storagesProvider.notifier).edit(widget.storage);
+                      ref.read(storagesProvider.notifier).edit(storage.value!);
                       setState(() {
-                        widget.storage.alias = value;
+                        storage.value!.alias = value;
                         editingName = false;
                       });
                     })
-                : Text(widget.storage.alias ?? 'No name'),
+                : Text(storage.value?.alias ?? 'No name'),
             centerTitle: true),
         body: Container(
-            decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceBright,
-                borderRadius: MediaQuery.of(context).size.width < 840
-                    ? const BorderRadius.all(Radius.circular(0))
-                    : const BorderRadius.only(
-                        topLeft: Radius.circular(20.0),
-                        bottomLeft: Radius.circular(20.0))),
-            child: EditStorage(
-              storage: widget.storage,
-            )));
+          decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceBright,
+              borderRadius: MediaQuery.of(context).size.width < 840
+                  ? const BorderRadius.all(Radius.circular(0))
+                  : const BorderRadius.only(
+                      topLeft: Radius.circular(20.0),
+                      bottomLeft: Radius.circular(20.0))),
+          child: storage is AsyncData && storage.value != null
+              ? EditStorage(storage: storage.value!)
+              : const Center(child: CircularProgressIndicator()),
+        ));
   }
 }

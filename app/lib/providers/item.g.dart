@@ -21,7 +21,7 @@ final itemRepositoryProvider = AutoDisposeProvider<ItemRepository>.internal(
 );
 
 typedef ItemRepositoryRef = AutoDisposeProviderRef<ItemRepository>;
-String _$itemControllerHash() => r'e229f92777070afb5241e6d1b43b481f6bb8dcd0';
+String _$itemControllerHash() => r'f609fe8f52d55311a277edb0a8d80cd6af98dda3';
 
 /// Copied from Dart SDK
 class _SystemHash {

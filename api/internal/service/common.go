@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Check struct against user ID
 type ProtectedResource interface {
 	UserHasAccess(userID *uuid.UUID) bool
 }

@@ -29,6 +29,7 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
   Widget build(BuildContext context) {
     var storages = ref.watch(sp.storagesProvider);
     if (storages is AsyncError) {
+      print("error");
       return const Column(children: [Center(child: Text('Error'))]);
     }
     if (storages is AsyncData) {

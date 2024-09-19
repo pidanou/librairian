@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/providers/item.dart';
 import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/items_in_storage.dart';
 import 'package:librairian/widgets/alert_dialog_confirm.dart';
@@ -196,39 +198,36 @@ class EditStorageState extends ConsumerState<EditStorage> {
                     IconButton(
                         tooltip: 'Add item',
                         icon: const Icon(Icons.add_circle),
-                        onPressed: () {
+                        onPressed: () async {
+                          Item? newItem;
                           if (MediaQuery.of(context).size.width < 840) {
-                            showModalBottomSheet<void>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: <Widget>[
-                                        Expanded(
-                                            child: ItemEditForm(
-                                          item: Item(
-                                              name: "New Item",
-                                              locations: [
-                                                StorageLocation(
-                                                    storage: widget.storage)
-                                              ]),
-                                          onSave: (item) {
-                                            save(item);
-                                            Navigator.pop(context);
-                                          },
-                                        )),
-                                      ],
-                                    ),
-                                  );
-                                });
+                            newItem = await ref
+                                .read(itemControllerProvider(null).notifier)
+                                .add(
+                                  Item(name: "New Item", locations: [
+                                    Location(storage: widget.storage)
+                                  ]),
+                                );
+                            if (!context.mounted) {
+                              return;
+                            }
+                            if (newItem == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text("Item could not be added")));
+                              return;
+                            }
+                            ref.invalidate(itemsInStorageProvider(
+                                page, limit, widget.storage.id));
+                            if (MediaQuery.of(context).size.width < 840) {
+                              GoRouter.of(context).go(
+                                '/storage/${widget.storage.id}/${newItem.id}',
+                              );
+                            }
                           }
                           setState(() {
-                            editingItem = Item(name: "New Item", locations: [
-                              StorageLocation(storage: widget.storage)
-                            ]);
+                            editingItem = newItem;
                           });
                         }),
                     if (MediaQuery.of(context).size.width > 840)
@@ -264,45 +263,8 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                   editingItem = item;
                                 });
                                 if (MediaQuery.of(context).size.width < 840) {
-                                  showModalBottomSheet<void>(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Center(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: <Widget>[
-                                              Expanded(
-                                                  child: ItemEditForm(
-                                                      item: editingItem!,
-                                                      onSave: (item) {
-                                                        save(item);
-                                                        // ref
-                                                        //     .read(
-                                                        //         itemsInStorageProvider(
-                                                        //                 page,
-                                                        //                 limit,
-                                                        //                 storage
-                                                        //                     .id)
-                                                        //             .notifier)
-                                                        //     .save(item);
-                                                        // ref.invalidate(
-                                                        //     itemsInStorageProvider(
-                                                        //         page,
-                                                        //         limit,
-                                                        //         storage.id));
-                                                        editingItem = null;
-                                                      },
-                                                      onCancel: () {
-                                                        setState(() {
-                                                          editingItem = null;
-                                                        });
-                                                      }))
-                                            ],
-                                          ),
-                                        );
-                                      });
+                                  GoRouter.of(context).go(
+                                      "/storage/${widget.storage.id}/${editingItem!.id}");
                                 }
                               }))
                       : const Expanded(

@@ -86,15 +86,21 @@ final goRouter = GoRouter(
               ),
               routes: [
                 GoRoute(
-                  path: ':id',
-                  builder: (context, state) {
-                    Storage storage = state.extra as Storage;
-                    return StorageDetailPage(
-                      storageID: state.pathParameters['id']!,
-                      storage: storage,
-                    );
-                  },
-                ),
+                    path: ':id',
+                    builder: (context, state) {
+                      return StorageDetailPage(
+                        storageID: state.pathParameters['id']!,
+                      );
+                    },
+                    routes: [
+                      GoRoute(
+                        path: ':itemID',
+                        builder: (context, state) {
+                          final itemId = state.pathParameters['itemID'];
+                          return ItemEditFormPage(itemId: itemId ?? "");
+                        },
+                      ),
+                    ]),
               ],
             ),
           ],

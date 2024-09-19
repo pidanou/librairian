@@ -39,21 +39,10 @@ class AttachmentRepository {
     return await supabaseClient.storage.from("attachments").download(path);
   }
 
-  Future<String?> uploadAttachment(String? itemId, String fileName,
-      {File? file, Uint8List? bytes}) async {
-    String userId = supabaseClient.auth.currentUser!.id;
-    fileName = fileName.split("/").last;
-    String itemName = "$userId/$itemId/$fileName";
-    if (file != null) {
-      return await supabaseClient.storage.from("attachments").upload(
-            itemName,
-            file,
-            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-          );
-    }
+  Future<String?> uploadAttachment(String path, Uint8List? bytes) async {
     if (bytes != null) {
       return await supabaseClient.storage.from("attachments").uploadBinary(
-            itemName,
+            path,
             bytes,
             fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
           );
@@ -61,12 +50,17 @@ class AttachmentRepository {
     return null;
   }
 
-  Future<List<Attachment>> postAttachment(String? itemId, String fileName,
-      {File? file, Uint8List? bytes}) async {
+  Future<void> deleteAttachment(String path) async {
+    await supabaseClient.storage.from("attachments").remove([path]);
+  }
+
+  Future<List<Attachment>> postAttachment(
+      String? itemId, String fileName, Uint8List? bytes) async {
+    fileName = fileName.split("/").last;
+    String path = "${supabaseClient.auth.currentUser!.id}/$itemId/$fileName";
     String? objectId;
     try {
-      objectId =
-          await uploadAttachment(itemId, fileName, file: file, bytes: bytes);
+      objectId = await uploadAttachment(path, bytes);
     } catch (e) {
       print("Cannot upload attachment : $e");
       return [];
@@ -75,9 +69,6 @@ class AttachmentRepository {
     if (objectId == null) {
       return [];
     }
-
-    fileName = fileName.split("/").last;
-    String path = "${supabaseClient.auth.currentUser!.id}/$itemId/$fileName";
 
     Attachment attachment = Attachment(
       userId: supabaseClient.auth.currentUser!.id,
@@ -101,15 +92,14 @@ class AttachmentRepository {
           return data.map((item) => Attachment.fromJson(item)).toList();
         } else {
           print("Data is not a list");
-          return [];
         }
       } else {
         print("Http error : ${response.body}");
       }
     } catch (e) {
       print("Exception : $e");
-      return [];
     }
+    await deleteAttachment(path);
     return [];
   }
 

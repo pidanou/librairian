@@ -10,14 +10,19 @@ import (
 
 type Item struct {
 	Base
-	Name                 *string          `json:"name" db:"name"`
-	Description          *string          `json:"description" db:"description"`
+	Name                  *string          `json:"name" db:"name"`
+	Description           *string          `json:"description" db:"description"`
 	DescriptionEmbeddings *pgvector.Vector `json:"-" db:"description_embeddings"`
-	Locations            []Location       `json:"locations"`
-	Attachments          pq.StringArray   `json:"attachments" db:"attachments"`
+	Locations             []Location       `json:"locations"`
+	Attachments           pq.StringArray   `json:"attachments" db:"attachments"`
 }
 
 func (f *Item) UserHasAccess(userID *uuid.UUID) bool {
+	if f == nil {
+		log.Println("No item")
+		return false
+	}
+
 	if f.UserID == nil {
 		log.Println("Missing userID in item")
 		return false
@@ -34,7 +39,7 @@ func (f *Item) UserHasAccess(userID *uuid.UUID) bool {
 }
 
 type MatchedItem struct {
-	ItemID                *uuid.UUID `json:"-" db:"item_id"`
-	Item                  *Item      `json:"item"`
-	DescriptionSimilarity float32    `json:"description_similarity" db:"description_similarity"`
+	ItemID     *uuid.UUID `json:"-" db:"item_id"`
+	Item       *Item      `json:"item"`
+	Similarity float32    `json:"similarity" db:"similarity"`
 }

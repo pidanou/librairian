@@ -59,11 +59,10 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
             SizedBox(
               width: 20,
               height: 20,
-              child:
-                  CircularProgressIndicator(value: match.descriptionSimilarity),
+              child: CircularProgressIndicator(value: match.similarity),
             ),
             const SizedBox(height: 3),
-            Text('${(match.descriptionSimilarity * 100).toStringAsFixed(2)}%')
+            Text('${(match.similarity * 100).toStringAsFixed(2)}%')
           ]),
           title: Text(match.item?.name ?? ''),
           subtitle: Column(

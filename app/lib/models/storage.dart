@@ -1,4 +1,4 @@
-class StorageLocation {
+class Location {
   String? id;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -8,7 +8,7 @@ class StorageLocation {
   String? storageId;
   String? location;
 
-  StorageLocation({
+  Location({
     this.id,
     this.createdAt,
     this.updatedAt,
@@ -19,8 +19,8 @@ class StorageLocation {
     this.location,
   });
 
-  factory StorageLocation.fromJson(Map<String, dynamic> json) {
-    return StorageLocation(
+  factory Location.fromJson(Map<String, dynamic> json) {
+    return Location(
       id: json['id'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),

@@ -11,8 +11,8 @@ type Attachment struct {
 	Base
 	ItemID           *uuid.UUID       `json:"item_id" db:"item_id"`
 	Path             *string          `json:"path" db:"path"`
-	Labels           *string          `json:"-" db:"labels"`
-	LabelsEmbeddings *pgvector.Vector `json:"-" db:"labels_embeddings"`
+	Captions           *string          `json:"-" db:"captions"`
+	CaptionsEmbeddings *pgvector.Vector `json:"-" db:"captions_embeddings"`
 }
 
 func (a *Attachment) UserHasAccess(userID *uuid.UUID) bool {

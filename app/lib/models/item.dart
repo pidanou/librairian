@@ -26,7 +26,7 @@ class Item {
   String? userId;
   String? name;
   String? description;
-  List<StorageLocation>? locations;
+  List<Location>? locations;
   List<String>? attachments;
 
   Item({
@@ -54,7 +54,7 @@ class Item {
       name: json['name'],
       description: json['description'],
       locations: (json['locations'] as List)
-          .map((e) => StorageLocation.fromJson(e))
+          .map((e) => Location.fromJson(e))
           .toList(),
       attachments:
           (json['attachments'] as List?)?.map((e) => e.toString()).toList() ??
@@ -76,17 +76,17 @@ class Item {
 
 class MatchItem {
   Item? item;
-  double descriptionSimilarity;
+  double similarity;
 
   MatchItem({
     this.item,
-    required this.descriptionSimilarity,
+    required this.similarity,
   });
 
   factory MatchItem.fromJson(Map<String, dynamic> json) {
     return MatchItem(
       item: json['item'] != null ? Item.fromJson(json['item']) : null,
-      descriptionSimilarity: json['description_similarity'].toDouble(),
+      similarity: json['similarity']?.toDouble(),
     );
   }
 }

@@ -80,15 +80,19 @@ class ItemsInStorage extends _$ItemsInStorage {
           .patch(item);
     }
 
-    int index = state.value!.data.indexWhere((e) => e.id == item.id);
-    var tmp = state;
-    if (index == -1) {
-      tmp.value!.data.insert(0, newItem ?? Item());
-    } else {
-      tmp.value!.data[index] = newItem ?? Item();
-    }
-    tmp.value!.metadata.total = tmp.value!.data.length;
-    state = tmp;
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      int index = state.value!.data.indexWhere((e) => e.id == item.id);
+      var tmp = state.value!;
+      if (index == -1) {
+        tmp.data.insert(0, newItem ?? Item());
+      } else {
+        tmp.data[index] = newItem ?? Item();
+      }
+      tmp.metadata.total = tmp.data.length;
+      return tmp;
+    });
+
     return newItem;
   }
 }

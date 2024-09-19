@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:librairian/models/item.dart';
+import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/attachment.dart';
 import 'package:librairian/providers/item.dart';
+import 'package:librairian/providers/storage.dart';
 import 'package:librairian/widgets/attachment_display.dart';
 import 'package:librairian/widgets/attachments_picker.dart';
 import 'package:librairian/widgets/edit_location.dart';
@@ -45,18 +47,6 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
   }
 
   @override
-  void didUpdateWidget(ItemEditForm oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.item.id != oldWidget.item.id) {
-      nameController.text = widget.item.name ?? "";
-      editName = widget.isNewItem ?? false;
-      if (editName) {
-        nameFocusNode.requestFocus();
-      }
-    }
-  }
-
-  @override
   build(BuildContext context) {
     var itemProv = ref.watch(itemControllerProvider(widget.item.id));
     descriptionController.text = widget.item.description ?? '';
@@ -66,7 +56,10 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
     if (itemProv is AsyncLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    var item = itemProv.value!;
+    var item = itemProv.value ??
+        Item(
+            name: "New item",
+            locations: [Location(storage: ref.read(defaultStorageProvider))]);
     return Column(children: [
       Expanded(
           child: ListView(children: [
@@ -152,7 +145,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                       onPressed: () {
                         showDialog(
                             context: context,
-                            builder: (context) => EditStorageLocation(
+                            builder: (context) => EditLocation(
                                 title: const Text("Add location"),
                                 onSave: (sl) {
                                   if (sl != null) {
@@ -190,7 +183,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                             onTap: () {
                               showDialog(
                                   context: context,
-                                  builder: (context) => EditStorageLocation(
+                                  builder: (context) => EditLocation(
                                       location: item.locations![i],
                                       title: const Text("Edit location"),
                                       onSave: (sl) {
@@ -229,9 +222,10 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                   trailing: AttachmentsPicker(onAdd: (List<XFile> files) async {
                 for (var file in files) {
                   var bytes = await file.readAsBytes();
+
                   ref
                       .read(itemAttachmentsControllerProvider(item.id).notifier)
-                      .postAttachment(item.id!, file.path, bytes: bytes);
+                      .postAttachment(item.id!, file.path, bytes);
                 }
               }))
             ])))

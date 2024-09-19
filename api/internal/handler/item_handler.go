@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"dario.cat/mergo"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -45,10 +44,15 @@ func (h *Handler) GetItems(c echo.Context) error {
 		limit = 20
 	}
 
-	items, total, err := h.ArchiveService.GetItems(userID, &storageID, name, page, limit, order)
+	items, total, err := h.ItemService.GetItems(userID, &storageID, name, page, limit, order)
 	if err != nil {
-		log.Println(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot get items")
+		if httpErr, ok := err.(*echo.HTTPError); !ok {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		} else {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot get item")
+		}
 	}
 
 	response := types.Response{Data: items, Metadata: types.Pagination{Page: page, Limit: limit, Total: total}}
@@ -65,40 +69,22 @@ func (h *Handler) PostItem(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	cleanedLocation := []types.Location{}
-	if item.Locations == nil {
-		item.Locations = []types.Location{}
-	}
-	for _, sl := range item.Locations {
-		if sl.Storage == nil {
-			continue
-		}
-		storage, err := h.ArchiveService.GetStorageByID(sl.Storage.ID)
-		if err != nil {
-			log.Println("Cannot get storage: ", err)
-			continue
-		}
-		if !UserHasAccess(storage, userID) {
-			continue
-		}
-		sl.UserID = userID
-		cleanedLocation = append(cleanedLocation, sl)
-	}
+	cleanedLocation := h.StorageService.Clean(&item, userID)
 
 	item.Locations = cleanedLocation
 
-	descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description)
+	newItem, err := h.ItemService.AddItem(&item)
 	if err != nil {
-		log.Println("Cannot create description embedding: ", err)
+		if httpErr, ok := err.(*echo.HTTPError); !ok {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		} else {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot get item")
+		}
 	}
-	item.DescriptionEmbeddings = descriptionEmbedding
 
-	titem, err := h.ArchiveService.AddItem(&item)
-	if err != nil {
-		log.Println("Cannot add item: ", err)
-	}
-
-	return c.JSON(http.StatusCreated, titem)
+	return c.JSON(http.StatusCreated, newItem)
 }
 
 func (h *Handler) GetItemByID(c echo.Context) error {
@@ -110,14 +96,15 @@ func (h *Handler) GetItemByID(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	item, err := h.ArchiveService.GetItemByID(&id)
+	item, err := h.ItemService.GetItemByID(&id, userID)
 	if err != nil {
-		log.Println(err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Cannot get item")
-	}
-
-	if !UserHasAccess(item, userID) {
-		return c.NoContent(http.StatusUnauthorized)
+		if httpErr, ok := err.(*echo.HTTPError); !ok {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		} else {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot get item")
+		}
 	}
 
 	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
@@ -131,19 +118,15 @@ func (h *Handler) DeleteItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
-	item, err := h.ArchiveService.GetItemByID(&id)
-	if err != nil || item == nil {
-		log.Println(err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Cannot delete item: item does not exist")
-	}
-
-	if !UserHasAccess(item, userID) {
-		return c.NoContent(http.StatusUnauthorized)
-	}
-
-	err = h.ArchiveService.DeleteItem(&id)
+	err = h.ItemService.DeleteItem(&id, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot delete item")
+		if httpErr, ok := err.(*echo.HTTPError); !ok {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		} else {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot delete item")
+		}
 	}
 
 	return c.NoContent(http.StatusOK)
@@ -154,27 +137,16 @@ func (h *Handler) PutItem(c echo.Context) error {
 	c.Bind(item)
 
 	userID := getUserIDFromJWT(c)
-	itemCheck, err := h.ArchiveService.GetItemByID(item.ID)
-	if err != nil || itemCheck == nil {
-		log.Println(err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item: item does not exist")
-	}
 
-	if !UserHasAccess(itemCheck, userID) {
-		return c.NoContent(http.StatusUnauthorized)
-	}
-
-	if item.Description != nil && item.Description != itemCheck.Description {
-		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
-		}
-		item.DescriptionEmbeddings = descriptionEmbedding
-	}
-
-	item, err = h.ArchiveService.UpdateItem(item)
+	item, err := h.ItemService.UpdateItem(item, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot update item")
+		if httpErr, ok := err.(*echo.HTTPError); !ok {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		} else {
+			log.Println(err)
+			return echo.NewHTTPError(httpErr.Code, "Cannot update item")
+		}
 	}
 
 	return c.JSON(http.StatusOK, item)
@@ -188,31 +160,15 @@ func (h *Handler) PatchItem(c echo.Context) error {
 
 	id := uuid.MustParse(c.Param("id"))
 
-	oldItem, err := h.ArchiveService.GetItemByID(&id)
-	if err != nil || oldItem == nil {
-		log.Println(err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item: item does not exist")
-	}
-	if !UserHasAccess(oldItem, userID) {
-		return c.NoContent(http.StatusUnauthorized)
-	}
-
-	if item.Description != nil && item.Description != oldItem.Description {
-		descriptionEmbedding, err := h.EmbeddingService.CreateEmbedding(item.Description)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
-		}
-		item.DescriptionEmbeddings = descriptionEmbedding
-	}
-
-	emptyNewAttachments := len(item.Attachments) == 0
-	mergo.Merge(item, oldItem)
-	if emptyNewAttachments {
-		item.Attachments = []string{}
-	}
-	item, err = h.ArchiveService.UpdateItem(item)
+	item, err := h.ItemService.PartialUpdateItem(&id, item, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Cannot update item")
+		if httpErr, ok := err.(*echo.HTTPError); !ok {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		} else {
+			log.Println(httpErr.Message)
+			return echo.NewHTTPError(httpErr.Code, "Cannot update item")
+		}
 	}
 
 	return c.JSON(http.StatusOK, item)
@@ -250,26 +206,7 @@ func (h *Handler) GetMatches(c echo.Context) error {
 		req.MaxResults = 100
 	}
 
-	embedding, err := h.EmbeddingService.CreateEmbedding(&req.Search)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-	}
-
-	matches, err := h.SimilarityService.Find(embedding, req.Threshold, req.MaxResults, &userID)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-	}
-
-	for i, match := range matches {
-		item, err := h.ArchiveService.GetItemByID(match.ItemID)
-		if err != nil {
-			log.Printf("Cannot get item %s: %s", item.ID, err)
-			continue
-		}
-		if UserHasAccess(item, &userID) {
-			matches[i].Item = item
-		}
-	}
+	matches := h.ItemService.FindMatches(req.Search, req.Threshold, req.MaxResults, &userID)
 
 	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, matches)

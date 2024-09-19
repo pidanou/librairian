@@ -24,15 +24,22 @@ func (s *Server) Start() {
 
 	supabasePostgres := config.NewPostgresDB(os.Getenv("POSTGRES_CONNECTION_STRING"))
 
-	archiveRepository := repository.NewPostgresArchiveRepository(supabasePostgres)
-	embeddingRepository := repository.NewOpenaiEmbeddingRepository(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")
-	similarityRepository := repository.NewPgvectorSimilarityRepository(supabasePostgres)
+	itemRepository := repository.NewPostgresItemRepository(supabasePostgres)
+	storageRepository := repository.NewPostgresStorageRepository(supabasePostgres)
+	attachmentRepository := repository.NewPostgresAttachmentRepository(supabasePostgres)
+	permissionRepository := repository.NewPostgresPermissionRepository(supabasePostgres)
 
-	archiveService := service.NewArchiveService(archiveRepository)
-	embeddingService := service.NewEmbeddingService(embeddingRepository)
-	similarityService := service.NewSimilarityService(similarityRepository)
+	embeddingService := service.NewOpenaiEmbeddingService(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")
+	similarityService := service.NewPgvectorSimilarityService(supabasePostgres)
+	imageCaptionService := service.NewGcpImageCaptionsService(os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_SERVICE_ACCOUNT_KEY"), os.Getenv("GCP_LOCATION"))
+	imageStorageService := service.NewSupabaseImageStorageService(os.Getenv("SUPABASE_PROJECT_ID"), os.Getenv("SUPABASE_SERVICE_KEY"))
 
-	h := handler.New(archiveService, embeddingService, similarityService)
+	itemService := service.NewItemService(itemRepository, embeddingService, similarityService)
+	storageService := service.NewStorageService(storageRepository)
+	permissionService := service.NewPermissionService(permissionRepository)
+	attachmentService := service.NewAttachmentService(attachmentRepository, embeddingService, imageCaptionService, imageStorageService, permissionService)
+
+	h := handler.New(itemService, storageService, attachmentService)
 
 	e := echo.New()
 	e.HideBanner = true
@@ -67,7 +74,8 @@ func (s *Server) Start() {
 	api.POST("/attachments", h.PostAttachments)
 	api.DELETE("/attachment/:id", h.DeleteAttachmentByID)
 
-	api.GET("/storage", h.GetStorage)
+	api.GET("/storage", h.GetStoragesByUserID)
+	api.GET("/storage/:id", h.GetStorageByID)
 	api.POST("/storage", h.PostStorage)
 	api.DELETE("/storage/:id", h.DeleteStorage)
 	api.PUT("/storage", h.PutStorage)

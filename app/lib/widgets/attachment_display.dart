@@ -21,7 +21,6 @@ class AttachmentDisplay extends ConsumerWidget {
       return ListTile(
           title: SizedBox(
               height: 200,
-              width: double.infinity,
               child: ListView.separated(
                   separatorBuilder: (context, index) =>
                       const SizedBox(width: 20),

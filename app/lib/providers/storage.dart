@@ -3,10 +3,24 @@ import 'package:http/http.dart' as http;
 
 import 'package:librairian/models/storage.dart' as st;
 import 'package:librairian/providers/shared_preferences.dart';
+import 'package:librairian/repositories/storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
 part 'storage.g.dart';
+
+@riverpod
+StorageRepository storageRepository(StorageRepositoryRef ref) {
+  return StorageRepository(http.Client());
+}
+
+@riverpod
+class StorageByID extends _$StorageByID {
+  @override
+  Future<st.Storage?> build(String id) async {
+    return ref.read(storageRepositoryProvider).getStorageById(id);
+  }
+}
 
 @riverpod
 class Storages extends _$Storages {

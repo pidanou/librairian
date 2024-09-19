@@ -43,7 +43,6 @@ class ItemEditFormPageState extends ConsumerState<ItemEditFormPage> {
         appBar: AppBar(
             scrolledUnderElevation: 0,
             backgroundColor: Theme.of(context).colorScheme.surfaceDim,
-            title: const CircularProgressIndicator(),
             centerTitle: true),
         body: Container(
             decoration: BoxDecoration(

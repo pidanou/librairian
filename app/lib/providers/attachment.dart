@@ -28,13 +28,13 @@ class ItemAttachmentsController extends _$ItemAttachmentsController {
     return ref.watch(attachmentRepositoryProvider).listItemAttachments(itemId);
   }
 
-  Future<void> postAttachment(String itemId, String fileName,
-      {File? file, Uint8List? bytes}) async {
+  Future<void> postAttachment(
+      String itemId, String fileName, Uint8List? bytes) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       List<Attachment> attachments = await ref
           .read(attachmentRepositoryProvider)
-          .postAttachment(itemId, fileName, file: file, bytes: bytes);
+          .postAttachment(itemId, fileName, bytes);
       return [...state.value!, ...attachments];
     });
     return;

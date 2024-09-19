@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/providers/inventory.dart';
 import 'package:librairian/providers/item.dart';
 import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/items_in_storage.dart';
@@ -90,15 +91,12 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                       setState(() {
                                         deleting = false;
                                       });
-                                      if (mounted) {
-                                        SchedulerBinding.instance
-                                            .addPostFrameCallback((_) {
-                                          if (mounted) {
-                                            Navigator.pop(
-                                                context); // Safely pop after async operation
-                                          }
-                                        });
-                                      }
+                                      if (!context.mounted) return;
+                                      SchedulerBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        Navigator.pop(
+                                            context); // Safely pop after async operation
+                                      });
                                       ref.invalidate(itemsInStorageProvider(
                                           page, pageSize, null, orderBy, asc));
                                     });
@@ -110,19 +108,32 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
             IconButton(
                 tooltip: 'Add item',
                 icon: const Icon(Icons.add_circle),
-                onPressed: () {
+                onPressed: () async {
+                  var newItem = await ref
+                      .read(itemControllerProvider(null).notifier)
+                      .add(
+                        Item(name: "New Item", locations: [
+                          Location(storage: ref.read(defaultStorageProvider))
+                        ]),
+                      );
+                  if (!context.mounted) {
+                    return;
+                  }
+                  if (newItem == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Item could not be added")));
+                    return;
+                  }
+                  ref.invalidate(itemsInStorageProvider(
+                      page, pageSize, null, orderBy, asc));
                   if (MediaQuery.of(context).size.width < 840) {
                     GoRouter.of(context).go(
-                      '/inventory/new',
-                      extra: Item(name: "New Item", locations: [
-                        StorageLocation(
-                            storage: ref.read(defaultStorageProvider))
-                      ]),
+                      '/inventory/${newItem.id}',
                     );
                   }
                   setState(() {
                     editingItem = Item(name: "New Item", locations: [
-                      StorageLocation(storage: ref.read(defaultStorageProvider))
+                      Location(storage: ref.read(defaultStorageProvider))
                     ]);
                   });
                 }),
@@ -143,8 +154,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
   }
 
   Widget content(BuildContext context) {
-    var items =
-        ref.watch(itemsInStorageProvider(page, pageSize, null, orderBy, asc));
+    var items = ref.watch(inventoryProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
           color: MediaQuery.of(context).size.width < 840
@@ -162,9 +172,13 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         options: [
                           ListTile(
                               onTap: () {
+                                ref
+                                    .read(inventoryOrderProvider.notifier)
+                                    .set("name");
+                                ref
+                                    .read(inventoryAscProvider.notifier)
+                                    .set(false);
                                 setState(() {
-                                  asc = false;
-                                  orderBy = "name";
                                   orderByLabel = "Name A-Z";
                                 });
                                 menuController.close();
@@ -173,9 +187,13 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               title: const Text("Name A-Z")),
                           ListTile(
                               onTap: () {
+                                ref
+                                    .read(inventoryOrderProvider.notifier)
+                                    .set("name");
+                                ref
+                                    .read(inventoryAscProvider.notifier)
+                                    .set(true);
                                 setState(() {
-                                  asc = true;
-                                  orderBy = "name";
                                   orderByLabel = "Name Z-A";
                                 });
                                 menuController.close();
@@ -184,9 +202,13 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               title: const Text("Name Z-A")),
                           ListTile(
                               onTap: () {
+                                ref
+                                    .read(inventoryOrderProvider.notifier)
+                                    .set("created_at");
+                                ref
+                                    .read(inventoryAscProvider.notifier)
+                                    .set(false);
                                 setState(() {
-                                  asc = false;
-                                  orderBy = "created_at";
                                   orderByLabel = "Old items to new";
                                 });
                                 menuController.close();
@@ -195,9 +217,13 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               title: const Text("Old items to new")),
                           ListTile(
                               onTap: () {
+                                ref
+                                    .read(inventoryOrderProvider.notifier)
+                                    .set("created_at");
+                                ref
+                                    .read(inventoryAscProvider.notifier)
+                                    .set(true);
                                 setState(() {
-                                  asc = true;
-                                  orderBy = "created_at";
                                   orderByLabel = "New items to old";
                                 });
                                 menuController.close();
@@ -206,9 +232,13 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                               title: const Text("New items to old")),
                           ListTile(
                               onTap: () {
+                                ref
+                                    .read(inventoryOrderProvider.notifier)
+                                    .set("updated_at");
+                                ref
+                                    .read(inventoryAscProvider.notifier)
+                                    .set(true);
                                 setState(() {
-                                  asc = true;
-                                  orderBy = "updated_at";
                                   orderByLabel = "Last updated";
                                 });
                                 menuController.close();
@@ -223,8 +253,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             tooltip: "Refresh data",
                             icon: const Icon(Icons.refresh),
                             onPressed: () {
-                              ref.invalidate(itemsInStorageProvider(
-                                  page, pageSize, null, orderBy, asc));
+                              ref.invalidate(inventoryProvider);
                             })
                     ])
                   ]))),
@@ -243,9 +272,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         ? ItemsList(
                             selected: selected,
                             editing: editingItem?.id?.toString() ?? "",
-                            onRefresh: () => ref.refresh(itemsInStorageProvider(
-                                    page, pageSize, null, orderBy, asc)
-                                .future),
+                            onRefresh: () =>
+                                ref.refresh(inventoryProvider.future),
                             onSelected: (List<String> selectedItem) {
                               setState(() {
                                 selected = selectedItem;
@@ -289,16 +317,9 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                   Expanded(
                       child: ItemEditForm(
                     onSave: (item) {
-                      ref
-                          .read(itemsInStorageProvider(page, pageSize).notifier)
-                          .save(item)
-                          .then((value) {
-                        ref.invalidate(itemsInStorageProvider(
-                            page, pageSize, null, orderBy, asc));
-                        setState(() {
-                          editingItem = null;
-                          selected = [];
-                        });
+                      setState(() {
+                        editingItem = null;
+                        selected = [];
                       });
                     },
                     onCancel: () {
