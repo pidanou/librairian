@@ -55,6 +55,7 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   avatar_glow: ^3.0.1
   image_picker: ^1.1.2
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:

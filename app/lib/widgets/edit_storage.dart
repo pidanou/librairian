@@ -295,23 +295,11 @@ class EditStorageState extends ConsumerState<EditStorage> {
           ),
           Expanded(
               child: ItemEditForm(
-                  item: editingItem!,
-                  onSave: (item) async {
-                    save(item);
+                  itemID: editingItem!.id,
+                  onEdit: (item) async {
+                    ref.invalidate(
+                        itemsInStorageProvider(page, limit, widget.storage.id));
                   },
-                  // onSave: (item) async {
-                  //   Item? newItem = await ref
-                  //       .read(
-                  //           itemsInStorageProvider(page, limit, storage.id).notifier)
-                  //       .save(item);
-                  //   if (!mounted) return;
-                  //   if (newItem == null) {
-                  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  //         content: Text("Item could not be saved")));
-                  //   }
-                  //   // ref.invalidate(itemsInStorageProvider(page, limit, storage.id));
-                  //   editingItem = null;
-                  // },
                   onCancel: () {
                     setState(() {
                       editingItem = null;

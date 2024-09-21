@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/helpers/date.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/widgets/item_listtile.dart';
 
 class ItemsList extends ConsumerStatefulWidget {
   const ItemsList(
@@ -87,7 +88,8 @@ class ItemsListState extends ConsumerState<ItemsList> {
           for (Item item in items)
             Material(
                 type: MaterialType.transparency,
-                child: ListTile(
+                child: ItemListTile(
+                    item: item,
                     onTap: () async {
                       widget.onTap?.call(item).whenComplete(() {
                         if (MediaQuery.sizeOf(context).width < 840) {
@@ -103,8 +105,6 @@ class ItemsListState extends ConsumerState<ItemsList> {
                       });
                     },
                     selected: selected.contains(item.id) || editing == item.id,
-                    selectedColor: Theme.of(context).colorScheme.onSurface,
-                    selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
                     leading: widget.onSelected != null
                         ? Checkbox(
                             value: selected.contains(item.id),

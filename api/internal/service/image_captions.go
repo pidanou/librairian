@@ -16,7 +16,7 @@ import (
 
 // Generate captions of an image
 type ImageCaptioner interface {
-	CreateCaption(image []byte) (*string, error)
+	CreateCaption(image []byte) (string, error)
 }
 
 // GCP implementation
@@ -66,7 +66,7 @@ func NewGcpImageCaptionsService(projectID string, jsonCred string, location stri
 	return &GcpImageCaptionService{URL: url, ProjectID: projectID, Location: location, HttpClient: httpClient}
 }
 
-func (r *GcpImageCaptionService) CreateCaption(image []byte) (*string, error) {
+func (r *GcpImageCaptionService) CreateCaption(image []byte) (string, error) {
 	base64Image := b64.StdEncoding.EncodeToString(image)
 
 	imageCaptionRequest := ImageCaptionRequest{
@@ -86,13 +86,13 @@ func (r *GcpImageCaptionService) CreateCaption(image []byte) (*string, error) {
 	jsonData, err := json.Marshal(imageCaptionRequest)
 	if err != nil {
 		fmt.Println(err)
-		return nil, fmt.Errorf("failed to marshal image caption request: %v", err)
+		return "", fmt.Errorf("failed to marshal image caption request: %v", err)
 	}
 
 	req, err := http.NewRequest("POST", r.URL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println(err)
-		return nil, fmt.Errorf("failed to create HTTP request: %v", err)
+		return "", fmt.Errorf("failed to create HTTP request: %v", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -100,29 +100,29 @@ func (r *GcpImageCaptionService) CreateCaption(image []byte) (*string, error) {
 	resp, err := r.HttpClient.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return nil, fmt.Errorf("failed to send HTTP request: %v", err)
+		return "", fmt.Errorf("failed to send HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		return "", fmt.Errorf("failed to read response body: %v", err)
 	}
 
 	var result map[string]interface{}
 	if err := json.Unmarshal(bodyBytes, &result); err != nil {
-		return nil, fmt.Errorf("failed to parse response body: %v", err)
+		return "", fmt.Errorf("failed to parse response body: %v", err)
 	}
 
 	predictions, ok := result["predictions"].([]interface{})
 	if !ok || len(predictions) == 0 {
-		return nil, fmt.Errorf("no predictions found in response")
+		return "", fmt.Errorf("no predictions found in response")
 	}
 
 	caption, ok := predictions[0].(string)
 	if !ok {
-		return nil, fmt.Errorf("failed to extract caption from prediction")
+		return "", fmt.Errorf("failed to extract caption from prediction")
 	}
 
-	return &caption, nil
+	return caption, nil
 }

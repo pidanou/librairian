@@ -31,15 +31,75 @@ class ItemRepository {
     return null;
   }
 
-  FutureOr<Item?> postItem(String id) {
+  Future<Item?> postItem(Item item) async {
+    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item';
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final headers = {
+      "Authorization": "Bearer $token",
+      "content-type": "application/json"
+    };
+
+    item.userId = Supabase.instance.client.auth.currentUser!.id;
+    for (var sl in item.locations ?? []) {
+      sl.userId = Supabase.instance.client.auth.currentUser!.id;
+      sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
+    }
+
+    try {
+      final response = await http.post(Uri.parse(url),
+          headers: headers, body: jsonEncode(item));
+      if (response.statusCode < 300) {
+        Item newItem = Item.fromJson(jsonDecode(response.body));
+        return newItem;
+      }
+    } catch (e) {
+      print("Exception : $e");
+      return null;
+    }
     return null;
   }
 
-  FutureOr<Item?> patchItem(Item item) {
+  FutureOr<Item?> patchItem(Item item) async {
+    String url =
+        '${const String.fromEnvironment('API_URL')}/api/v1/item/${item.id}';
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final headers = {
+      "Authorization": "Bearer $token",
+      "content-type": "application/json"
+    };
+
+    item.userId = Supabase.instance.client.auth.currentUser!.id;
+    for (var sl in item.locations ?? []) {
+      sl.userId = Supabase.instance.client.auth.currentUser!.id;
+      sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
+    }
+
+    try {
+      final response = await http.patch(Uri.parse(url),
+          headers: headers, body: jsonEncode(item));
+      if (response.statusCode < 300) {
+        Item newItem = Item.fromJson(jsonDecode(response.body));
+        return newItem;
+      }
+    } catch (e) {
+      print("Exception : $e");
+      return null;
+    }
     return null;
   }
 
-  FutureOr<Item?> deleteItem(String id) {
-    return null;
+  FutureOr<void> deleteItem(String id) async {
+    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/$id';
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final headers = {
+      "Authorization": "Bearer $token",
+      "content-type": "application/json"
+    };
+    try {
+      await http.delete(Uri.parse(url), headers: headers);
+    } catch (e) {
+      print("Exception : $e");
+      rethrow;
+    }
   }
 }

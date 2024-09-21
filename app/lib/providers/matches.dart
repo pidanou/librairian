@@ -70,7 +70,7 @@ class Matches extends _$Matches {
   Future<void> matchesByName(String input, int maxResults) async {
     String url;
     url =
-        '${const String.fromEnvironment('API_URL')}/api/v1/item?name=$input&page=1&limit=$maxResults&order_by=name&order=asc';
+        '${const String.fromEnvironment('API_URL')}/api/v1/items?name=$input&page=1&limit=$maxResults&order_by=name&order=asc';
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     final headers = {"Authorization": "Bearer $token"};
     state = [

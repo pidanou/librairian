@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -10,11 +11,20 @@ import (
 
 type Item struct {
 	Base
-	Name                  *string          `json:"name" db:"name"`
-	Description           *string          `json:"description" db:"description"`
+	Name                  string           `json:"name" db:"name"`
+	Description           string           `json:"description" db:"description"`
 	DescriptionEmbeddings *pgvector.Vector `json:"-" db:"description_embeddings"`
 	Locations             []Location       `json:"locations"`
 	Attachments           pq.StringArray   `json:"attachments" db:"attachments"`
+}
+
+func (i Item) String() string {
+	return fmt.Sprintf("Item{Name: %s, Description: %s, Locations: %s, Attachments: %s}",
+		i.Name,
+		i.Description,
+		i.Locations,
+		i.Attachments,
+	)
 }
 
 func (f *Item) UserHasAccess(userID *uuid.UUID) bool {

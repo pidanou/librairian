@@ -27,7 +27,7 @@ func (s *Server) Start() {
 	itemRepository := repository.NewPostgresItemRepository(supabasePostgres)
 	storageRepository := repository.NewPostgresStorageRepository(supabasePostgres)
 	attachmentRepository := repository.NewPostgresAttachmentRepository(supabasePostgres)
-	permissionRepository := repository.NewPostgresPermissionRepository(supabasePostgres)
+	permissionRepository := repository.NewPostgresUserRepository(supabasePostgres)
 
 	embeddingService := service.NewOpenaiEmbeddingService(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")
 	similarityService := service.NewPgvectorSimilarityService(supabasePostgres)
@@ -36,8 +36,8 @@ func (s *Server) Start() {
 
 	itemService := service.NewItemService(itemRepository, embeddingService, similarityService)
 	storageService := service.NewStorageService(storageRepository)
-	permissionService := service.NewPermissionService(permissionRepository)
-	attachmentService := service.NewAttachmentService(attachmentRepository, embeddingService, imageCaptionService, imageStorageService, permissionService)
+	userService := service.NewUserService(permissionRepository)
+	attachmentService := service.NewAttachmentService(attachmentRepository, embeddingService, imageCaptionService, imageStorageService, userService)
 
 	h := handler.New(itemService, storageService, attachmentService)
 

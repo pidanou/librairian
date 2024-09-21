@@ -48,7 +48,7 @@ class EditLocationState extends ConsumerState<EditLocation> {
       return;
     }
     widget.onSave?.call(Location(
-        storage: storage, location: controller.text, storageId: storageID));
+        storage: storage, location: controller.text, storageId: storageID!));
   }
 
   @override

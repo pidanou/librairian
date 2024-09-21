@@ -9,7 +9,7 @@ import (
 )
 
 type Embedder interface {
-	CreateEmbedding(text *string) (*pgvector.Vector, error)
+	CreateEmbedding(text string) (*pgvector.Vector, error)
 }
 
 type OpenaiEmbeddingService struct {
@@ -25,15 +25,12 @@ func NewOpenaiEmbeddingService(token string, model string) *OpenaiEmbeddingServi
 	}
 }
 
-func (r *OpenaiEmbeddingService) CreateEmbedding(text *string) (*pgvector.Vector, error) {
-	if text == nil {
-		return nil, nil
-	}
-	if *text == "" {
+func (r *OpenaiEmbeddingService) CreateEmbedding(text string) (*pgvector.Vector, error) {
+	if text == "" {
 		return nil, nil
 	}
 	queryReq := openai.EmbeddingRequest{
-		Input: []string{*text},
+		Input: []string{text},
 		Model: openai.SmallEmbedding3,
 	}
 

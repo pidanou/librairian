@@ -190,13 +190,24 @@ func (r *PostgresItemRepository) UpdateItem(item *types.Item) (*types.Item, erro
 		}
 	}
 
-	query, args, err := sqlx.In(`DELETE FROM location where id NOT IN (?) and item_id = ?`, slList, item.ID)
-	query = tx.Rebind(query)
-	_, err = tx.Exec(query, args...)
-	if err != nil {
-		log.Printf(`Cannot delete storage location %s`, err)
-		tx.Rollback()
-		return nil, err
+	if item.Locations == nil || len(item.Locations) == 0 {
+		query = `DELETE FROM location WHERE item_id = $1`
+		_, err = tx.Exec(query, item.ID)
+		if err != nil {
+			log.Printf(`Cannot delete storage location %s`, err)
+			tx.Rollback()
+			return nil, err
+		}
+	} else {
+		query, args, err := sqlx.In(`DELETE FROM location where id NOT IN (?) and item_id = ?`, slList, item.ID)
+		query = tx.Rebind(query)
+		_, err = tx.Exec(query, args...)
+		_, err = tx.Exec(query, args...)
+		if err != nil {
+			log.Printf(`Cannot delete storage location %s`, err)
+			tx.Rollback()
+			return nil, err
+		}
 	}
 
 	err = tx.Commit()

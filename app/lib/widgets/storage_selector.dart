@@ -48,7 +48,7 @@ class _StorageSelectorState extends ConsumerState<StorageSelector> {
           (Storage storage) {
             return DropdownMenuEntry<Storage>(
               value: storage,
-              label: "${storage.type} ${storage.alias}",
+              label: "${storage.alias}",
             );
           },
         ).toList(),

@@ -42,10 +42,10 @@ type UsageRepository interface {
 	GetUsage(id *uuid.UUID) (*types.Usage, error)
 	EditUsage(usage *types.Usage) (*types.Usage, error)
 	GetUserUsage(userID *uuid.UUID) (*types.Usage, error)
-	GetUserTier(userID *uuid.UUID) (string, error)
 }
 
 type PermissionRepository interface {
 	GetUserTier(userID *uuid.UUID) (string, error)
 	SetUserTier(userID *uuid.UUID, tier string) error
+	UserIsPremium(userID *uuid.UUID) bool
 }

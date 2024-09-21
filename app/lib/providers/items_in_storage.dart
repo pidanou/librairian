@@ -40,26 +40,15 @@ class ItemsInStorage extends _$ItemsInStorage {
   }
 
   Future<void> delete(String itemID) async {
-    String url =
-        '${const String.fromEnvironment('API_URL')}/api/v1/item/$itemID';
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    final headers = {
-      "Authorization": "Bearer $token",
-    };
     try {
-      final response = await http.delete(Uri.parse(url), headers: headers);
-      if (response.statusCode < 300) {
-        var tmp = state;
-        tmp.value?.data.removeWhere((e) => e.id == itemID);
-        state = tmp;
-        return;
-      } else {
-        print("Http error : ${response.body}");
-      }
+      ref.read(ip.itemControllerProvider(itemID).notifier).delete(itemID);
     } catch (e) {
-      print("Exception : $e");
+      print(e);
       return;
     }
+    var tmp = state;
+    tmp.value?.data.removeWhere((e) => e.id == itemID);
+    state = tmp;
     return;
   }
 

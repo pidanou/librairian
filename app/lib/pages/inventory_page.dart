@@ -33,25 +33,6 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
   List<String> selected = [];
   bool deleting = false;
 
-  Future<void> save(Item item) async {
-    Item? newItem;
-    if (item.id == null) {
-      newItem =
-          await ref.read(itemControllerProvider(item.id).notifier).add(item);
-    } else {
-      newItem =
-          await ref.read(itemControllerProvider(item.id).notifier).patch(item);
-    }
-
-    if (!mounted) return;
-    if (newItem == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Item could not be saved")));
-      return;
-    }
-    ref.invalidate(itemsInStorageProvider(page, pageSize, null, orderBy, asc));
-  }
-
   @override
   Widget build(BuildContext context) {
     if (MediaQuery.of(context).size.width < 840) {
@@ -248,13 +229,88 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         ],
                         child: Text(orderByLabel),
                       ),
-                      if (MediaQuery.of(context).size.width > 840)
+                      if (MediaQuery.of(context).size.width > 840) ...[
                         IconButton(
                             tooltip: "Refresh data",
                             icon: const Icon(Icons.refresh),
                             onPressed: () {
                               ref.invalidate(inventoryProvider);
-                            })
+                            }),
+                        IconButton(
+                            tooltip: 'Add item',
+                            icon: const Icon(Icons.add_circle),
+                            onPressed: () async {
+                              var newItem = await ref
+                                  .read(itemControllerProvider(null).notifier)
+                                  .add(
+                                    Item(name: "New Item", locations: [
+                                      Location(
+                                          storage:
+                                              ref.read(defaultStorageProvider))
+                                    ]),
+                                  );
+                              if (!context.mounted) {
+                                return;
+                              }
+                              if (newItem == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content:
+                                            Text("Item could not be added")));
+                                return;
+                              }
+                              ref.invalidate(inventoryProvider);
+                              setState(() {
+                                editingItem = newItem;
+                              });
+                            }),
+                        deleting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator())
+                            : IconButton(
+                                tooltip: 'Delete selected',
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  selected.isNotEmpty
+                                      ? showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialogConfirm(
+                                                icon: const Icon(Icons.warning),
+                                                title: const Text(
+                                                    "Are you sure you want to delete these items?"),
+                                                message: const Text(
+                                                    "This action cannot be undone"),
+                                                confirmMessage:
+                                                    const Text("Delete"),
+                                                action: () async {
+                                                  setState(() {
+                                                    deleting = true;
+                                                  });
+                                                  for (String id in selected) {
+                                                    await ref
+                                                        .read(
+                                                            itemControllerProvider(
+                                                                    id)
+                                                                .notifier)
+                                                        .delete(id);
+                                                  }
+                                                  setState(() {
+                                                    editingItem = null;
+                                                    deleting = false;
+                                                  });
+                                                  ref.invalidate(
+                                                      inventoryProvider);
+                                                });
+                                          })
+                                      : ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                              content:
+                                                  Text("No item selected")));
+                                }),
+                      ]
                     ])
                   ]))),
       Divider(
@@ -316,11 +372,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                   ),
                   Expanded(
                       child: ItemEditForm(
-                    onSave: (item) {
-                      setState(() {
-                        editingItem = null;
-                        selected = [];
-                      });
+                    onEdit: (item) {
+                      ref.invalidate(inventoryProvider);
                     },
                     onCancel: () {
                       setState(() {
@@ -328,7 +381,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         selected = [];
                       });
                     },
-                    item: editingItem!,
+                    itemID: editingItem!.id!,
                   ))
                 ] else ...[
                   VerticalDivider(

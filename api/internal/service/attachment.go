@@ -68,10 +68,10 @@ func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userI
 		return attachments
 	}
 	for i, attachment := range attachments {
-		if attachment.Path == nil {
+		if attachment.Path == "" {
 			continue
 		}
-		image, err := s.ImageStorageService.GetImage("attachments", *attachment.Path)
+		image, err := s.ImageStorageService.GetImage("attachments", attachment.Path)
 		if err != nil {
 			log.Println(err)
 			continue

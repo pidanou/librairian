@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:librairian/models/item.dart';
 import 'package:librairian/repositories/item.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 import 'package:http/http.dart' as http;
 
 part 'item.g.dart';
@@ -24,84 +21,25 @@ class ItemController extends _$ItemController {
     return newItem;
   }
 
-  Future<bool> delete(String id) async {
-    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item/$id';
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    final headers = {
-      "Authorization": "Bearer $token",
-      "content-type": "application/json"
-    };
-    try {
-      final response = await http.delete(Uri.parse(url), headers: headers);
-      if (response.statusCode < 300) {
-        state = AsyncValue.data(Item());
-        return true;
-      }
-    } catch (e) {
-      print("Exception : $e");
-      return false;
-    }
-    return false;
+  Future<void> delete(String id) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      ref.watch(itemRepositoryProvider).deleteItem(id);
+      return Item();
+    });
   }
 
-  Future<Item?> patch(Item item) async {
-    String url =
-        '${const String.fromEnvironment('API_URL')}/api/v1/item/${item.id}';
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    final headers = {
-      "Authorization": "Bearer $token",
-      "content-type": "application/json"
-    };
-
-    item.userId = Supabase.instance.client.auth.currentUser!.id;
-    for (var sl in item.locations ?? []) {
-      sl.userId = Supabase.instance.client.auth.currentUser!.id;
-      sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
-    }
-
-    try {
-      final response = await http.patch(Uri.parse(url),
-          headers: headers, body: jsonEncode(item));
-      if (response.statusCode < 300) {
-        Item newItem = Item.fromJson(jsonDecode(response.body));
-        state = AsyncValue.data(newItem);
-        return newItem;
-      }
-    } catch (e) {
-      print("Exception : $e");
-      return null;
-    }
-    return null;
+  FutureOr<Item?> patch(Item item) async {
+    item.id = state.value!.id;
+    var newItem = await ref.read(itemRepositoryProvider).patchItem(item);
+    state = AsyncValue.data(newItem);
+    return newItem;
   }
 
   Future<Item?> add(Item item) async {
-    String url = '${const String.fromEnvironment('API_URL')}/api/v1/item';
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    final headers = {
-      "Authorization": "Bearer $token",
-      "content-type": "application/json"
-    };
-
-    item.userId = Supabase.instance.client.auth.currentUser!.id;
-    for (var sl in item.locations ?? []) {
-      sl.userId = Supabase.instance.client.auth.currentUser!.id;
-      sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
-    }
-
-    try {
-      final response = await http.post(Uri.parse(url),
-          headers: headers, body: jsonEncode(item));
-      if (response.statusCode < 300) {
-        Item newItem = Item.fromJson(jsonDecode(response.body));
-        state = AsyncValue.data(newItem);
-        return newItem;
-      }
-    } catch (e) {
-      print("Exception : $e");
-      return null;
-    }
-
-    return null;
+    Item? newItem = await ref.read(itemRepositoryProvider).postItem(item);
+    state = AsyncValue.data(newItem);
+    return newItem;
   }
 
   Future<Item?> save(Item item) async {

@@ -42,11 +42,13 @@ class DialogAddStorageState extends ConsumerState<DialogAddStorage> {
                 .read(sp.storagesProvider.notifier)
                 .add(newStorage)
                 .then((value) {
-              Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             }).catchError((e) {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("An error occured")));
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("An error occured")));
+              }
             });
           },
           child: const Text('Add'),

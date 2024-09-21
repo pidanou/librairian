@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -156,7 +155,6 @@ func (h *Handler) PatchItem(c echo.Context) error {
 	userID := getUserIDFromJWT(c)
 	item := &types.Item{}
 	c.Bind(item)
-	fmt.Println(item)
 
 	id := uuid.MustParse(c.Param("id"))
 

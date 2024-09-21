@@ -10,6 +10,7 @@ type Location struct {
 	Storage   *Storage   `json:"storage"`
 	StorageID *uuid.UUID `json:"storage_id" db:"storage_id"`
 	Location  string     `json:"location"`
+	Picked    bool       `json:"picked" db:"picked"`
 }
 
 func (sl *Location) UserHasAccess(userID *uuid.UUID) bool {

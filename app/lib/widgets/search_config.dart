@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/constants/keys.dart';
+import 'package:librairian/providers/matches.dart';
 
-class SearchConfig extends StatefulWidget {
+class SearchConfig extends ConsumerStatefulWidget {
   final void Function(String) onChangeSearchMode;
   final void Function(double) onChangeMatchThreshold;
   final void Function(int) onChangeMaxResults;
@@ -19,7 +21,7 @@ class SearchConfig extends StatefulWidget {
   SearchConfigState createState() => SearchConfigState();
 }
 
-class SearchConfigState extends State<SearchConfig> {
+class SearchConfigState extends ConsumerState<SearchConfig> {
   String searchMode = "by description";
   double matchThreshold = 0.5;
   int maxResults = 10;
@@ -143,78 +145,68 @@ class SearchConfigState extends State<SearchConfig> {
             builder: (context, constraints) => SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(children: [
-                            Tooltip(
-                                message: "Search mode",
-                                child: SegmentedButton(
-                                    showSelectedIcon: false,
-                                    segments: const [
-                                      ButtonSegment(
-                                        value: "by description",
-                                        label: Text("by description"),
-                                      ),
-                                      ButtonSegment(
-                                        value: "by name",
-                                        label: Text("by item name"),
-                                      ),
-                                    ],
-                                    selected: <String>{searchMode},
-                                    onSelectionChanged: (value) {
-                                      setState(() {
-                                        searchMode = value.first;
-                                      });
-                                      widget.onChangeSearchMode(searchMode);
-                                    })),
-                            Tooltip(
-                                message: "Match threshold",
-                                child: Slider(
-                                    min: 0,
-                                    max: 1,
-                                    divisions: 10,
-                                    value: matchThreshold,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        matchThreshold = value;
-                                      });
-                                      widget.onChangeMatchThreshold(
-                                          matchThreshold);
-                                    })),
-                            Tooltip(
-                                message: "Max results",
-                                child: SegmentedButton(
-                                    showSelectedIcon: false,
-                                    segments: const [
-                                      ButtonSegment(
-                                        value: 10,
-                                        label: Text("10"),
-                                      ),
-                                      ButtonSegment(
-                                        value: 20,
-                                        label: Text("20"),
-                                      ),
-                                      ButtonSegment(
-                                        value: 50,
-                                        label: Text("50"),
-                                      ),
-                                    ],
-                                    selected: <int>{maxResults},
-                                    onSelectionChanged: (value) {
-                                      setState(() {
-                                        maxResults = value.first;
-                                      });
-                                      widget.onChangeMaxResults(maxResults);
-                                    })),
-                          ]),
-                          IconButton(
-                              tooltip: "Clear chat",
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                widget.onClearChat();
-                              }),
-                        ])))));
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: Row(children: [
+                    Tooltip(
+                        message: "Search mode",
+                        child: SegmentedButton(
+                            showSelectedIcon: false,
+                            segments: const [
+                              ButtonSegment(
+                                value: "by description",
+                                label: Text("by description"),
+                              ),
+                              ButtonSegment(
+                                value: "by name",
+                                label: Text("by item name"),
+                              ),
+                            ],
+                            selected: <String>{searchMode},
+                            onSelectionChanged: (value) {
+                              setState(() {
+                                searchMode = value.first;
+                              });
+                              widget.onChangeSearchMode(searchMode);
+                            })),
+                    Tooltip(
+                        message: "Match threshold",
+                        child: Slider(
+                            min: 0,
+                            max: 1,
+                            divisions: 10,
+                            value: matchThreshold,
+                            onChanged: (value) {
+                              setState(() {
+                                matchThreshold = value;
+                              });
+                              widget.onChangeMatchThreshold(matchThreshold);
+                            })),
+                    Tooltip(
+                        message: "Max results",
+                        child: SegmentedButton(
+                            showSelectedIcon: false,
+                            segments: const [
+                              ButtonSegment(
+                                value: 10,
+                                label: Text("10"),
+                              ),
+                              ButtonSegment(
+                                value: 20,
+                                label: Text("20"),
+                              ),
+                              ButtonSegment(
+                                value: 50,
+                                label: Text("50"),
+                              ),
+                            ],
+                            selected: <int>{maxResults},
+                            onSelectionChanged: (value) {
+                              setState(() {
+                                maxResults = value.first;
+                              });
+                              widget.onChangeMaxResults(maxResults);
+                            })),
+                  ]),
+                ))));
   }
 }

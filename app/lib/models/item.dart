@@ -20,22 +20,22 @@ class PaginatedItemsList {
 }
 
 class Item {
-  String? id;
+  String id;
   DateTime? createdAt;
   DateTime? updatedAt;
-  String? userId;
-  String? name;
-  String? description;
+  String userId;
+  String name;
+  String description;
   List<Location>? locations;
   List<String>? attachments;
 
   Item({
-    this.id,
+    this.id = "",
     this.createdAt,
     this.updatedAt,
-    this.userId,
-    this.name,
-    this.description,
+    this.userId = "",
+    this.name = "",
+    this.description = "",
     this.locations,
     this.attachments,
   });
@@ -53,9 +53,10 @@ class Item {
       userId: json['user_id'],
       name: json['name'],
       description: json['description'],
-      locations: (json['locations'] as List)
-          .map((e) => Location.fromJson(e))
-          .toList(),
+      locations: (json['locations'] as List?)
+              ?.map((e) => Location.fromJson(e))
+              .toList() ??
+          [],
       attachments:
           (json['attachments'] as List?)?.map((e) => e.toString()).toList() ??
               [],
@@ -68,8 +69,8 @@ class Item {
       'user_id': userId,
       'name': name,
       'description': description,
-      'locations': locations?.map((e) => e.toJson()).toList(),
-      'attachments': attachments
+      'locations': locations,
+      'attachments': attachments,
     };
   }
 }

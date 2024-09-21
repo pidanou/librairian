@@ -33,11 +33,9 @@ class ItemEditFormPageState extends ConsumerState<ItemEditFormPage> {
                           topLeft: Radius.circular(20.0),
                           bottomLeft: Radius.circular(20.0))),
               child: ItemEditForm(
-                  item: item.value!,
-                  onCancel: () => Navigator.of(context).pop(),
-                  onSave: (item) {
-                    Navigator.of(context).pop();
-                  })));
+                itemID: item.value!.id!,
+                onCancel: () => Navigator.of(context).pop(),
+              )));
     }
     return Scaffold(
         appBar: AppBar(

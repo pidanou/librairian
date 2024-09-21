@@ -1,22 +1,24 @@
 class Location {
-  String? id;
+  String id;
   DateTime? createdAt;
   DateTime? updatedAt;
-  String? userId;
-  String? fileId;
+  String userId;
+  String itemId;
   Storage? storage;
-  String? storageId;
-  String? location;
+  String storageId;
+  String location;
+  bool picked;
 
   Location({
-    this.id,
+    this.id = "",
     this.createdAt,
     this.updatedAt,
-    this.userId,
-    this.fileId,
+    this.userId = "",
+    this.itemId = "",
     this.storage,
-    this.storageId,
-    this.location,
+    this.storageId = "",
+    this.location = "",
+    this.picked = false,
   });
 
   factory Location.fromJson(Map<String, dynamic> json) {
@@ -25,10 +27,11 @@ class Location {
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       userId: json['user_id'],
-      fileId: json['file_id'],
+      itemId: json['item_id'],
       storage: Storage.fromJson(json['storage']),
       storageId: json['storage_id'],
       location: json['location'],
+      picked: json['picked'],
     );
   }
 
@@ -38,10 +41,11 @@ class Location {
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'user_id': userId,
-      'file_id': fileId,
+      'item_id': itemId,
       'storage': storage?.toJson(),
       'storage_id': storageId,
       'location': location,
+      'picked': picked,
     };
   }
 
@@ -50,21 +54,18 @@ class Location {
 }
 
 class Storage {
-  String? id;
+  String id;
   DateTime? createdAt;
   DateTime? updatedAt;
-  String? userId;
-  String? type;
-  String? alias;
-  String? username;
+  String userId;
+  String alias;
 
   Storage({
-    this.id,
+    this.id = "",
     this.createdAt,
     this.updatedAt,
-    this.userId,
-    this.alias,
-    this.username,
+    this.userId = "",
+    this.alias = "",
   });
 
   factory Storage.fromJson(Map<String, dynamic> json) {
@@ -74,7 +75,6 @@ class Storage {
       updatedAt: DateTime.parse(json['updated_at']),
       userId: json['user_id'],
       alias: json['alias'],
-      username: json['username'],
     );
   }
 
@@ -84,9 +84,7 @@ class Storage {
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'user_id': userId,
-      'type': type,
       'alias': alias,
-      'username': username,
     };
   }
 }

@@ -9,9 +9,9 @@ import (
 
 type Attachment struct {
 	Base
-	ItemID           *uuid.UUID       `json:"item_id" db:"item_id"`
-	Path             *string          `json:"path" db:"path"`
-	Captions           *string          `json:"-" db:"captions"`
+	ItemID             *uuid.UUID       `json:"item_id" db:"item_id"`
+	Path               string           `json:"path" db:"path"`
+	Captions           string           `json:"-" db:"captions"`
 	CaptionsEmbeddings *pgvector.Vector `json:"-" db:"captions_embeddings"`
 }
 

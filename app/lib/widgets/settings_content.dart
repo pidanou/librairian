@@ -9,7 +9,7 @@ class SettingsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var _googleSignIn = GoogleSignIn();
+    var googleSignIn = GoogleSignIn();
     return Column(
         mainAxisSize: MediaQuery.of(context).size.height < 840
             ? MainAxisSize.min
@@ -106,8 +106,8 @@ class SettingsContent extends StatelessWidget {
                       await Supabase.instance.client.auth
                           .signOut()
                           .then((value) {
-                        _googleSignIn.signOut();
-                        GoRouter.of(context).go('/login');
+                        googleSignIn.signOut();
+                        if (context.mounted) GoRouter.of(context).go('/login');
                       });
                     },
                   )

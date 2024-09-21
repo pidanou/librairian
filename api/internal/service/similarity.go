@@ -1,9 +1,7 @@
 package service
 
 import (
-	"fmt"
 	"log"
-	"sort"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -12,7 +10,8 @@ import (
 )
 
 type SimilarityChecker interface {
-	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
+	FindByDescription(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
+	FindByCaptions(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
 }
 
 type PgvectorSimilarityService struct {
@@ -23,8 +22,7 @@ func NewPgvectorSimilarityService(db *sqlx.DB) *PgvectorSimilarityService {
 	return &PgvectorSimilarityService{DB: db}
 }
 
-func (r *PgvectorSimilarityService) Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
-	matches := []types.MatchedItem{}
+func (r *PgvectorSimilarityService) FindByDescription(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
 	matchesByDescription := []types.MatchedItem{}
 	matchesByCaptions := []types.MatchedItem{}
 	query := `SELECT * FROM match_item_by_description($1, $2, $3, $4)`
@@ -33,7 +31,6 @@ func (r *PgvectorSimilarityService) Find(vector *pgvector.Vector, matchThreshold
 		log.Printf("Error finding similar items %s", err)
 		return nil, err
 	}
-	fmt.Println(matchesByDescription)
 
 	query = `SELECT * FROM match_item_by_captions($1, $2, $3, $4)`
 	err = r.DB.Select(&matchesByCaptions, query, vector, matchThreshold, matchCount, UserID)
@@ -41,20 +38,26 @@ func (r *PgvectorSimilarityService) Find(vector *pgvector.Vector, matchThreshold
 		log.Printf("Error finding similar items %s", err)
 		return nil, err
 	}
-	fmt.Println(matchesByCaptions)
 
-	matches = append(matches, matchesByDescription...)
-	matches = append(matches, matchesByCaptions...)
+	return matchesByDescription, nil
+}
 
-	sort.Slice(matches, func(i, j int) bool {
-		return matches[i].Similarity > matches[j].Similarity
-	})
-
-	if matchCount < len(matches) {
-		matches = matches[:matchCount]
+func (r *PgvectorSimilarityService) FindByCaptions(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
+	matchesByDescription := []types.MatchedItem{}
+	matchesByCaptions := []types.MatchedItem{}
+	query := `SELECT * FROM match_item_by_description($1, $2, $3, $4)`
+	err := r.DB.Select(&matchesByDescription, query, vector, matchThreshold, matchCount, UserID)
+	if err != nil {
+		log.Printf("Error finding similar items %s", err)
+		return nil, err
 	}
 
-	fmt.Println(matches)
+	query = `SELECT * FROM match_item_by_captions($1, $2, $3, $4)`
+	err = r.DB.Select(&matchesByCaptions, query, vector, matchThreshold, matchCount, UserID)
+	if err != nil {
+		log.Printf("Error finding similar items %s", err)
+		return nil, err
+	}
 
-	return matches, nil
+	return matchesByCaptions, nil
 }

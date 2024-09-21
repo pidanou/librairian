@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
+import 'package:librairian/widgets/item_listtile.dart';
 
 class ChatResponse extends ConsumerStatefulWidget {
   const ChatResponse(
@@ -27,8 +28,8 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
     return Column(children: [
       for (var match in widget.matches)
         Card(
-            child: ListTile(
-          dense: true,
+            child: ItemListTile(
+          item: match.item ?? Item(),
           trailing: widget.selected?.id == match.item?.id
               ? AvatarGlow(
                   glowRadiusFactor: 0.2,
@@ -64,22 +65,6 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
             const SizedBox(height: 3),
             Text('${(match.similarity * 100).toStringAsFixed(2)}%')
           ]),
-          title: Text(match.item?.name ?? ''),
-          subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(match.item?.description ?? 'No description'),
-                Column(children: [
-                  for (var sl in match.item?.locations ?? [])
-                    Wrap(children: [
-                      Text(sl.storage?.alias),
-                      const Text(' - '),
-                      Text(sl.location),
-                    ]),
-                ])
-              ]),
         ))
     ]);
   }

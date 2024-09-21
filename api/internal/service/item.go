@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -15,6 +16,7 @@ type ItemService struct {
 	ItemRepository    repository.ItemRepository
 	EmbeddingService  Embedder
 	SimilarityService SimilarityChecker
+	UserService       Permissioner
 }
 
 func NewItemService(r repository.ItemRepository, e Embedder, s SimilarityChecker) *ItemService {
@@ -67,7 +69,7 @@ func (s *ItemService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types.It
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	if item.Description != nil && item.Description != itemCheck.Description {
+	if item.Description != "" && item.Description != itemCheck.Description {
 		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(item.Description)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
@@ -80,11 +82,15 @@ func (s *ItemService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types.It
 
 func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, userID *uuid.UUID) (*types.Item, error) {
 	oldItem, err := s.GetItemByID(itemID, userID)
+	if httpErr, ok := err.(*echo.HTTPError); ok {
+		return nil, echo.NewHTTPError(httpErr.Code, "Cannot get item")
+	}
 	if err != nil || oldItem == nil {
-		return nil, echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item: item does not exist")
+		return nil, echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item")
 	}
 
-	if newItem.Description != nil && newItem.Description != oldItem.Description {
+	if newItem.Description != "" && newItem.Description != oldItem.Description {
+		fmt.Println("description changed")
 		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(newItem.Description)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
@@ -92,7 +98,13 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 		newItem.DescriptionEmbeddings = descriptionEmbedding
 	}
 
-	mergo.Merge(newItem, oldItem)
+	if newItem.Locations != nil && len(newItem.Locations) == 0 {
+		mergo.Merge(newItem, oldItem)
+		newItem.Locations = []types.Location{}
+	} else {
+		mergo.Merge(newItem, oldItem)
+	}
+
 	if !UserHasAccess(newItem, userID) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
@@ -103,6 +115,8 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item, error) {
 	item, err := s.ItemRepository.GetItemByID(id)
 	if err != nil {
+		fmt.Println("sfsdfs")
+		log.Println(err)
 		return nil, err
 	}
 	if !item.UserHasAccess(userID) {
@@ -113,25 +127,56 @@ func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item
 
 func (s *ItemService) FindMatches(search string, threshold float32, maxResults int, userID *uuid.UUID) []types.MatchedItem {
 
-	embedding, err := s.EmbeddingService.CreateEmbedding(&search)
+	embedding, err := s.EmbeddingService.CreateEmbedding(search)
 	if err != nil {
 		return []types.MatchedItem{}
 	}
 
-	matches, err := s.SimilarityService.Find(embedding, threshold, maxResults, userID)
-	if err != nil {
-		return []types.MatchedItem{}
+	matches := []types.MatchedItem{}
+	// matchesByCaptions := []types.MatchedItem{}
+	matchesByDescription := []types.MatchedItem{}
+
+	matchesByDescription, err = s.SimilarityService.FindByDescription(embedding, threshold, maxResults, userID)
+	if err != nil || matchesByDescription == nil {
+		matchesByDescription = []types.MatchedItem{}
 	}
 
-	for i, match := range matches {
-		item, err := s.GetItemByID(match.ItemID, userID)
-		if err != nil {
-			log.Printf("Cannot get item %s: %s", match.ItemID, err)
-			continue
-		}
-		if UserHasAccess(item, userID) {
-			matches[i].Item = item
-		}
+	// if s.UserService.UserIsPremium(userID) {
+	// 	matchesByCaptions, err = s.SimilarityService.FindByCaptions(embedding, threshold, maxResults, userID)
+	// 	if err != nil || matchesByCaptions == nil {
+	// 		matchesByDescription = []types.MatchedItem{}
+	// 	}
+	// }
+
+	matches = append(matches, matchesByDescription...)
+	// matches = append(matches, matchesByCaptions...)
+
+	fmt.Println(matches)
+
+	if len(matches) == 0 {
+		return matches
 	}
+
+	// sort.Slice(matches, func(i, j int) bool {
+	// 	return matches[i].Similarity > matches[j].Similarity
+	// })
+
+	// if maxResults < len(matches) {
+	// 	matches = matches[:maxResults]
+	// }
+	// for i, match := range matches {
+	// 	if userID == nil || match.ItemID == nil {
+	// 		log.Printf("Invalid match or user ID")
+	// 		continue
+	// 	}
+	// 	item, err := s.GetItemByID(match.ItemID, userID)
+	// 	if err != nil {
+	// 		log.Printf("Cannot get item %s: %s", match.ItemID, err)
+	// 		continue
+	// 	}
+	// 	if UserHasAccess(item, userID) {
+	// 		matches[i].Item = item
+	// 	}
+	// }
 	return matches
 }
