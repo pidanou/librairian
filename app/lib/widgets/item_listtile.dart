@@ -55,10 +55,11 @@ class ItemListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(itemControllerProvider(item.id ?? ""));
+    print(item);
+    ref.watch(itemControllerProvider(item.id));
     return ListTile(
-      title: Text(item.name ?? ''),
-      subtitle: Text(item.description ?? 'No description'),
+      title: Text(item.name),
+      subtitle: Text(item.description),
       leading: leading,
       trailing: trailing,
       isThreeLine: isThreeLine ?? false,

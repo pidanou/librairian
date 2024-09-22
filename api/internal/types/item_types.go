@@ -19,7 +19,7 @@ type Item struct {
 }
 
 func (i Item) String() string {
-	return fmt.Sprintf("Item{Name: %s, Description: %s, Locations: %s, Attachments: %s}",
+	return fmt.Sprintf("Item{Name: %s, Description: %s, Locations: %v, Attachments: %s}",
 		i.Name,
 		i.Description,
 		i.Locations,

@@ -188,7 +188,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
                         ),
                         Expanded(
                             child: ItemEditForm(
-                                itemID: selectedItem!.id!,
+                                itemID: selectedItem!.id,
                                 onCancel: () {
                                   setState(() {
                                     selectedItem = null;

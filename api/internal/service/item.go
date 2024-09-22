@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 
 	"dario.cat/mergo"
 	"github.com/google/uuid"
@@ -19,8 +20,8 @@ type ItemService struct {
 	UserService       Permissioner
 }
 
-func NewItemService(r repository.ItemRepository, e Embedder, s SimilarityChecker) *ItemService {
-	return &ItemService{ItemRepository: r, EmbeddingService: e, SimilarityService: s}
+func NewItemService(r repository.ItemRepository, e Embedder, s SimilarityChecker, u Permissioner) *ItemService {
+	return &ItemService{ItemRepository: r, EmbeddingService: e, SimilarityService: s, UserService: u}
 }
 
 func (s *ItemService) AddItem(item *types.Item) (*types.Item, error) {
@@ -133,7 +134,7 @@ func (s *ItemService) FindMatches(search string, threshold float32, maxResults i
 	}
 
 	matches := []types.MatchedItem{}
-	// matchesByCaptions := []types.MatchedItem{}
+	matchesByCaptions := []types.MatchedItem{}
 	matchesByDescription := []types.MatchedItem{}
 
 	matchesByDescription, err = s.SimilarityService.FindByDescription(embedding, threshold, maxResults, userID)
@@ -141,42 +142,50 @@ func (s *ItemService) FindMatches(search string, threshold float32, maxResults i
 		matchesByDescription = []types.MatchedItem{}
 	}
 
-	// if s.UserService.UserIsPremium(userID) {
-	// 	matchesByCaptions, err = s.SimilarityService.FindByCaptions(embedding, threshold, maxResults, userID)
-	// 	if err != nil || matchesByCaptions == nil {
-	// 		matchesByDescription = []types.MatchedItem{}
-	// 	}
-	// }
+	if s.UserService.UserIsPremium(userID) {
+		matchesByCaptions, err = s.SimilarityService.FindByCaptions(embedding, threshold, maxResults, userID)
+		if err != nil || matchesByCaptions == nil {
+			matchesByDescription = []types.MatchedItem{}
+		}
+	}
 
 	matches = append(matches, matchesByDescription...)
-	// matches = append(matches, matchesByCaptions...)
-
-	fmt.Println(matches)
+	matches = append(matches, matchesByCaptions...)
 
 	if len(matches) == 0 {
 		return matches
 	}
 
-	// sort.Slice(matches, func(i, j int) bool {
-	// 	return matches[i].Similarity > matches[j].Similarity
-	// })
+	seen := make(map[string]bool)
+	var deduped []types.MatchedItem
 
-	// if maxResults < len(matches) {
-	// 	matches = matches[:maxResults]
-	// }
-	// for i, match := range matches {
-	// 	if userID == nil || match.ItemID == nil {
-	// 		log.Printf("Invalid match or user ID")
-	// 		continue
-	// 	}
-	// 	item, err := s.GetItemByID(match.ItemID, userID)
-	// 	if err != nil {
-	// 		log.Printf("Cannot get item %s: %s", match.ItemID, err)
-	// 		continue
-	// 	}
-	// 	if UserHasAccess(item, userID) {
-	// 		matches[i].Item = item
-	// 	}
-	// }
-	return matches
+	for _, match := range matches {
+		if !seen[match.ItemID.String()] {
+			deduped = append(deduped, match)
+			seen[match.ItemID.String()] = true
+		}
+	}
+
+	sort.Slice(deduped, func(i, j int) bool {
+		return deduped[i].Similarity > deduped[j].Similarity
+	})
+
+	if maxResults < len(deduped) {
+		deduped = deduped[:maxResults]
+	}
+	for i, match := range deduped {
+		if userID == nil || match.ItemID == nil {
+			log.Printf("Invalid match or user ID")
+			continue
+		}
+		item, err := s.GetItemByID(match.ItemID, userID)
+		if err != nil {
+			log.Printf("Cannot get item %s: %s", match.ItemID, err)
+			continue
+		}
+		if UserHasAccess(item, userID) {
+			deduped[i].Item = item
+		}
+	}
+	return deduped
 }

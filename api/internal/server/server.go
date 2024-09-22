@@ -34,9 +34,9 @@ func (s *Server) Start() {
 	imageCaptionService := service.NewGcpImageCaptionsService(os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_SERVICE_ACCOUNT_KEY"), os.Getenv("GCP_LOCATION"))
 	imageStorageService := service.NewSupabaseImageStorageService(os.Getenv("SUPABASE_PROJECT_ID"), os.Getenv("SUPABASE_SERVICE_KEY"))
 
-	itemService := service.NewItemService(itemRepository, embeddingService, similarityService)
 	storageService := service.NewStorageService(storageRepository)
 	userService := service.NewUserService(permissionRepository)
+	itemService := service.NewItemService(itemRepository, embeddingService, similarityService, userService)
 	attachmentService := service.NewAttachmentService(attachmentRepository, embeddingService, imageCaptionService, imageStorageService, userService)
 
 	h := handler.New(itemService, storageService, attachmentService)

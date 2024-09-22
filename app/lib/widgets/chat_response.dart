@@ -30,31 +30,33 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
         Card(
             child: ItemListTile(
           item: match.item ?? Item(),
-          trailing: widget.selected?.id == match.item?.id
-              ? AvatarGlow(
-                  glowRadiusFactor: 0.2,
-                  glowCount: 1,
-                  glowColor: Theme.of(context).colorScheme.primary,
-                  child: IconButton(
-                    icon: Icon(Icons.info,
-                        color: Theme.of(context).colorScheme.primary),
-                    onPressed: () {},
-                  ))
-              : IconButton(
-                  icon: Icon(Icons.info,
-                      color: widget.selected?.id == match.item?.id
-                          ? Theme.of(context).colorScheme.primary
-                          : null),
-                  onPressed: () {
-                    if (MediaQuery.of(context).size.width < 840) {
-                      GoRouter.of(context).go(
-                          "/search/detail/${match.item?.id}",
-                          extra: match.item);
-                    } else {
-                      widget.onSelect?.call(match.item!);
-                    }
-                  },
-                ),
+          trailing:
+              widget.selected?.id == match.item?.id && widget.selected != null
+                  ? AvatarGlow(
+                      glowRadiusFactor: 0.2,
+                      glowCount: 1,
+                      glowColor: Theme.of(context).colorScheme.primary,
+                      child: IconButton(
+                        icon: Icon(Icons.info,
+                            color: Theme.of(context).colorScheme.primary),
+                        onPressed: () {},
+                      ))
+                  : IconButton(
+                      icon: Icon(Icons.info,
+                          color: widget.selected?.id == match.item?.id &&
+                                  widget.selected != null
+                              ? Theme.of(context).colorScheme.primary
+                              : null),
+                      onPressed: () {
+                        if (MediaQuery.of(context).size.width < 840) {
+                          GoRouter.of(context).go(
+                              "/search/detail/${match.item?.id}",
+                              extra: match.item);
+                        } else {
+                          widget.onSelect?.call(match.item!);
+                        }
+                      },
+                    ),
           leading:
               Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             SizedBox(

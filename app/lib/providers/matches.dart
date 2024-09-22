@@ -59,6 +59,7 @@ class Matches extends _$Matches {
           matches: await AsyncValue.guard(() async {
             var response = await http.get(Uri.parse(url), headers: headers);
             var data = jsonDecode(response.body);
+            print(data);
             return data
                 .map<MatchItem>((json) => MatchItem.fromJson(json))
                 .toList();

@@ -58,7 +58,6 @@ func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userI
 		}
 	}
 	attachments = attachments[:n]
-	attachments = s.AttachmentRepository.AddAttachments(attachments)
 	userTier, err := s.PermissionService.GetUserTier(userID)
 	if err != nil {
 		log.Println(err)
