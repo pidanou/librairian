@@ -15,12 +15,12 @@ import (
 )
 
 // Generate captions of an image
-type ImageCaptioner interface {
+type IImageCaptionService interface {
 	CreateCaption(image []byte) (string, error)
 }
 
 // GCP implementation
-type GcpImageCaptionService struct {
+type ImageCaptionService struct {
 	URL        string
 	ProjectID  string
 	Location   string
@@ -45,7 +45,7 @@ type ImageCaptionRequest struct {
 	Parameters Parameters      `json:"parameters"`
 }
 
-func NewGcpImageCaptionsService(projectID string, jsonCred string, location string) *GcpImageCaptionService {
+func NewImageCaptionsService(projectID string, jsonCred string, location string) *ImageCaptionService {
 	sDec, err := b64.StdEncoding.DecodeString(jsonCred)
 	if err != nil {
 		log.Fatal(err)
@@ -63,10 +63,10 @@ func NewGcpImageCaptionsService(projectID string, jsonCred string, location stri
 		projectID,
 		location,
 	)
-	return &GcpImageCaptionService{URL: url, ProjectID: projectID, Location: location, HttpClient: httpClient}
+	return &ImageCaptionService{URL: url, ProjectID: projectID, Location: location, HttpClient: httpClient}
 }
 
-func (r *GcpImageCaptionService) CreateCaption(image []byte) (string, error) {
+func (r *ImageCaptionService) CreateCaption(image []byte) (string, error) {
 	base64Image := b64.StdEncoding.EncodeToString(image)
 
 	imageCaptionRequest := ImageCaptionRequest{

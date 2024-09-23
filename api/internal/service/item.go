@@ -15,13 +15,13 @@ import (
 
 type ItemService struct {
 	ItemRepository    repository.ItemRepository
-	EmbeddingService  Embedder
-	SimilarityService SimilarityChecker
-	UserService       Permissioner
+	EmbeddingService  IEmbeddingService
+	SimilarityService *SimilarityService
+	BillingService    *BillingService
 }
 
-func NewItemService(r repository.ItemRepository, e Embedder, s SimilarityChecker, u Permissioner) *ItemService {
-	return &ItemService{ItemRepository: r, EmbeddingService: e, SimilarityService: s, UserService: u}
+func NewItemService(r repository.ItemRepository, e IEmbeddingService, s *SimilarityService, b *BillingService) *ItemService {
+	return &ItemService{ItemRepository: r, EmbeddingService: e, SimilarityService: s, BillingService: b}
 }
 
 func (s *ItemService) AddItem(item *types.Item) (*types.Item, error) {
@@ -142,11 +142,9 @@ func (s *ItemService) FindMatches(search string, threshold float32, maxResults i
 		matchesByDescription = []types.MatchedItem{}
 	}
 
-	if s.UserService.UserIsPremium(userID) {
-		matchesByCaptions, err = s.SimilarityService.FindByCaptions(embedding, threshold, maxResults, userID)
-		if err != nil || matchesByCaptions == nil {
-			matchesByDescription = []types.MatchedItem{}
-		}
+	matchesByCaptions, err = s.SimilarityService.FindByCaptions(embedding, threshold, maxResults, userID)
+	if err != nil || matchesByCaptions == nil {
+		matchesByDescription = []types.MatchedItem{}
 	}
 
 	matches = append(matches, matchesByDescription...)

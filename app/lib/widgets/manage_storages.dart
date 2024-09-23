@@ -61,29 +61,7 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
                                         extra: storage);
                                   }
                                 },
-                                title: storage.id ==
-                                        ref.watch(sp.defaultStorageProvider)?.id
-                                    ? Text("${storage.alias} (default)")
-                                    : Text(storage.alias),
-                                trailing: IconButton(
-                                  onPressed: () {
-                                    ref
-                                        .read(
-                                            sp.defaultStorageProvider.notifier)
-                                        .set(storage);
-                                  },
-                                  icon: storage.id ==
-                                          ref
-                                              .watch(sp.defaultStorageProvider)
-                                              ?.id
-                                      ? Icon(Icons.star,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary)
-                                      : const Icon(
-                                          Icons.star_border,
-                                        ),
-                                ),
+                                title: Text(storage.alias),
                               ))
                       ])))
             ])),

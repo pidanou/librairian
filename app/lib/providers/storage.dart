@@ -124,36 +124,3 @@ class Storages extends _$Storages {
     }
   }
 }
-
-@riverpod
-class DefaultStorage extends _$DefaultStorage {
-  @override
-  st.Storage? build() {
-    final prefs = ref.read(sharedPreferencesProvider);
-
-    final storageID = prefs.getString("storage_id");
-    if (storageID == null) {
-      return null;
-    }
-
-    final storages = ref.watch(storagesProvider);
-    if (storages is AsyncLoading || storages is AsyncError) {
-      return null;
-    }
-    if (storages.value?.isEmpty ?? true) {
-      return null;
-    }
-    final storageList =
-        storages.value!.where((device) => device.id == storageID).toList();
-    if (storageList.isEmpty) {
-      return null;
-    }
-    return storageList.first;
-  }
-
-  void set(st.Storage? s) {
-    state = s;
-    final prefs = ref.read(sharedPreferencesProvider);
-    prefs.setString('storage_id', s?.id ?? '');
-  }
-}

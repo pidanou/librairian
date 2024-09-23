@@ -44,6 +44,7 @@ class ItemRepository {
       sl.userId = Supabase.instance.client.auth.currentUser!.id;
       sl.storage?.userId = Supabase.instance.client.auth.currentUser!.id;
     }
+    print(item);
 
     try {
       final response = await http.post(Uri.parse(url),

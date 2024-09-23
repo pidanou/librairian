@@ -12,20 +12,20 @@ import (
 
 type AttachmentService struct {
 	AttachmentRepository repository.AttachmentRepository
-	EmbeddingService     Embedder
-	ImageCaptionService  ImageCaptioner
-	ImageStorageService  ObjectStorer
-	PermissionService    Permissioner
+	EmbeddingService     IEmbeddingService
+	ImageCaptionService  IImageCaptionService
+	ImageStorageService  IObjectStorageService
+	BillingService       *BillingService
 }
 
 func NewAttachmentService(
 	r repository.AttachmentRepository,
-	e Embedder,
-	s ImageCaptioner,
-	i ObjectStorer,
-	p Permissioner,
+	e IEmbeddingService,
+	s IImageCaptionService,
+	i IObjectStorageService,
+	b *BillingService,
 ) *AttachmentService {
-	return &AttachmentService{AttachmentRepository: r, EmbeddingService: e, ImageCaptionService: s, ImageStorageService: i, PermissionService: p}
+	return &AttachmentService{AttachmentRepository: r, EmbeddingService: e, ImageCaptionService: s, ImageStorageService: i, BillingService: b}
 }
 
 func (s *AttachmentService) GetAttachmentByID(id *uuid.UUID) (*types.Attachment, error) {
@@ -58,14 +58,6 @@ func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userI
 		}
 	}
 	attachments = attachments[:n]
-	userTier, err := s.PermissionService.GetUserTier(userID)
-	if err != nil {
-		log.Println(err)
-		return attachments
-	}
-	if userTier != "premium" {
-		return attachments
-	}
 	for i, attachment := range attachments {
 		if attachment.Path == "" {
 			continue

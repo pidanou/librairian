@@ -2,30 +2,45 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/pgvector/pgvector-go"
+	"github.com/pkoukk/tiktoken-go"
 	"github.com/sashabaranov/go-openai"
 )
 
-type Embedder interface {
+type IEmbeddingService interface {
+	CountTokens(text string) int
 	CreateEmbedding(text string) (*pgvector.Vector, error)
 }
 
-type OpenaiEmbeddingService struct {
+type EmbeddingService struct {
 	Client *openai.Client
 	Model  string
 }
 
-func NewOpenaiEmbeddingService(token string, model string) *OpenaiEmbeddingService {
+func NewEmbeddingService(token string, model string) *EmbeddingService {
 	client := openai.NewClient(token)
-	return &OpenaiEmbeddingService{
+	return &EmbeddingService{
 		Client: client,
 		Model:  model,
 	}
 }
 
-func (r *OpenaiEmbeddingService) CreateEmbedding(text string) (*pgvector.Vector, error) {
+func (r *EmbeddingService) CountTokens(text string) int {
+	tkm, err := tiktoken.EncodingForModel(r.Model)
+	if err != nil {
+		err = fmt.Errorf(": %v", err)
+		return 0
+	}
+
+	token := tkm.Encode(text, nil, nil)
+
+	return len(token)
+}
+
+func (r *EmbeddingService) CreateEmbedding(text string) (*pgvector.Vector, error) {
 	if text == "" {
 		return nil, nil
 	}
@@ -43,5 +58,3 @@ func (r *OpenaiEmbeddingService) CreateEmbedding(text string) (*pgvector.Vector,
 
 	return &vector, nil
 }
-
-// Store image and objects in S3 compatible storage

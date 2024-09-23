@@ -3,10 +3,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
-import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/inventory.dart';
 import 'package:librairian/providers/item.dart';
-import 'package:librairian/providers/storage.dart';
 import 'package:librairian/providers/items_in_storage.dart';
 import 'package:librairian/widgets/alert_dialog_confirm.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
@@ -90,13 +88,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                 tooltip: 'Add item',
                 icon: const Icon(Icons.add_circle),
                 onPressed: () async {
-                  var newItem = await ref
-                      .read(itemControllerProvider(null).notifier)
-                      .add(
-                        Item(name: "New Item", locations: [
-                          Location(storage: ref.read(defaultStorageProvider))
-                        ]),
-                      );
+                  var newItem =
+                      await ref.read(itemControllerProvider(null).notifier).add(
+                            Item(name: "New Item"),
+                          );
                   if (!context.mounted) {
                     return;
                   }
@@ -113,9 +108,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                     );
                   }
                   setState(() {
-                    editingItem = Item(name: "New Item", locations: [
-                      Location(storage: ref.read(defaultStorageProvider))
-                    ]);
+                    editingItem = Item(name: "New Item");
                   });
                 }),
           ],
@@ -241,13 +234,11 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             icon: const Icon(Icons.add_circle),
                             onPressed: () async {
                               var newItem = await ref
-                                  .read(itemControllerProvider(null).notifier)
-                                  .add(
-                                    Item(name: "New Item", locations: [
-                                      Location(
-                                          storage:
-                                              ref.read(defaultStorageProvider))
-                                    ]),
+                                  .read(itemRepositoryProvider)
+                                  .postItem(
+                                    Item(
+                                      name: "New Item",
+                                    ),
                                   );
                               if (!context.mounted) {
                                 return;
@@ -327,7 +318,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                     child: items is AsyncData
                         ? ItemsList(
                             selected: selected,
-                            editing: editingItem?.id?.toString() ?? "",
+                            editing: editingItem?.id.toString() ?? "",
                             onRefresh: () =>
                                 ref.refresh(inventoryProvider.future),
                             onSelected: (List<String> selectedItem) {
@@ -381,7 +372,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                         selected = [];
                       });
                     },
-                    itemID: editingItem!.id!,
+                    itemID: editingItem!.id,
                   ))
                 ] else ...[
                   VerticalDivider(

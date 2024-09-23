@@ -37,15 +37,7 @@ type SimilarityRepository interface {
 	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
 }
 
-type UsageRepository interface {
-	AddUsage(usage *types.Usage) (*types.Usage, error)
-	GetUsage(id *uuid.UUID) (*types.Usage, error)
-	EditUsage(usage *types.Usage) (*types.Usage, error)
-	GetUserUsage(userID *uuid.UUID) (*types.Usage, error)
-}
-
-type PermissionRepository interface {
-	GetUserTier(userID *uuid.UUID) (string, error)
-	SetUserTier(userID *uuid.UUID, tier string) error
-	UserIsPremium(userID *uuid.UUID) bool
+type BillingRepository interface {
+	AddTokenUsage(usage *types.TokenUsage) error
+	GetUserMonthlyTokenUsage(userID *uuid.UUID) (int, error)
 }

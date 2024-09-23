@@ -9,20 +9,15 @@ import (
 	"github.com/pidanou/librairian/internal/types"
 )
 
-type SimilarityChecker interface {
-	FindByDescription(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
-	FindByCaptions(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
-}
-
-type PgvectorSimilarityService struct {
+type SimilarityService struct {
 	DB *sqlx.DB
 }
 
-func NewPgvectorSimilarityService(db *sqlx.DB) *PgvectorSimilarityService {
-	return &PgvectorSimilarityService{DB: db}
+func NewSimilarityService(db *sqlx.DB) *SimilarityService {
+	return &SimilarityService{DB: db}
 }
 
-func (r *PgvectorSimilarityService) FindByDescription(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
+func (r *SimilarityService) FindByDescription(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
 	matchesByDescription := []types.MatchedItem{}
 	matchesByCaptions := []types.MatchedItem{}
 	query := `SELECT * FROM match_item_by_description($1, $2, $3, $4)`
@@ -42,7 +37,7 @@ func (r *PgvectorSimilarityService) FindByDescription(vector *pgvector.Vector, m
 	return matchesByDescription, nil
 }
 
-func (r *PgvectorSimilarityService) FindByCaptions(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
+func (r *SimilarityService) FindByCaptions(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error) {
 	matchesByDescription := []types.MatchedItem{}
 	matchesByCaptions := []types.MatchedItem{}
 	query := `SELECT * FROM match_item_by_description($1, $2, $3, $4)`

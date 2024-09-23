@@ -11,7 +11,7 @@ import (
 )
 
 type StorageService struct {
-	StorageRepository repository.StorageRepository
+	repository.StorageRepository
 }
 
 func NewStorageService(r repository.StorageRepository) *StorageService {

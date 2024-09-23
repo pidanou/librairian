@@ -39,7 +39,9 @@ require (
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
+	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/pkoukk/tiktoken-go v0.1.7 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
