@@ -13,6 +13,8 @@ type Attachment struct {
 	Path               string           `json:"path" db:"path"`
 	Captions           string           `json:"-" db:"captions"`
 	CaptionsEmbeddings *pgvector.Vector `json:"-" db:"captions_embeddings"`
+	Bytes              []byte           `json:"bytes"`
+	Size               int              `json:"-" db:"size"`
 }
 
 func (a *Attachment) UserHasAccess(userID *uuid.UUID) bool {

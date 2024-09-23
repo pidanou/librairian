@@ -1,11 +1,7 @@
 package helper
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"reflect"
 )
 
@@ -47,31 +43,4 @@ func RemoveDuplicates(slice interface{}, fieldName string) interface{} {
 
 	// Return the unique slice
 	return uniqueSlice.Interface()
-}
-
-func PrettyPrintRequest(r http.Request) {
-	var bodyBytes []byte
-	var err error
-
-	if r.Body != nil {
-		bodyBytes, err = io.ReadAll(r.Body)
-		if err != nil {
-			fmt.Printf("Body reading error: %v", err)
-			return
-		}
-		defer r.Body.Close()
-	}
-
-	fmt.Printf("Headers: %+v\n", r.Header)
-
-	if len(bodyBytes) > 0 {
-		var prettyJSON bytes.Buffer
-		if err = json.Indent(&prettyJSON, bodyBytes, "", "\t"); err != nil {
-			fmt.Printf("JSON parse error: %v", err)
-			return
-		}
-		fmt.Println(string(prettyJSON.Bytes()))
-	} else {
-		fmt.Printf("Body: No Body Supplied\n")
-	}
 }

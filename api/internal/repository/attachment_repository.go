@@ -42,10 +42,10 @@ func (r *PostgresAttachmentRepository) GetItemAttachments(id *uuid.UUID) ([]type
 	return attachments, nil
 }
 
-func (r *PostgresAttachmentRepository) AddAttachments(attachments []types.Attachment) []types.Attachment {
+func (r *PostgresAttachmentRepository) AddAttachments(attachments []types.Attachment) ([]types.Attachment, error) {
 	insertedAttachments := []types.Attachment{}
-	query := `INSERT INTO attachment (user_id, created_at, updated_at, item_id, path, captions, captions_embeddings) 
-  VALUES (:user_id, now(), now(), :item_id, :path, :captions, :captions_embeddings) RETURNING *`
+	query := `INSERT INTO attachment (user_id, created_at, updated_at, item_id, path, captions, captions_embeddings, size) 
+  VALUES (:user_id, now(), now(), :item_id, :path, :captions, :captions_embeddings, :size) RETURNING *`
 
 	for _, attachment := range attachments {
 		rows, err := r.DB.NamedQuery(query, attachment)
@@ -67,7 +67,7 @@ func (r *PostgresAttachmentRepository) AddAttachments(attachments []types.Attach
 		}
 	}
 
-	return insertedAttachments
+	return insertedAttachments, nil
 }
 
 func (r *PostgresAttachmentRepository) DeleteAttachmentByID(id *uuid.UUID) error {

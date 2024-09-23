@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -25,20 +24,7 @@ func NewItemService(r repository.ItemRepository, e IEmbeddingService, s *Similar
 }
 
 func (s *ItemService) AddItem(item *types.Item) (*types.Item, error) {
-	descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(item.Description)
-	if err != nil {
-		log.Println("Cannot create description embedding: ", err)
-		return nil, err
-	}
-	item.DescriptionEmbeddings = descriptionEmbedding
-
-	newItem, err := s.ItemRepository.AddItem(item)
-	if err != nil {
-		log.Println("Cannot add item: ", err)
-		return nil, err
-	}
-
-	return newItem, nil
+	return s.ItemRepository.AddItem(item)
 }
 
 func (s *ItemService) GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, order types.OrderBy) ([]types.Item, int, error) {
@@ -70,12 +56,22 @@ func (s *ItemService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types.It
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
+	monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
+	if monthlyTokens > 100000000 || err != nil {
+		return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
+	}
+
 	if item.Description != "" && item.Description != itemCheck.Description {
 		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(item.Description)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
 		item.DescriptionEmbeddings = descriptionEmbedding
+		descriptionToken := s.EmbeddingService.CountTokens(item.Description)
+		err = s.BillingService.AddTokenUsage(descriptionToken, userID)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	return s.ItemRepository.UpdateItem(item)
@@ -90,13 +86,23 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 		return nil, echo.NewHTTPError(http.StatusBadRequest, "Cannot edit item")
 	}
 
+	monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
+	if monthlyTokens > 100000000 || err != nil {
+		return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
+	}
+
 	if newItem.Description != "" && newItem.Description != oldItem.Description {
-		fmt.Println("description changed")
 		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(newItem.Description)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
 		newItem.DescriptionEmbeddings = descriptionEmbedding
+		descriptionToken := s.EmbeddingService.CountTokens(newItem.Description)
+		err = s.BillingService.AddTokenUsage(descriptionToken, userID)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
 	}
 
 	if newItem.Locations != nil && len(newItem.Locations) == 0 {
@@ -116,7 +122,6 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item, error) {
 	item, err := s.ItemRepository.GetItemByID(id)
 	if err != nil {
-		fmt.Println("sfsdfs")
 		log.Println(err)
 		return nil, err
 	}
@@ -127,9 +132,19 @@ func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item
 }
 
 func (s *ItemService) FindMatches(search string, threshold float32, maxResults int, userID *uuid.UUID) []types.MatchedItem {
+	monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
+	if monthlyTokens > 100000000 || err != nil {
+		return []types.MatchedItem{}
+	}
 
 	embedding, err := s.EmbeddingService.CreateEmbedding(search)
 	if err != nil {
+		return []types.MatchedItem{}
+	}
+	searchToken := s.EmbeddingService.CountTokens(search)
+	err = s.BillingService.AddTokenUsage(searchToken, userID)
+	if err != nil {
+		log.Println(err)
 		return []types.MatchedItem{}
 	}
 

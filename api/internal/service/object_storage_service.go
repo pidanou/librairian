@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"fmt"
 
 	storage_go "github.com/supabase-community/storage-go"
@@ -8,6 +9,7 @@ import (
 
 type IObjectStorageService interface {
 	GetImage(bucket, path string) ([]byte, error)
+	UploadImage(bucket string, path string, body []byte) error
 }
 
 // Supabase implenementation
@@ -28,4 +30,12 @@ func NewSupabaseImageStorageService(projectID string, serviceKey string) *Object
 
 func (r *ObjectStorageService) GetImage(bucket, path string) ([]byte, error) {
 	return r.StorageClient.DownloadFile(bucket, path)
+}
+
+func (r *ObjectStorageService) UploadImage(bucket string, path string, body []byte) error {
+	_, err := r.StorageClient.UploadFile(bucket, path, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	return nil
 }

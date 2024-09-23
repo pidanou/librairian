@@ -49,35 +49,54 @@ func (s *AttachmentService) GetItemAttachments(itemID, userID *uuid.UUID) ([]typ
 	return attachments, nil
 }
 
-func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userID *uuid.UUID) []types.Attachment {
-	n := 0
-	for _, attachment := range attachments {
-		if attachment.UserHasAccess(userID) {
-			attachments[n] = attachment
-			n++
-		}
+func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userID *uuid.UUID) ([]types.Attachment, error) {
+	totalStorage, err := s.BillingService.GetTotalStorageUsed(userID)
+	if err != nil || totalStorage > 5368709120 {
+		log.Println(err)
+		return []types.Attachment{}, echo.NewHTTPError(http.StatusForbidden, "Out of storage")
 	}
-	attachments = attachments[:n]
-	for i, attachment := range attachments {
-		if attachment.Path == "" {
+	attachmentsToAdd := []types.Attachment{}
+	for _, attachment := range attachments {
+		totalStorage += len(attachment.Bytes)
+		if totalStorage > 5368709120 {
+			totalStorage -= len(attachment.Bytes)
 			continue
 		}
-		image, err := s.ImageStorageService.GetImage("attachments", attachment.Path)
+		if attachment.UserHasAccess(userID) {
+			attachment.Size = len(attachment.Bytes)
+			attachmentsToAdd = append(attachmentsToAdd, attachment)
+		}
+	}
+	for i, attachment := range attachmentsToAdd {
+		err := s.ImageStorageService.UploadImage("attachments", attachment.Path, attachment.Bytes)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
-		captions, _ := s.ImageCaptionService.CreateCaption(image)
+		monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
+		if monthlyTokens > 100000000 || err != nil {
+			return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
+		}
+		captions, _ := s.ImageCaptionService.CreateCaption(attachment.Bytes)
 		attachment.Captions = captions
 
 		captionsEmbedding, _ := s.EmbeddingService.CreateEmbedding(captions)
 		attachment.CaptionsEmbeddings = captionsEmbedding
+		tokens := s.EmbeddingService.CountTokens(captions)
+		err = s.BillingService.AddTokenUsage(tokens, userID)
+		if err != nil {
+			log.Println(err)
+		}
+		err = s.BillingService.AddTokenUsage(75000, userID)
+		if err != nil {
+			log.Println(err)
+		}
 
-		attachments[i] = attachment
+		attachmentsToAdd[i] = attachment
 	}
 
-	return s.AttachmentRepository.AddAttachments(attachments)
+	return s.AttachmentRepository.AddAttachments(attachmentsToAdd)
 }
 
 func (s *AttachmentService) DeleteAttachmentByID(attachmentID, userID *uuid.UUID) error {

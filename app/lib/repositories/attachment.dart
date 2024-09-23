@@ -57,23 +57,23 @@ class AttachmentRepository {
       String? itemId, String fileName, Uint8List? bytes) async {
     fileName = fileName.split("/").last;
     String path = "${supabaseClient.auth.currentUser!.id}/$itemId/$fileName";
-    String? objectId;
-    try {
-      objectId = await uploadAttachment(path, bytes);
-    } catch (e) {
-      print("Cannot upload attachment : $e");
-      return [];
-    }
+    // String? objectId;
+    // try {
+    //   objectId = await uploadAttachment(path, bytes);
+    // } catch (e) {
+    //   print("Cannot upload attachment : $e");
+    //   return [];
+    // }
 
-    if (objectId == null) {
-      return [];
-    }
+    // if (objectId == null) {
+    //   return [];
+    // }
 
     Attachment attachment = Attachment(
-      userId: supabaseClient.auth.currentUser!.id,
-      itemId: itemId,
-      path: path,
-    );
+        userId: supabaseClient.auth.currentUser!.id,
+        itemId: itemId,
+        path: path,
+        bytes: bytes);
 
     String url =
         '${const String.fromEnvironment('API_URL')}/api/v1/attachments';

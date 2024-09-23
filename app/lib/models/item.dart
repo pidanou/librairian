@@ -64,6 +64,15 @@ class Item {
   }
 
   Map<String, dynamic> toJson() {
+    if (id == "") {
+      return {
+        'user_id': userId,
+        'name': name,
+        'description': description,
+        'locations': locations,
+        'attachments': attachments,
+      };
+    }
     return {
       'id': id,
       'user_id': userId,

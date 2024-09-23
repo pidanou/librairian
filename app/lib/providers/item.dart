@@ -32,6 +32,9 @@ class ItemController extends _$ItemController {
   FutureOr<Item?> patch(Item item) async {
     item.id = state.value!.id;
     var newItem = await ref.read(itemRepositoryProvider).patchItem(item);
+    if (newItem == null) {
+      return null;
+    }
     state = AsyncValue.data(newItem);
     return newItem;
   }
@@ -43,7 +46,7 @@ class ItemController extends _$ItemController {
   }
 
   Future<Item?> save(Item item) async {
-    if (item.id == null) {
+    if (item.id == "") {
       return add(item);
     } else {
       return patch(item);

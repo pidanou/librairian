@@ -55,7 +55,6 @@ class ItemListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print(item);
     ref.watch(itemControllerProvider(item.id));
     return ListTile(
       title: Text(item.name),

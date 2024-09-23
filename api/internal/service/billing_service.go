@@ -22,3 +22,7 @@ func (s *BillingService) AddTokenUsage(tokens int, userID *uuid.UUID) error {
 func (s *BillingService) GetUserMonthlyTokenUsage(userID *uuid.UUID) (int, error) {
 	return s.BillingRepository.GetUserMonthlyTokenUsage(userID)
 }
+
+func (s *BillingService) GetTotalStorageUsed(userID *uuid.UUID) (int, error) {
+	return s.BillingRepository.GetTotalStorageUsed(userID)
+}

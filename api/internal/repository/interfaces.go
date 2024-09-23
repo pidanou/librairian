@@ -25,7 +25,7 @@ type StorageRepository interface {
 type AttachmentRepository interface {
 	GetAttachmentByID(id *uuid.UUID) (*types.Attachment, error)
 	GetItemAttachments(itemID *uuid.UUID) ([]types.Attachment, error)
-	AddAttachments(attachment []types.Attachment) []types.Attachment
+	AddAttachments(attachment []types.Attachment) ([]types.Attachment, error)
 	DeleteAttachmentByID(*uuid.UUID) error
 }
 
@@ -35,9 +35,4 @@ type EmbeddingRepository interface {
 
 type SimilarityRepository interface {
 	Find(vector *pgvector.Vector, matchThreshold float32, matchCount int, UserID *uuid.UUID) ([]types.MatchedItem, error)
-}
-
-type BillingRepository interface {
-	AddTokenUsage(usage *types.TokenUsage) error
-	GetUserMonthlyTokenUsage(userID *uuid.UUID) (int, error)
 }

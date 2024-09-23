@@ -61,6 +61,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
             }
           });
         });
+        controller.clear();
       }
       scrollController.animateTo(
         0,

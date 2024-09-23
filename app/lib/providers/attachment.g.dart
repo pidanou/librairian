@@ -173,7 +173,7 @@ class _AttachmentProviderElement
 }
 
 String _$itemAttachmentsControllerHash() =>
-    r'8341246c69275191690c3e0f0a0651204dc338ec';
+    r'0fb6188d87c700926a092301fe1db5127d552ea4';
 
 abstract class _$ItemAttachmentsController
     extends BuildlessAutoDisposeAsyncNotifier<List<Attachment>> {

@@ -28,7 +28,14 @@ func (h *Handler) PostAttachments(c echo.Context) error {
 	attachments := []types.Attachment{}
 	c.Bind(&attachments)
 	userID := getUserIDFromJWT(c)
-	attachments = h.AttachmentService.AddAttachments(attachments, userID)
+	attachments, err := h.AttachmentService.AddAttachments(attachments, userID)
+	if err != nil {
+		log.Println(err)
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			return echo.NewHTTPError(httpErr.Code, "Cannot add attachments")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError)
+	}
 	return c.JSON(http.StatusOK, attachments)
 }
 

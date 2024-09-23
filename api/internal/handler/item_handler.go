@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/pidanou/librairian/internal/helper"
 	"github.com/pidanou/librairian/internal/types"
 )
 
@@ -64,9 +62,7 @@ func (h *Handler) GetItems(c echo.Context) error {
 
 func (h *Handler) PostItem(c echo.Context) error {
 	var itemReq = &types.Item{}
-	helper.PrettyPrintRequest(*c.Request())
-	c.Bind(itemReq)
-	fmt.Println(itemReq)
+	err := c.Bind(itemReq)
 
 	item := *itemReq
 

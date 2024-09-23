@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class Attachment {
   String? id;
   DateTime? createdAt;
@@ -5,15 +7,16 @@ class Attachment {
   String? userId;
   String? itemId;
   String? path;
+  Uint8List? bytes;
 
-  Attachment({
-    this.id,
-    this.createdAt,
-    this.updatedAt,
-    this.userId,
-    this.itemId,
-    this.path,
-  });
+  Attachment(
+      {this.id,
+      this.createdAt,
+      this.updatedAt,
+      this.userId,
+      this.itemId,
+      this.path,
+      this.bytes});
 
   factory Attachment.fromJson(Map<String, dynamic> json) {
     return Attachment(
@@ -34,6 +37,7 @@ class Attachment {
       'user_id': userId,
       'item_id': itemId,
       'path': path,
+      'bytes': bytes
     };
   }
 

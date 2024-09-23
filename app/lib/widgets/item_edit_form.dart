@@ -96,9 +96,8 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                           }),
                     )
                   : ListTile(
-                      title: Center(
-                          child: Text(item.name,
-                              style: Theme.of(context).textTheme.titleMedium)),
+                      title: Text(item.name,
+                          style: Theme.of(context).textTheme.titleMedium),
                       trailing: IconButton(
                           icon: const Icon(Icons.edit, size: 20),
                           onPressed: () {
@@ -193,10 +192,15 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                       maxLengthEnforcement: MaxLengthEnforcement.enforced,
                       maxLength: 1000,
                       onFieldSubmitted: (value) async {
-                        await ref
+                        var newItem = await ref
                             .read(
                                 itemControllerProvider(widget.itemID).notifier)
                             .patch(Item(description: value));
+                        if (newItem == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("Error updating item")));
+                        }
                         widget.onEdit?.call(item);
                       },
                       decoration: const InputDecoration(
