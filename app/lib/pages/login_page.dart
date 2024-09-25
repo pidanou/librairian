@@ -1,13 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:librairian/providers/supabase.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
         body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Center(
@@ -20,11 +22,16 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 32),
                 SupaEmailAuth(
                   onSignInComplete: (response) {
+                    ref.invalidate(supabaseUserProvider);
                     GoRouter.of(context).go('/search');
                   },
                   onSignUpComplete: (response) {
+                    ref.invalidate(supabaseUserProvider);
                     GoRouter.of(context).go('/search');
                   },
+                  resetPasswordRedirectTo: kIsWeb
+                      ? "http://localhost:3000/settings"
+                      : "io.librairian.app://callback/settings/account",
                 ),
                 const Divider(),
                 SupaSocialsAuth(
@@ -35,8 +42,7 @@ class LoginPage extends StatelessWidget {
                           "740244662736-3pfti4ji50uhbchp7btj6st5210upceb.apps.googleusercontent.com"),
                   enableNativeAppleAuth: true,
                   showSuccessSnackBar: false,
-                  redirectUrl:
-                      kIsWeb ? null : 'io.librairian.app://login-callback/',
+                  redirectUrl: kIsWeb ? null : 'io.librairian.app://callback/',
                   socialButtonVariant: SocialButtonVariant.icon,
                   socialProviders: const [
                     OAuthProvider.google,

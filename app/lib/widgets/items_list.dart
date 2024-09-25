@@ -71,7 +71,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
       }
       if (selectAll == true) {
         for (var item in items) {
-          selected.add(item.id ?? "");
+          selected.add(item.id);
         }
       }
     }
@@ -99,7 +99,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
                         }
                       });
                       setState(() {
-                        editing = item.id ?? "";
+                        editing = item.id;
                         selected = [];
                         selectAll = false;
                       });
@@ -113,13 +113,13 @@ class ItemsListState extends ConsumerState<ItemsList> {
                                 editing = "";
                                 selected.contains(item.id)
                                     ? selected.remove(item.id)
-                                    : selected.add(item.id ?? "");
+                                    : selected.add(item.id);
                               });
                               widget.onSelected?.call(selected);
                             },
                           )
                         : null,
-                    title: Text(item.name ?? ""),
+                    title: Text(item.name),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"log"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -9,6 +11,7 @@ import (
 func getUserIDFromJWT(c echo.Context) *uuid.UUID {
 	token, ok := c.Get("user").(*jwt.Token)
 	if !ok {
+		log.Println("Cannot get JWT")
 		return nil
 	}
 	userID := uuid.MustParse(token.Claims.(jwt.MapClaims)["sub"].(string))

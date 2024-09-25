@@ -79,6 +79,14 @@ class Storage {
   }
 
   Map<String, dynamic> toJson() {
+    if (id == "") {
+      return {
+        'created_at': createdAt?.toIso8601String(),
+        'updated_at': updatedAt?.toIso8601String(),
+        'user_id': userId,
+        'alias': alias,
+      };
+    }
     return {
       'id': id,
       'created_at': createdAt?.toIso8601String(),

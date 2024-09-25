@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:librairian/providers/shared_preferences.dart';
+import 'package:librairian/providers/supabase.dart';
 import 'package:librairian/routes.dart';
 import 'package:librairian/theme/chip.dart';
 import 'package:librairian/theme/input_decoration.dart';
@@ -30,12 +32,35 @@ Future main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final AuthChangeEvent event = data.event;
+      if (!context.mounted) return;
+      switch (event) {
+        case AuthChangeEvent.initialSession:
+        // handle initial session
+        case AuthChangeEvent.signedIn:
+        // handle signed in
+        case AuthChangeEvent.signedOut:
+        // handle signed out
+        case AuthChangeEvent.passwordRecovery:
+        // handle password recovery
+        case AuthChangeEvent.tokenRefreshed:
+        // handle token refreshed
+        case AuthChangeEvent.userUpdated:
+        // handle user updated
+        case AuthChangeEvent.userDeleted:
+        // handle user deleted
+        case AuthChangeEvent.mfaChallengeVerified:
+        // handle mfa challenge verified
+      }
+      ref.invalidate(supabaseUserProvider);
+    });
     return AdaptiveTheme(
         light: ThemeData(
           useMaterial3: true,

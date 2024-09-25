@@ -21,6 +21,7 @@ func (h *Handler) GetItemAttachments(c echo.Context) error {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
+	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, attachments)
 }
 

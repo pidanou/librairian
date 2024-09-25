@@ -11,7 +11,7 @@ type Attachment struct {
 	Base
 	ItemID             *uuid.UUID       `json:"item_id" db:"item_id"`
 	Path               string           `json:"path" db:"path"`
-	Captions           string           `json:"-" db:"captions"`
+	Captions           string           `json:"captions" db:"captions"`
 	CaptionsEmbeddings *pgvector.Vector `json:"-" db:"captions_embeddings"`
 	Bytes              []byte           `json:"bytes"`
 	Size               int              `json:"-" db:"size"`

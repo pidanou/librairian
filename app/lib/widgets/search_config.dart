@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/constants/keys.dart';
-import 'package:librairian/providers/matches.dart';
 
 class SearchConfig extends ConsumerStatefulWidget {
   final void Function(String) onChangeSearchMode;
@@ -29,115 +28,113 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
   @override
   Widget build(BuildContext context) {
     if (MediaQuery.of(context).size.width < 840) {
-      return Padding(
-          padding:
-              const EdgeInsets.only(left: 16, top: 1, bottom: 1, right: 16),
-          child:
+      return ListTile(
+          title:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            MenuAnchor(
-                key: searchFilterKey,
-                menuChildren: [
-                  MenuItemButton(
-                    onPressed: () {
-                      setState(() {
-                        searchMode = "by description";
-                      });
-                      widget.onChangeSearchMode(searchMode);
-                    },
-                    child: const Text('by description'),
-                  ),
-                  MenuItemButton(
-                    onPressed: () {
-                      setState(() {
-                        searchMode = "by name";
-                      });
-                      widget.onChangeSearchMode(searchMode);
-                    },
-                    child: const Text('by name'),
-                  ),
-                ],
-                builder: (_, MenuController controller, Widget? child) {
-                  return ActionChip(
-                      label: Text(searchMode),
-                      onPressed: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      });
-                }),
-            const SizedBox(width: 5),
-            MenuAnchor(
-                menuChildren: [
-                  Slider(
-                      min: 0,
-                      max: 1,
-                      divisions: 10,
-                      value: matchThreshold,
-                      onChanged: (value) {
-                        setState(() {
-                          matchThreshold = value;
-                        });
-                        widget.onChangeMatchThreshold(matchThreshold);
-                      }),
-                ],
-                builder: (_, MenuController controller, Widget? child) {
-                  return ActionChip(
-                      label: Text("${matchThreshold * 100}% similarity"),
-                      onPressed: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      });
-                }),
-            const SizedBox(width: 5),
-            MenuAnchor(
-              menuChildren: [
-                MenuItemButton(
-                  onPressed: () {
-                    setState(() {
-                      maxResults = 10;
-                    });
-                    widget.onChangeMaxResults(maxResults);
-                  },
-                  child: const Text('10'),
-                ),
-                MenuItemButton(
-                  onPressed: () {
-                    setState(() {
-                      maxResults = 20;
-                    });
-                    widget.onChangeMaxResults(maxResults);
-                  },
-                  child: const Text('20'),
-                ),
-                MenuItemButton(
-                  onPressed: () {
-                    setState(() {
-                      maxResults = 50;
-                    });
-                    widget.onChangeMaxResults(maxResults);
-                  },
-                  child: const Text('50'),
-                ),
-              ],
-              builder: (_, MenuController controller, Widget? child) {
-                return ActionChip(
+        MenuAnchor(
+            key: searchFilterKey,
+            menuChildren: [
+              MenuItemButton(
+                onPressed: () {
+                  setState(() {
+                    searchMode = "by description";
+                  });
+                  widget.onChangeSearchMode(searchMode);
+                },
+                child: const Text('by description'),
+              ),
+              MenuItemButton(
+                onPressed: () {
+                  setState(() {
+                    searchMode = "by name";
+                  });
+                  widget.onChangeSearchMode(searchMode);
+                },
+                child: const Text('by name'),
+              ),
+            ],
+            builder: (_, MenuController controller, Widget? child) {
+              return ActionChip(
+                  label: Text(searchMode),
                   onPressed: () {
                     if (controller.isOpen) {
                       controller.close();
                     } else {
                       controller.open();
                     }
-                  },
-                  label: Text('$maxResults results'),
-                );
+                  });
+            }),
+        const SizedBox(width: 5),
+        MenuAnchor(
+            menuChildren: [
+              Slider(
+                  min: 0,
+                  max: 1,
+                  divisions: 10,
+                  value: matchThreshold,
+                  onChanged: (value) {
+                    setState(() {
+                      matchThreshold = value;
+                    });
+                    widget.onChangeMatchThreshold(matchThreshold);
+                  }),
+            ],
+            builder: (_, MenuController controller, Widget? child) {
+              return ActionChip(
+                  label: Text("${matchThreshold * 100}% similarity"),
+                  onPressed: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  });
+            }),
+        const SizedBox(width: 5),
+        MenuAnchor(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () {
+                setState(() {
+                  maxResults = 10;
+                });
+                widget.onChangeMaxResults(maxResults);
               },
+              child: const Text('10'),
             ),
-          ]));
+            MenuItemButton(
+              onPressed: () {
+                setState(() {
+                  maxResults = 20;
+                });
+                widget.onChangeMaxResults(maxResults);
+              },
+              child: const Text('20'),
+            ),
+            MenuItemButton(
+              onPressed: () {
+                setState(() {
+                  maxResults = 50;
+                });
+                widget.onChangeMaxResults(maxResults);
+              },
+              child: const Text('50'),
+            ),
+          ],
+          builder: (_, MenuController controller, Widget? child) {
+            return ActionChip(
+              onPressed: () {
+                if (controller.isOpen) {
+                  controller.close();
+                } else {
+                  controller.open();
+                }
+              },
+              label: Text('$maxResults results'),
+            );
+          },
+        ),
+      ]));
     }
     return Padding(
         padding: const EdgeInsets.only(left: 16, top: 1, bottom: 1, right: 16),

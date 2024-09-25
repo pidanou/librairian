@@ -187,7 +187,7 @@ class _StorageByIDProviderElement
   String get id => (origin as StorageByIDProvider).id;
 }
 
-String _$storagesHash() => r'f09795db317b733d316ee6ee671e925123d53ae4';
+String _$storagesHash() => r'1eb5c6c4c6c865b6ff68dc8a2142e1d660a7e7ec';
 
 /// See also [Storages].
 @ProviderFor(Storages)

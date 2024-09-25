@@ -39,7 +39,7 @@ class Storages extends _$Storages {
             data.map<st.Storage>((json) => st.Storage.fromJson(json)).toList();
 
         storages.sort((a, b) {
-          return a.alias!.compareTo(b.alias!);
+          return a.alias.compareTo(b.alias);
         });
         return Future.value(storages);
       } else {
@@ -59,6 +59,7 @@ class Storages extends _$Storages {
       "Authorization": "Bearer $token",
       "content-type": "application/json"
     };
+    print(jsonEncode(s));
 
     try {
       final response = await http.post(Uri.parse(url),

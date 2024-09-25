@@ -134,176 +134,160 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
           color: MediaQuery.of(context).size.width < 840
               ? Theme.of(context).colorScheme.surfaceDim
               : null,
-          child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 8, top: 1, bottom: 1, right: 16),
-              child: Row(
+          child: ListTile(
+              title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(children: [
-                      OrderBySelector(
-                        controller: menuController,
-                        options: [
-                          ListTile(
-                              onTap: () {
-                                ref
-                                    .read(inventoryOrderProvider.notifier)
-                                    .set("name");
-                                ref
-                                    .read(inventoryAscProvider.notifier)
-                                    .set(false);
-                                setState(() {
-                                  orderByLabel = "Name A-Z";
-                                });
-                                menuController.close();
-                              },
-                              dense: true,
-                              title: const Text("Name A-Z")),
-                          ListTile(
-                              onTap: () {
-                                ref
-                                    .read(inventoryOrderProvider.notifier)
-                                    .set("name");
-                                ref
-                                    .read(inventoryAscProvider.notifier)
-                                    .set(true);
-                                setState(() {
-                                  orderByLabel = "Name Z-A";
-                                });
-                                menuController.close();
-                              },
-                              dense: true,
-                              title: const Text("Name Z-A")),
-                          ListTile(
-                              onTap: () {
-                                ref
-                                    .read(inventoryOrderProvider.notifier)
-                                    .set("created_at");
-                                ref
-                                    .read(inventoryAscProvider.notifier)
-                                    .set(false);
-                                setState(() {
-                                  orderByLabel = "Old items to new";
-                                });
-                                menuController.close();
-                              },
-                              dense: true,
-                              title: const Text("Old items to new")),
-                          ListTile(
-                              onTap: () {
-                                ref
-                                    .read(inventoryOrderProvider.notifier)
-                                    .set("created_at");
-                                ref
-                                    .read(inventoryAscProvider.notifier)
-                                    .set(true);
-                                setState(() {
-                                  orderByLabel = "New items to old";
-                                });
-                                menuController.close();
-                              },
-                              dense: true,
-                              title: const Text("New items to old")),
-                          ListTile(
-                              onTap: () {
-                                ref
-                                    .read(inventoryOrderProvider.notifier)
-                                    .set("updated_at");
-                                ref
-                                    .read(inventoryAscProvider.notifier)
-                                    .set(true);
-                                setState(() {
-                                  orderByLabel = "Last updated";
-                                });
-                                menuController.close();
-                              },
-                              dense: true,
-                              title: const Text("Last updated")),
-                        ],
-                        child: Text(orderByLabel),
-                      ),
-                      if (MediaQuery.of(context).size.width > 840) ...[
-                        IconButton(
-                            tooltip: "Refresh data",
-                            icon: const Icon(Icons.refresh),
-                            onPressed: () {
-                              ref.invalidate(inventoryProvider);
-                            }),
-                        IconButton(
-                            tooltip: 'Add item',
-                            icon: const Icon(Icons.add_circle),
-                            onPressed: () async {
-                              var newItem = await ref
-                                  .read(itemRepositoryProvider)
-                                  .postItem(
+                Row(children: [
+                  OrderBySelector(
+                    controller: menuController,
+                    options: [
+                      ListTile(
+                          onTap: () {
+                            ref
+                                .read(inventoryOrderProvider.notifier)
+                                .set("name");
+                            ref.read(inventoryAscProvider.notifier).set(false);
+                            setState(() {
+                              orderByLabel = "Name A-Z";
+                            });
+                            menuController.close();
+                          },
+                          dense: true,
+                          title: const Text("Name A-Z")),
+                      ListTile(
+                          onTap: () {
+                            ref
+                                .read(inventoryOrderProvider.notifier)
+                                .set("name");
+                            ref.read(inventoryAscProvider.notifier).set(true);
+                            setState(() {
+                              orderByLabel = "Name Z-A";
+                            });
+                            menuController.close();
+                          },
+                          dense: true,
+                          title: const Text("Name Z-A")),
+                      ListTile(
+                          onTap: () {
+                            ref
+                                .read(inventoryOrderProvider.notifier)
+                                .set("created_at");
+                            ref.read(inventoryAscProvider.notifier).set(false);
+                            setState(() {
+                              orderByLabel = "Old items to new";
+                            });
+                            menuController.close();
+                          },
+                          dense: true,
+                          title: const Text("Old items to new")),
+                      ListTile(
+                          onTap: () {
+                            ref
+                                .read(inventoryOrderProvider.notifier)
+                                .set("created_at");
+                            ref.read(inventoryAscProvider.notifier).set(true);
+                            setState(() {
+                              orderByLabel = "New items to old";
+                            });
+                            menuController.close();
+                          },
+                          dense: true,
+                          title: const Text("New items to old")),
+                      ListTile(
+                          onTap: () {
+                            ref
+                                .read(inventoryOrderProvider.notifier)
+                                .set("updated_at");
+                            ref.read(inventoryAscProvider.notifier).set(true);
+                            setState(() {
+                              orderByLabel = "Last updated";
+                            });
+                            menuController.close();
+                          },
+                          dense: true,
+                          title: const Text("Last updated")),
+                    ],
+                    child: Text(orderByLabel),
+                  ),
+                  if (MediaQuery.of(context).size.width > 840) ...[
+                    IconButton(
+                        tooltip: "Refresh data",
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          ref.invalidate(inventoryProvider);
+                        }),
+                    IconButton(
+                        tooltip: 'Add item',
+                        icon: const Icon(Icons.add_circle),
+                        onPressed: () async {
+                          var newItem =
+                              await ref.read(itemRepositoryProvider).postItem(
                                     Item(
                                       name: "New Item",
                                     ),
                                   );
-                              if (!context.mounted) {
-                                return;
-                              }
-                              if (newItem == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text("Item could not be added")));
-                                return;
-                              }
-                              ref.invalidate(inventoryProvider);
-                              setState(() {
-                                editingItem = newItem;
-                              });
+                          if (!context.mounted) {
+                            return;
+                          }
+                          if (newItem == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Item could not be added")));
+                            return;
+                          }
+                          ref.invalidate(inventoryProvider);
+                          setState(() {
+                            editingItem = newItem;
+                          });
+                        }),
+                    deleting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator())
+                        : IconButton(
+                            tooltip: 'Delete selected',
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              selected.isNotEmpty
+                                  ? showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialogConfirm(
+                                            icon: const Icon(Icons.warning),
+                                            title: const Text(
+                                                "Are you sure you want to delete these items?"),
+                                            message: const Text(
+                                                "This action cannot be undone"),
+                                            confirmMessage:
+                                                const Text("Delete"),
+                                            action: () async {
+                                              setState(() {
+                                                deleting = true;
+                                              });
+                                              for (String id in selected) {
+                                                await ref
+                                                    .read(
+                                                        itemControllerProvider(
+                                                                id)
+                                                            .notifier)
+                                                    .delete(id);
+                                              }
+                                              setState(() {
+                                                editingItem = null;
+                                                deleting = false;
+                                              });
+                                              ref.invalidate(inventoryProvider);
+                                            });
+                                      })
+                                  : ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text("No item selected")));
                             }),
-                        deleting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator())
-                            : IconButton(
-                                tooltip: 'Delete selected',
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  selected.isNotEmpty
-                                      ? showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return AlertDialogConfirm(
-                                                icon: const Icon(Icons.warning),
-                                                title: const Text(
-                                                    "Are you sure you want to delete these items?"),
-                                                message: const Text(
-                                                    "This action cannot be undone"),
-                                                confirmMessage:
-                                                    const Text("Delete"),
-                                                action: () async {
-                                                  setState(() {
-                                                    deleting = true;
-                                                  });
-                                                  for (String id in selected) {
-                                                    await ref
-                                                        .read(
-                                                            itemControllerProvider(
-                                                                    id)
-                                                                .notifier)
-                                                        .delete(id);
-                                                  }
-                                                  setState(() {
-                                                    editingItem = null;
-                                                    deleting = false;
-                                                  });
-                                                  ref.invalidate(
-                                                      inventoryProvider);
-                                                });
-                                          })
-                                      : ScaffoldMessenger.of(context)
-                                          .showSnackBar(const SnackBar(
-                                              content:
-                                                  Text("No item selected")));
-                                }),
-                      ]
-                    ])
-                  ]))),
+                  ]
+                ])
+              ]))),
       Divider(
         color: Theme.of(context).colorScheme.surfaceDim,
         height: 0,

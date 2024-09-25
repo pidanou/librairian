@@ -6,7 +6,8 @@ import 'package:librairian/widgets/custom_appbar.dart';
 import 'package:librairian/widgets/manage_storages.dart';
 
 class StoragePage extends ConsumerStatefulWidget {
-  const StoragePage({super.key});
+  const StoragePage({super.key, this.storageID});
+  final String? storageID;
   @override
   StoragePageState createState() => StoragePageState();
 }
@@ -50,10 +51,9 @@ class StoragePageState extends ConsumerState<StoragePage> {
 
   Widget content(BuildContext context) {
     return Column(children: [
-      if (MediaQuery.of(context).size.width > 840)
-        Padding(
-          padding: const EdgeInsets.only(left: 8, top: 5, bottom: 5, right: 16),
-          child: Row(children: [
+      if (MediaQuery.of(context).size.width > 840) ...[
+        ListTile(
+          title: Row(children: [
             IconButton(
                 tooltip: 'Add storage',
                 icon: const Icon(Icons.add_circle),
@@ -73,10 +73,11 @@ class StoragePageState extends ConsumerState<StoragePage> {
                   })
           ]),
         ),
-      Divider(
-        color: Theme.of(context).colorScheme.surfaceDim,
-        height: 0,
-      ),
+        Divider(
+          color: Theme.of(context).colorScheme.surfaceDim,
+          height: 0,
+        )
+      ],
       Expanded(
           child: ManageStorages(
         selectAll: selectAll,

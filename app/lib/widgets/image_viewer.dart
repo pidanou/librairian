@@ -3,8 +3,10 @@ import "package:flutter/material.dart";
 class ImageViewer extends StatelessWidget {
   final Widget image;
   final VoidCallback? onDelete;
+  final Widget? caption;
 
-  const ImageViewer({super.key, required this.image, this.onDelete});
+  const ImageViewer(
+      {super.key, required this.image, this.onDelete, this.caption});
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +16,9 @@ class ImageViewer extends StatelessWidget {
             showDialog(
                 context: context,
                 builder: (context) {
-                  return Dialog(
-                    child: image,
+                  return AlertDialog(
+                    title: caption,
+                    content: image,
                   );
                 });
           },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/storage.dart' as sp;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DialogAddStorage extends ConsumerStatefulWidget {
   const DialogAddStorage({super.key});
@@ -37,7 +38,9 @@ class DialogAddStorageState extends ConsumerState<DialogAddStorage> {
         ),
         TextButton(
           onPressed: () {
-            Storage newStorage = Storage(alias: controller.text);
+            Storage newStorage = Storage(
+                alias: controller.text,
+                userId: Supabase.instance.client.auth.currentUser!.id);
             ref
                 .read(sp.storagesProvider.notifier)
                 .add(newStorage)

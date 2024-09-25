@@ -8,6 +8,7 @@ class Attachment {
   String? itemId;
   String? path;
   Uint8List? bytes;
+  String? captions;
 
   Attachment(
       {this.id,
@@ -16,6 +17,7 @@ class Attachment {
       this.userId,
       this.itemId,
       this.path,
+      this.captions,
       this.bytes});
 
   factory Attachment.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Attachment {
       userId: json['user_id'],
       itemId: json['item_id'],
       path: json['path'],
+      captions: json['captions'],
     );
   }
 

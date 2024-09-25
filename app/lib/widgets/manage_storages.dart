@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:librairian/helpers/date.dart';
 import 'package:librairian/providers/storage.dart' as sp;
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/widgets/edit_storage.dart';
@@ -29,8 +30,9 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
   Widget build(BuildContext context) {
     var storages = ref.watch(sp.storagesProvider);
     if (storages is AsyncError) {
-      print("error");
-      return const Column(children: [Center(child: Text('Error'))]);
+      return RefreshIndicator(
+          onRefresh: () => ref.refresh(sp.storagesProvider.future),
+          child: const Column(children: [Center(child: Text('Error'))]));
     }
     if (storages is AsyncData) {
       return Row(children: [
@@ -61,7 +63,12 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
                                         extra: storage);
                                   }
                                 },
-                                title: Text(storage.alias),
+                                title: Text(storage.alias,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium),
+                                trailing: Text(formatTimestamp(
+                                    storage.createdAt.toString())),
                               ))
                       ])))
             ])),

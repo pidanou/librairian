@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:librairian/pages/account_page.dart';
 import 'package:librairian/pages/item_edit_form_page.dart';
 import 'package:librairian/pages/storage_detail_page.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
@@ -33,12 +34,6 @@ final goRouter = GoRouter(
       builder: (context, state) => const LoginPage(),
     ),
     StatefulShellRoute.indexedStack(
-      redirect: (context, state) async {
-        if (Supabase.instance.client.auth.currentSession == null) {
-          return "/login";
-        }
-        return null;
-      },
       builder: (context, state, navigationShell) {
         // the UI shell
         return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
@@ -132,7 +127,13 @@ final goRouter = GoRouter(
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: SettingsPage(),
               ),
-              routes: const [],
+              routes: [
+                GoRoute(
+                    path: "account",
+                    pageBuilder: (context, state) => const NoTransitionPage(
+                          child: AccountPage(),
+                        ))
+              ],
             ),
           ],
         ),

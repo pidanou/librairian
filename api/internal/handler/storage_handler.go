@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -51,9 +52,10 @@ func (h *Handler) PostStorage(c echo.Context) error {
 
 	err := c.Bind(storage)
 	if err != nil {
-		log.Println(err)
+		log.Printf("cannot parse body: %s", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid storage")
 	}
+	fmt.Println(storage)
 
 	storage.UserID = userID
 	storage, err = h.StorageService.AddStorage(storage)
