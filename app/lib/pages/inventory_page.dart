@@ -12,6 +12,7 @@ import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/items_list.dart';
 import 'package:librairian/widgets/order_by_selector.dart';
 import 'package:librairian/widgets/page_switcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key});
@@ -37,7 +38,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,
         appBar: CustomAppBar(
-          title: const Text("My Items"),
+          title: Text(AppLocalizations.of(context)!.myItems),
           actions: [
             deleting
                 ? const SizedBox(

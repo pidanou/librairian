@@ -23,32 +23,19 @@ class EditLocation extends ConsumerStatefulWidget {
 class EditLocationState extends ConsumerState<EditLocation> {
   Storage? storage;
   String? storageID;
-  TextEditingController controller = TextEditingController();
-  late FocusNode focus = FocusNode(
-    onKeyEvent: (FocusNode node, KeyEvent evt) {
-      if (evt.logicalKey.keyLabel == 'Enter') {
-        save();
-        return KeyEventResult.handled;
-      } else {
-        return KeyEventResult.ignored;
-      }
-    },
-  );
 
   @override
   void initState() {
     super.initState();
     storage = widget.location?.storage;
-    controller.text = widget.location?.location ?? "";
     storageID = widget.location?.storageId;
   }
 
   void save() {
-    if (storage == null || storageID == null || controller.text == "") {
+    if (storage == null || storageID == null) {
       return;
     }
-    widget.onSave?.call(Location(
-        storage: storage, location: controller.text, storageId: storageID!));
+    widget.onSave?.call(Location(storage: storage, storageId: storageID!));
   }
 
   @override
@@ -78,24 +65,6 @@ class EditLocationState extends ConsumerState<EditLocation> {
                   storageID = s?.id;
                 });
               }),
-          const SizedBox(height: 10),
-          SizedBox(
-              width: 500,
-              child: Row(children: [
-                Expanded(
-                    child: TextFormField(
-                  textInputAction: TextInputAction.none,
-                  decoration: const InputDecoration(
-                    hintText: "Location",
-                  ),
-                  focusNode: focus,
-                  onFieldSubmitted: (s) {
-                    save();
-                  },
-                  controller: controller,
-                  maxLines: null,
-                )),
-              ]))
         ]));
   }
 }

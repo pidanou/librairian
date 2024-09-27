@@ -1,4 +1,5 @@
 import 'package:librairian/models/item.dart';
+import 'package:librairian/models/storage.dart';
 import 'package:librairian/repositories/item.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:http/http.dart' as http;
@@ -51,5 +52,26 @@ class ItemController extends _$ItemController {
     } else {
       return patch(item);
     }
+  }
+
+  Future<Item?> addLocation(Location location) async {
+    if (location.itemId == "") {
+      return null;
+    }
+    Item? newItem =
+        await ref.read(itemRepositoryProvider).addLocation(location);
+    state = AsyncValue.data(newItem);
+    return newItem;
+  }
+
+  Future<void> deleteLocation(String id) async {
+    await ref.read(itemRepositoryProvider).deleteLocation(id);
+    state = state.whenData((item) {
+      if (item == null) {
+        return item;
+      }
+      item.locations?.removeWhere((location) => location.id == id);
+      return item;
+    });
   }
 }

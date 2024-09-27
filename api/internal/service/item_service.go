@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -110,6 +111,7 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 		newItem.Locations = []types.Location{}
 	} else {
 		mergo.Merge(newItem, oldItem)
+		fmt.Println(newItem)
 	}
 
 	if !UserHasAccess(newItem, userID) {
@@ -129,6 +131,21 @@ func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 	return item, nil
+}
+
+func (s *ItemService) AddItemLocation(itemID *uuid.UUID, location *types.Location, userID *uuid.UUID) (*types.Item, error) {
+	if !location.UserHasAccess(userID) {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	return s.ItemRepository.AddItemLocation(location)
+}
+
+func (s *ItemService) DeleteItemLocation(id *uuid.UUID, userID *uuid.UUID) error {
+	location, _ := s.ItemRepository.GetItemLocation(id)
+	if !location.UserHasAccess(userID) {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	return s.ItemRepository.DeleteItemLocation(id)
 }
 
 func (s *ItemService) FindMatches(search string, threshold float32, maxResults int, userID *uuid.UUID) []types.MatchedItem {

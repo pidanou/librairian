@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:librairian/constants/keys.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Destination {
   const Destination(this.icon, this.label, this.key);
@@ -8,9 +9,15 @@ class Destination {
   final GlobalKey key;
 }
 
-List<Destination> navigationDestinations = <Destination>[
-  Destination(Icons.search, 'Search', searchNavKey),
-  Destination(Icons.shelves, 'Storage', storageNavKey),
-  Destination(Icons.list_alt, 'Inventory', inventoryNavKey),
-  Destination(Icons.settings, 'Settings', settingsNavKey),
-];
+List<Destination> getDestinations(BuildContext context) {
+  return [
+    Destination(
+        Icons.search, AppLocalizations.of(context)!.search, searchNavKey),
+    Destination(
+        Icons.shelves, AppLocalizations.of(context)!.storage, storageNavKey),
+    Destination(Icons.list_alt, AppLocalizations.of(context)!.inventory,
+        inventoryNavKey),
+    Destination(
+        Icons.settings, AppLocalizations.of(context)!.settings, settingsNavKey)
+  ];
+}

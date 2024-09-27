@@ -43,8 +43,8 @@ func (r *PostgresItemRepository) AddItem(item *types.Item) (*types.Item, error) 
 	rows.Close()
 
 	for _, sl := range item.Locations {
-		query = `INSERT INTO location (location, storage_id, item_id, user_id) VALUES ($1, $2, $3, $4)`
-		_, err = tx.Exec(query, sl.Location, sl.Storage.ID, insertedItemId, sl.UserID)
+		query = `INSERT INTO location (storage_id, item_id, user_id) VALUES ($1, $2, $3)`
+		_, err = tx.Exec(query, sl.Storage.ID, insertedItemId, sl.UserID)
 		if err != nil {
 			log.Printf(`Cannot create storage location %s`, err)
 			tx.Rollback()
@@ -74,15 +74,17 @@ func (r *PostgresItemRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUI
 	var err error
 
 	if *storageID != uuid.Nil {
-		query := fmt.Sprintf(`SELECT i.id 
-                      FROM item i 
-                      JOIN location sl 
-                      ON i.id = sl.item_id 
-                      WHERE i.user_id = $1 
-                      AND sl.storage_id = $2  
-                      AND i.name ILIKE $3
-                      ORDER BY i.%s %s 
-                      LIMIT $4 OFFSET $5`, orderBy.Column, orderBy.Direction)
+		query := fmt.Sprintf(`
+    SELECT a.id FROM (
+      SELECT DISTINCT i.id as id, i.%s
+		  FROM item i
+		  JOIN location sl
+		  ON i.id = sl.item_id
+		  WHERE i.user_id = $1
+		  AND sl.storage_id = $2
+		  AND i.name ILIKE $3
+		  ORDER BY i.%s %s
+		  LIMIT $4 OFFSET $5) as a`, orderBy.Column, orderBy.Column, orderBy.Direction)
 		err := r.DB.Select(&itemsID, query, userID, storageID, "%"+name+"%", limit, page*limit)
 		if errors.Is(err, sql.ErrNoRows) {
 			return []types.Item{}, 0, nil
@@ -99,7 +101,7 @@ func (r *PostgresItemRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUI
 			items = append(items, *item)
 		}
 
-		query = `SELECT count(*) FROM item i JOIN location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2                       AND i.name ILIKE $3
+		query = `SELECT count(*) FROM item i JOIN location sl ON i.id = sl.item_id WHERE i.user_id = $1 AND sl.storage_id = $2 AND i.name ILIKE $3
             AND i.name ILIKE $3`
 		err = r.DB.Get(&total, query, userID, storageID, "%"+name+"%")
 		if err != nil {
@@ -150,8 +152,43 @@ func (r *PostgresItemRepository) DeleteItem(id *uuid.UUID) error {
 	return nil
 }
 
+func (r *PostgresItemRepository) AddItemLocation(location *types.Location) (*types.Item, error) {
+	query := `INSERT INTO location (storage_id, item_id, user_id) VALUES (:storage_id, :item_id, :user_id)`
+	_, err := r.DB.NamedExec(query, location)
+	if err != nil {
+		log.Printf(`Cannot add item location %s`, err)
+		return nil, err
+	}
+
+	item, err := r.GetItemByID(location.ItemID)
+
+	return item, err
+}
+
+func (r *PostgresItemRepository) GetItemLocation(id *uuid.UUID) (*types.Location, error) {
+	var location types.Location
+	query := `SELECT * FROM location WHERE id = $1`
+	err := r.DB.Get(&location, query, id)
+	if err != nil {
+		log.Printf(`Cannot add get location %s`, err)
+		return nil, err
+	}
+
+	return &location, nil
+}
+
+func (r *PostgresItemRepository) DeleteItemLocation(id *uuid.UUID) error {
+	query := `DELETE FROM location WHERE id = $1`
+	_, err := r.DB.Exec(query, id)
+	if err != nil {
+		log.Printf(`Cannot add delete location %s`, err)
+		return err
+	}
+
+	return nil
+}
+
 func (r *PostgresItemRepository) UpdateItem(item *types.Item) (*types.Item, error) {
-	tx := r.DB.MustBegin()
 
 	query := `UPDATE item
     set 
@@ -160,59 +197,9 @@ func (r *PostgresItemRepository) UpdateItem(item *types.Item) (*types.Item, erro
   description_embeddings = :description_embeddings, 
   updated_at = now() 
   where id = :id`
-	_, err := tx.NamedExec(query, item)
+	_, err := r.DB.NamedExec(query, item)
 	if err != nil {
 		log.Printf(`Cannot update item %s`, err)
-		return nil, err
-	}
-
-	slList := []uuid.UUID{}
-
-	for _, sl := range item.Locations {
-		if sl.ID == nil {
-			sl.ItemID = item.ID
-			sl.UserID = item.UserID
-			query = `INSERT INTO location(item_id, user_id, location, storage_id, created_at, updated_at) VALUES (:item_id, :user_id, :location, :storage_id, now(), now()) RETURNING id`
-		} else {
-			query = `UPDATE location set location = :location, storage_id = :storage_id, updated_at = now() where id = :id returning id`
-		}
-		rows, err := tx.NamedQuery(query, sl)
-		defer rows.Close()
-		if err != nil {
-			log.Printf(`Cannot update storage location %s`, err)
-			tx.Rollback()
-			return nil, err
-		}
-		var id uuid.UUID
-		for rows.Next() {
-			_ = rows.Scan(&id)
-			slList = append(slList, id)
-		}
-	}
-
-	if item.Locations == nil || len(item.Locations) == 0 {
-		query = `DELETE FROM location WHERE item_id = $1`
-		_, err = tx.Exec(query, item.ID)
-		if err != nil {
-			log.Printf(`Cannot delete storage location %s`, err)
-			tx.Rollback()
-			return nil, err
-		}
-	} else {
-		query, args, err := sqlx.In(`DELETE FROM location where id NOT IN (?) and item_id = ?`, slList, item.ID)
-		query = tx.Rebind(query)
-		_, err = tx.Exec(query, args...)
-		_, err = tx.Exec(query, args...)
-		if err != nil {
-			log.Printf(`Cannot delete storage location %s`, err)
-			tx.Rollback()
-			return nil, err
-		}
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Printf(`Cannot commit: %s`, err)
 		return nil, err
 	}
 
@@ -227,7 +214,6 @@ func (r *PostgresItemRepository) UpdateItem(item *types.Item) (*types.Item, erro
 func (r *PostgresItemRepository) GetItemByID(id *uuid.UUID) (*types.Item, error) {
 	item := &types.Item{}
 	storageLocation := []types.Location{}
-	storage := &types.Storage{}
 
 	query := `SELECT * FROM item WHERE id = $1 ORDER BY updated_at DESC`
 	err := r.DB.Get(item, query, id)
@@ -245,17 +231,20 @@ func (r *PostgresItemRepository) GetItemByID(id *uuid.UUID) (*types.Item, error)
 		log.Printf("Cannot get storage location: %s", err)
 	}
 
-	for i, sl := range storageLocation {
+	var nl []types.Location
+
+	for _, sl := range storageLocation {
+		storage := &types.Storage{}
 		query = `SELECT * FROM storage WHERE id = $1`
 		err = r.DB.Get(storage, query, sl.StorageID)
 		if err != nil {
 			log.Printf("Cannot get storage: %s", err)
 		}
 		sl.Storage = storage
-		storageLocation[i] = sl
+		nl = append(nl, sl)
 	}
 
-	item.Locations = storageLocation
+	item.Locations = nl
 
 	return item, nil
 }

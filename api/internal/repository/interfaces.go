@@ -12,6 +12,9 @@ type ItemRepository interface {
 	DeleteItem(id *uuid.UUID) error
 	UpdateItem(item *types.Item) (*types.Item, error)
 	GetItemByID(id *uuid.UUID) (*types.Item, error)
+	AddItemLocation(location *types.Location) (*types.Item, error)
+	DeleteItemLocation(id *uuid.UUID) error
+	GetItemLocation(id *uuid.UUID) (*types.Location, error)
 }
 
 type StorageRepository interface {

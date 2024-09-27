@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:librairian/providers/locale.dart';
 import 'package:librairian/providers/shared_preferences.dart';
 import 'package:librairian/providers/supabase.dart';
 import 'package:librairian/routes.dart';
@@ -10,6 +10,7 @@ import 'package:librairian/theme/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
@@ -38,6 +39,8 @@ class MyApp extends ConsumerWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    Locale appLocale = ref.watch(localeStateProvider);
+
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final AuthChangeEvent event = data.event;
       if (!context.mounted) return;
@@ -61,6 +64,7 @@ class MyApp extends ConsumerWidget {
       }
       ref.invalidate(supabaseUserProvider);
     });
+
     return AdaptiveTheme(
         light: ThemeData(
           useMaterial3: true,
@@ -76,19 +80,21 @@ class MyApp extends ConsumerWidget {
         ),
         initial: AdaptiveThemeMode.system,
         builder: (theme, darkTheme) => MaterialApp.router(
-                localizationsDelegates: const [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: const [
-                  Locale('en'), // English
-                  Locale('fr'),
-                ],
-                debugShowCheckedModeBanner: false,
-                title: "Librairian",
-                routerConfig: goRouter,
-                theme: theme,
-                darkTheme: darkTheme));
+            locale: appLocale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'), // English
+              Locale('fr'),
+            ],
+            debugShowCheckedModeBanner: false,
+            title: "Librairian",
+            routerConfig: goRouter,
+            theme: theme,
+            darkTheme: darkTheme));
   }
 }

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:librairian/providers/locale.dart';
 import 'package:librairian/providers/settings.dart';
 import 'package:librairian/providers/supabase.dart';
 import 'package:librairian/widgets/account_form.dart';
+import 'package:librairian/widgets/theme_form.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingsContent extends ConsumerWidget {
   const SettingsContent({super.key, this.initialSetting});
@@ -35,11 +38,12 @@ class SettingsContent extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleSmall)),
                   ListTile(
                     leading: const Icon(Icons.mail),
-                    title: Text(
-                        ref.watch(supabaseUserProvider)?.email ?? "No email"),
+                    title: Text(ref.watch(supabaseUserProvider)?.email ?? ""),
                     onTap: () {
                       ref.read(selectedSettingProvider.notifier).set("account");
-                      GoRouter.of(context).go('/settings/account');
+                      if (MediaQuery.of(context).size.width < 840) {
+                        GoRouter.of(context).go('/settings/account');
+                      }
                     },
                   ),
                   ListTile(
@@ -52,6 +56,14 @@ class SettingsContent extends ConsumerWidget {
                       title: Text("App",
                           style: Theme.of(context).textTheme.titleSmall)),
                   ListTile(
+                      title: IconButton(
+                          icon: const Icon(Icons.settings),
+                          onPressed: () {
+                            ref
+                                .read(localeStateProvider.notifier)
+                                .set(const Locale('fr'));
+                          })),
+                  ListTile(
                       leading: const Icon(Icons.brightness_6),
                       title: const Text(
                         "Theme",
@@ -62,54 +74,14 @@ class SettingsContent extends ConsumerWidget {
                               ? const Text("Light")
                               : const Text("System (default)"),
                       onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                    content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                      RadioMenuButton(
-                                        value: AdaptiveThemeMode.light,
-                                        groupValue:
-                                            AdaptiveTheme.of(context).mode,
-                                        onChanged: (value) {
-                                          AdaptiveTheme.of(context)
-                                              .setThemeMode(value ??
-                                                  AdaptiveThemeMode.system);
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text('Light'),
-                                      ),
-                                      RadioMenuButton(
-                                          value: AdaptiveThemeMode.dark,
-                                          groupValue:
-                                              AdaptiveTheme.of(context).mode,
-                                          child: const Text('Dark'),
-                                          onChanged: (value) {
-                                            AdaptiveTheme.of(context)
-                                                .setThemeMode(value ??
-                                                    AdaptiveThemeMode.system);
-                                            Navigator.of(context).pop();
-                                          }),
-                                      RadioMenuButton(
-                                          value: AdaptiveThemeMode.system,
-                                          groupValue:
-                                              AdaptiveTheme.of(context).mode,
-                                          child: const Text('System (default)'),
-                                          onChanged: (value) {
-                                            AdaptiveTheme.of(context)
-                                                .setThemeMode(value ??
-                                                    AdaptiveThemeMode.system);
-                                            Navigator.of(context).pop();
-                                          }),
-                                    ])));
+                        ref.read(selectedSettingProvider.notifier).set("theme");
                       }),
                   const Divider(height: 0),
                   if (MediaQuery.of(context).size.width < 840)
                     ListTile(
                       leading: const Icon(Icons.logout),
-                      title: const Text(
-                        'Logout',
+                      title: Text(
+                        AppLocalizations.of(context)!.signOut,
                       ),
                       onTap: () async {
                         await Supabase.instance.client.auth
@@ -132,6 +104,7 @@ class SettingsContent extends ConsumerWidget {
         ),
         if (selected == null) Expanded(child: Container()),
         if (selected == "account") const Expanded(child: AccountForm()),
+        if (selected == "theme") const Expanded(child: ThemeForm()),
       ]
     ]);
   }

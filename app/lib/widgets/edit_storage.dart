@@ -68,14 +68,14 @@ class EditStorageState extends ConsumerState<EditStorage> {
   void initState() {
     super.initState();
     storage = widget.storage;
-    controller.text = storage.alias ?? "";
+    controller.text = storage.alias;
   }
 
   @override
   void didUpdateWidget(EditStorage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.storage.id != oldWidget.storage.id) {
-      controller.text = widget.storage.alias ?? "";
+      controller.text = widget.storage.alias;
       storage = widget.storage;
       selectAll = false;
       editingItem = null;
@@ -103,7 +103,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                       ? TextField(
                           controller: controller,
                         )
-                      : Text(widget.storage.alias ?? 'No name',
+                      : Text(widget.storage.alias,
                           style: Theme.of(context).textTheme.titleMedium),
                   trailing: editingStorage
                       ? Row(mainAxisSize: MainAxisSize.min, children: [
@@ -142,7 +142,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                     builder: (context) {
                                       return AlertDialogDeleteStorage(
                                           onDelete: widget.onDelete,
-                                          storageID: widget.storage.id ?? "");
+                                          storageID: widget.storage.id);
                                     });
                               })
                         ])),
@@ -154,15 +154,14 @@ class EditStorageState extends ConsumerState<EditStorage> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Row(children: [
-                    const SizedBox(width: 16),
-                    Checkbox(
+                  CheckboxListTile(
+                      controlAffinity: ListTileControlAffinity.leading,
                       onChanged: (value) {
                         setState(() {
                           selectAll = !selectAll;
                           if (selectAll == true) {
                             for (var item in items.value!.data) {
-                              selected.add(item.id ?? "");
+                              selected.add(item.id);
                             }
                           } else {
                             selected = [];
@@ -170,75 +169,73 @@ class EditStorageState extends ConsumerState<EditStorage> {
                         });
                       },
                       value: selectAll,
-                    ),
-                    const SizedBox(width: 48),
-                    deleting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator())
-                        : IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialogConfirm(
-                                      icon: const Icon(Icons.warning),
-                                      title: const Text(
-                                          "Are you sure you want to delete these items?"),
-                                      message:
-                                          const Text("This cannot be undone."),
-                                      confirmMessage: const Text("Delete"),
-                                      action: deleteSelected,
-                                    );
-                                  });
-                            },
-                            tooltip: 'Delete selected'),
-                    IconButton(
-                        tooltip: 'Add item',
-                        icon: const Icon(Icons.add_circle),
-                        onPressed: () async {
-                          Item? newItem;
-                          if (MediaQuery.of(context).size.width < 840) {
-                            newItem = await ref
-                                .read(itemControllerProvider(null).notifier)
-                                .add(
-                                  Item(name: "New Item", locations: [
-                                    Location(storage: widget.storage)
-                                  ]),
-                                );
-                            if (!context.mounted) {
-                              return;
-                            }
-                            if (newItem == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content:
-                                          Text("Item could not be added")));
-                              return;
-                            }
-                            ref.invalidate(itemsInStorageProvider(
-                                page, limit, widget.storage.id));
-                            if (MediaQuery.of(context).size.width < 840) {
-                              GoRouter.of(context).go(
-                                '/storage/${widget.storage.id}/${newItem.id}',
-                              );
-                            }
-                          }
-                          setState(() {
-                            editingItem = newItem;
-                          });
-                        }),
-                    if (MediaQuery.of(context).size.width > 840)
-                      IconButton(
-                          tooltip: 'Refresh data',
-                          icon: const Icon(Icons.refresh),
-                          onPressed: () {
-                            ref.invalidate(itemsInStorageProvider(
-                                page, limit, storage.id));
-                          })
-                  ]),
+                      title: Row(children: [
+                        deleting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator())
+                            : IconButton(
+                                icon: const Icon(Icons.delete, size: 20),
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialogConfirm(
+                                          icon: const Icon(Icons.warning),
+                                          title: const Text(
+                                              "Are you sure you want to delete these items?"),
+                                          message: const Text(
+                                              "This cannot be undone."),
+                                          confirmMessage: const Text("Delete"),
+                                          action: deleteSelected,
+                                        );
+                                      });
+                                },
+                                tooltip: 'Delete selected'),
+                        IconButton(
+                            tooltip: 'Add item',
+                            icon: const Icon(Icons.add_circle, size: 20),
+                            onPressed: () async {
+                              Item? newItem = await ref
+                                  .read(itemControllerProvider(null).notifier)
+                                  .add(
+                                    Item(name: "New Item", locations: [
+                                      Location(storage: widget.storage)
+                                    ]),
+                                  );
+                              if (!context.mounted) {
+                                return;
+                              }
+                              if (MediaQuery.of(context).size.width < 840) {
+                                if (newItem == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text("Item could not be added")));
+                                  return;
+                                }
+                                ref.invalidate(itemsInStorageProvider(
+                                    page, limit, widget.storage.id));
+                                if (MediaQuery.of(context).size.width < 840) {
+                                  GoRouter.of(context).go(
+                                    '/storage/${widget.storage.id}/${newItem.id}',
+                                  );
+                                }
+                              }
+                              setState(() {
+                                editingItem = newItem;
+                              });
+                            }),
+                        if (MediaQuery.of(context).size.width > 840)
+                          IconButton(
+                              tooltip: 'Refresh data',
+                              icon: const Icon(Icons.refresh, size: 20),
+                              onPressed: () {
+                                ref.invalidate(itemsInStorageProvider(
+                                    page, limit, storage.id));
+                              })
+                      ])),
                   Divider(
                     color: Theme.of(context).colorScheme.surfaceDim,
                     height: 0,

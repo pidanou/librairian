@@ -30,6 +30,7 @@ class ScaffoldWithBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var navigationDestinations = getDestinations(context);
     return SelectionArea(
         child: Scaffold(
             body: body,

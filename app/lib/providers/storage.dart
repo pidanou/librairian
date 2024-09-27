@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:librairian/models/storage.dart' as st;
-import 'package:librairian/providers/shared_preferences.dart';
 import 'package:librairian/repositories/storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';

@@ -1,0 +1,11 @@
+
+{
+    "account": "Mon compte",
+    "inventory": "Inventaire",
+    "usage": "Usage",
+    "theme": "Theme",
+    "search": "Recherche",
+    "storage": "Stockage",
+    "signOut": "Se déconnecter",
+    "settings": "Paramètres"
+  }

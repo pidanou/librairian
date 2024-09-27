@@ -1,0 +1,12 @@
+{
+    "account": "Account",
+    "inventory": "Inventory",
+    "usage": "Usage",
+    "theme": "Theme",
+    "signOut": "Sign out",
+    "settings": "Settings",
+    "search": "Search",
+    "storage": "Storage",
+    "myAccount": "My account",
+    "myItems": "My items"
+  }

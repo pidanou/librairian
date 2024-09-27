@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:librairian/pages/account_page.dart';
 import 'package:librairian/pages/item_edit_form_page.dart';
 import 'package:librairian/pages/storage_detail_page.dart';
-import 'package:supabase_auth_ui/supabase_auth_ui.dart';
-
 import 'package:librairian/widgets/scaffold_with_nested_navigation.dart';
 import 'package:librairian/pages/login_page.dart';
 import 'package:librairian/pages/settings_page.dart';

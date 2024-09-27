@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/widgets/navigation_destinations.dart';
-import 'package:librairian/widgets/tutorial.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
-import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ScaffoldWithSideBar extends ConsumerStatefulWidget {
   const ScaffoldWithSideBar({
@@ -25,7 +24,6 @@ class ScaffoldWithSideBar extends ConsumerStatefulWidget {
 class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
   final activeSession = Supabase.instance.client.auth.currentSession;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late TutorialCoachMark tutorialCoachMark;
 
   bool _extendedRail = false;
   bool _fixedRail = false;
@@ -33,13 +31,11 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      tutorialCoachMark = createTutorial(context);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    var navigationDestinations = getDestinations(context);
     return SelectionArea(
         child: Scaffold(
             key: _scaffoldKey,
@@ -59,15 +55,6 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
                     });
                   }),
               leadingWidth: 80,
-              // actions: [
-              //   IconButton(
-              //     onPressed: () {
-              //       tutorialCoachMark.show(context: context);
-              //     },
-              //     icon: const Icon(Icons.help),
-              //   ),
-              //   const SizedBox(width: 10),
-              // ],
             ),
             body: SafeArea(
               child: Container(
@@ -149,7 +136,10 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
                                                 ? const SizedBox(width: 28)
                                                 : const SizedBox(),
                                             _extendedRail
-                                                ? Text('Sign Out',
+                                                ? Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .signOut,
                                                     style: TextStyle(
                                                         color: Theme.of(context)
                                                             .colorScheme

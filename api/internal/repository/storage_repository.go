@@ -54,7 +54,7 @@ func (r *PostgresStorageRepository) AddStorage(storage *types.Storage) (*types.S
 }
 
 func (r *PostgresStorageRepository) EditStorage(storage *types.Storage) (*types.Storage, error) {
-	query := `UPDATE storage SET alias = :alias, picked = :picked, updated_at = now() WHERE id = :id`
+	query := `UPDATE storage SET alias = :alias, updated_at = now() WHERE id = :id`
 	_, err := r.DB.NamedExec(query, storage)
 	if err != nil {
 		log.Printf("Cannot add storage: %s", err)

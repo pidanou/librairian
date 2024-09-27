@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/widgets/account_form.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AccountPage extends ConsumerStatefulWidget {
   const AccountPage({super.key});
@@ -24,7 +25,7 @@ class AccountPageState extends ConsumerState<AccountPage> {
         appBar: AppBar(
             scrolledUnderElevation: 0,
             backgroundColor: Theme.of(context).colorScheme.surfaceDim,
-            title: const Text("My account"),
+            title: Text(AppLocalizations.of(context)!.myAccount),
             centerTitle: true),
         body: Container(
             decoration: BoxDecoration(

@@ -6,7 +6,6 @@ class Location {
   String itemId;
   Storage? storage;
   String storageId;
-  String location;
   bool picked;
 
   Location({
@@ -17,7 +16,6 @@ class Location {
     this.itemId = "",
     this.storage,
     this.storageId = "",
-    this.location = "",
     this.picked = false,
   });
 
@@ -30,23 +28,24 @@ class Location {
       itemId: json['item_id'],
       storage: Storage.fromJson(json['storage']),
       storageId: json['storage_id'],
-      location: json['location'],
       picked: json['picked'],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'user_id': userId,
-      'item_id': itemId,
-      'storage': storage?.toJson(),
-      'storage_id': storageId,
-      'location': location,
-      'picked': picked,
-    };
+    final Map<String, dynamic> data = {};
+
+    if (id.isNotEmpty) data['id'] = id;
+    if (createdAt != null) data['created_at'] = createdAt?.toIso8601String();
+    if (updatedAt != null) data['updated_at'] = updatedAt?.toIso8601String();
+    if (userId.isNotEmpty) data['user_id'] = userId;
+    if (itemId.isNotEmpty) data['item_id'] = itemId;
+    if (storage != null) data['storage'] = storage?.toJson();
+    if (storageId.isNotEmpty) data['storage_id'] = storageId;
+
+    data['picked'] = picked;
+
+    return data;
   }
 
   @override

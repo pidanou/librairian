@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:librairian/models/item.dart';
+import 'package:librairian/models/storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ItemRepository {
@@ -97,6 +98,49 @@ class ItemRepository {
     };
     try {
       await http.delete(Uri.parse(url), headers: headers);
+    } catch (e) {
+      print("Exception : $e");
+      rethrow;
+    }
+  }
+
+  FutureOr<Item?> addLocation(Location location) async {
+    String url =
+        '${const String.fromEnvironment('API_URL')}/api/v1/item/${location.itemId}/location';
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final headers = {
+      "Authorization": "Bearer $token",
+      "content-type": "application/json"
+    };
+
+    location.userId = Supabase.instance.client.auth.currentUser!.id;
+
+    try {
+      final response = await http.post(Uri.parse(url),
+          headers: headers, body: jsonEncode(location));
+      if (response.statusCode < 300) {
+        Item newItem = Item.fromJson(jsonDecode(response.body));
+        return newItem;
+      }
+    } catch (e) {
+      print("Exception : $e");
+      return null;
+    }
+    return null;
+  }
+
+  FutureOr<void> deleteLocation(String id) async {
+    String url =
+        '${const String.fromEnvironment('API_URL')}/api/v1/location/$id';
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final headers = {
+      "Authorization": "Bearer $token",
+      "content-type": "application/json"
+    };
+
+    try {
+      await http.delete(Uri.parse(url), headers: headers);
+      return;
     } catch (e) {
       print("Exception : $e");
       rethrow;

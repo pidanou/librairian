@@ -46,10 +46,9 @@ func (s *Server) Start() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins: []string{"https://app.librairian.io", "http://localhost:3000"},
-	// }))
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"https://app.librairian.io", "http://localhost:3000"},
+	}))
 
 	api := e.Group("/api/v1")
 	api.Use(echojwt.WithConfig(echojwt.Config{
@@ -70,6 +69,9 @@ func (s *Server) Start() {
 	api.DELETE("/item/:id", h.DeleteItem)
 	api.GET("/item/matches", h.GetMatches)
 	api.GET("/item/:id/attachments", h.GetItemAttachments)
+	api.POST("/item/:id/location", h.PostItemLocation)
+
+	api.DELETE("/location/:id", h.DeleteItemLocation)
 
 	api.POST("/attachments", h.PostAttachments)
 	api.DELETE("/attachment/:id", h.DeleteAttachmentByID)
