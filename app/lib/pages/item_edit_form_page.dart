@@ -33,7 +33,7 @@ class ItemEditFormPageState extends ConsumerState<ItemEditFormPage> {
                           topLeft: Radius.circular(20.0),
                           bottomLeft: Radius.circular(20.0))),
               child: ItemEditForm(
-                itemID: item.value!.id!,
+                itemID: item.value!.id,
                 onCancel: () => Navigator.of(context).pop(),
               )));
     }

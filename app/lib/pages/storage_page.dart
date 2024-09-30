@@ -56,7 +56,9 @@ class StoragePageState extends ConsumerState<StoragePage> {
           title: Row(children: [
             IconButton(
                 tooltip: 'Add storage',
-                icon: const Icon(Icons.add_circle),
+                icon: const Icon(
+                  Icons.add_circle,
+                ),
                 onPressed: () {
                   showDialog(
                       context: context,
@@ -67,7 +69,9 @@ class StoragePageState extends ConsumerState<StoragePage> {
             if (MediaQuery.of(context).size.width > 840)
               IconButton(
                   tooltip: 'Refresh data',
-                  icon: const Icon(Icons.refresh),
+                  icon: const Icon(
+                    Icons.refresh,
+                  ),
                   onPressed: () {
                     ref.invalidate(storagesProvider);
                   })

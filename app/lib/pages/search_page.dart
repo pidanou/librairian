@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/item.dart';
-import 'package:librairian/providers/item.dart' as provider;
 import 'package:librairian/providers/matches.dart';
 import 'package:librairian/widgets/chat_prompt.dart';
 import 'package:librairian/widgets/chat_response.dart';
@@ -213,7 +212,7 @@ class SearchPageState extends ConsumerState<SearchPage> {
                           suffixIcon: Padding(
                               padding: const EdgeInsets.only(right: 5),
                               child: IconButton(
-                                icon: const Icon(Icons.send, size: 20),
+                                icon: const Icon(Icons.send,  ),
                                 onPressed: !textFieldEnabled
                                     ? null
                                     : () async {

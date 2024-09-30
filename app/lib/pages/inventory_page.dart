@@ -8,6 +8,7 @@ import 'package:librairian/providers/item.dart';
 import 'package:librairian/providers/items_in_storage.dart';
 import 'package:librairian/widgets/alert_dialog_confirm.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
+import 'package:librairian/widgets/default_error.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/items_list.dart';
 import 'package:librairian/widgets/order_by_selector.dart';
@@ -294,7 +295,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
         height: 0,
       ),
       items is AsyncError
-          ? const Text("Error")
+          ? const DefaultError()
           : Expanded(
               child: Row(children: [
               Expanded(

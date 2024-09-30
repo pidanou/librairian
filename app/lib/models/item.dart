@@ -69,17 +69,13 @@ class Item {
         'user_id': userId,
         'name': name,
         'description': description,
-        'locations': locations,
-        'attachments': attachments,
       };
     }
     return {
       'id': id,
       'user_id': userId,
-      'name': name,
-      'description': description,
-      'locations': locations,
-      'attachments': attachments,
+      if (name.isNotEmpty) 'name': name,
+      if (description.isNotEmpty) 'description': description,
     };
   }
 }

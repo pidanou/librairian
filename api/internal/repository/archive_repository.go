@@ -11,23 +11,21 @@ import (
 	"github.com/pidanou/librairian/internal/types"
 )
 
-type PostgresItemRepository struct {
+type PostgresArchiveRepository struct {
 	DB *sqlx.DB
 }
 
-func NewPostgresItemRepository(db *sqlx.DB) *PostgresItemRepository {
-	return &PostgresItemRepository{DB: db}
+func NewPostgresArchiveRepository(db *sqlx.DB) *PostgresArchiveRepository {
+	return &PostgresArchiveRepository{DB: db}
 }
 
-func (r *PostgresItemRepository) AddItem(item *types.Item) (*types.Item, error) {
+func (r *PostgresArchiveRepository) AddItem(item *types.Item) (*types.Item, error) {
 	var insertedItemId uuid.UUID
-
-	tx := r.DB.MustBegin()
 
 	query := `INSERT INTO item
   (user_id, name, description, description_embeddings )
   VALUES (:user_id, :name, :description, :description_embeddings ) returning id`
-	rows, err := tx.NamedQuery(query, item)
+	rows, err := r.DB.NamedQuery(query, item)
 	if err != nil {
 		log.Printf(`Cannot create item %s`, err)
 		return nil, err
@@ -37,26 +35,9 @@ func (r *PostgresItemRepository) AddItem(item *types.Item) (*types.Item, error) 
 	rows.Next()
 	err = rows.Scan(&insertedItemId)
 	if err != nil {
-		tx.Rollback()
 		return nil, err
 	}
 	rows.Close()
-
-	for _, sl := range item.Locations {
-		query = `INSERT INTO location (storage_id, item_id, user_id) VALUES ($1, $2, $3)`
-		_, err = tx.Exec(query, sl.Storage.ID, insertedItemId, sl.UserID)
-		if err != nil {
-			log.Printf(`Cannot create storage location %s`, err)
-			tx.Rollback()
-			return nil, err
-		}
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Printf(`Cannot commit: %s`, err)
-		return nil, err
-	}
 
 	item, err = r.GetItemByID(&insertedItemId)
 	if err != nil {
@@ -66,7 +47,7 @@ func (r *PostgresItemRepository) AddItem(item *types.Item) (*types.Item, error) 
 	return item, nil
 }
 
-func (r *PostgresItemRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error) {
+func (r *PostgresArchiveRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error) {
 	itemsID := []uuid.UUID{}
 	items := []types.Item{}
 	total := 0
@@ -132,7 +113,7 @@ func (r *PostgresItemRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUI
 	}
 
 	query = `SELECT count(*) FROM item WHERE user_id = $1 AND name ILIKE $2
-`
+  `
 	err = r.DB.Get(&total, query, userID, "%"+name+"%")
 	if err != nil {
 		log.Println("Cannot get items: ", err)
@@ -141,7 +122,7 @@ func (r *PostgresItemRepository) GetItems(userID *uuid.UUID, storageID *uuid.UUI
 	return items, total, nil
 }
 
-func (r *PostgresItemRepository) DeleteItem(id *uuid.UUID) error {
+func (r *PostgresArchiveRepository) DeleteItem(id *uuid.UUID) error {
 	query := `DELETE FROM item WHERE id = $1`
 	_, err := r.DB.Exec(query, id)
 	if err != nil {
@@ -152,7 +133,7 @@ func (r *PostgresItemRepository) DeleteItem(id *uuid.UUID) error {
 	return nil
 }
 
-func (r *PostgresItemRepository) AddItemLocation(location *types.Location) (*types.Item, error) {
+func (r *PostgresArchiveRepository) AddItemLocation(location *types.Location) (*types.Item, error) {
 	query := `INSERT INTO location (storage_id, item_id, user_id) VALUES (:storage_id, :item_id, :user_id)`
 	_, err := r.DB.NamedExec(query, location)
 	if err != nil {
@@ -165,7 +146,7 @@ func (r *PostgresItemRepository) AddItemLocation(location *types.Location) (*typ
 	return item, err
 }
 
-func (r *PostgresItemRepository) GetItemLocation(id *uuid.UUID) (*types.Location, error) {
+func (r *PostgresArchiveRepository) GetLocation(id *uuid.UUID) (*types.Location, error) {
 	var location types.Location
 	query := `SELECT * FROM location WHERE id = $1`
 	err := r.DB.Get(&location, query, id)
@@ -177,7 +158,19 @@ func (r *PostgresItemRepository) GetItemLocation(id *uuid.UUID) (*types.Location
 	return &location, nil
 }
 
-func (r *PostgresItemRepository) DeleteItemLocation(id *uuid.UUID) error {
+func (r *PostgresArchiveRepository) GetItemLocations(itemID *uuid.UUID) ([]types.Location, error) {
+	var locations []types.Location
+	query := `SELECT * FROM location WHERE item_id = $1`
+	err := r.DB.Select(&locations, query, itemID)
+	if err != nil {
+		log.Printf(`Cannot add get location %s`, err)
+		return nil, err
+	}
+
+	return locations, nil
+}
+
+func (r *PostgresArchiveRepository) DeleteItemLocation(id *uuid.UUID) error {
 	query := `DELETE FROM location WHERE id = $1`
 	_, err := r.DB.Exec(query, id)
 	if err != nil {
@@ -188,7 +181,7 @@ func (r *PostgresItemRepository) DeleteItemLocation(id *uuid.UUID) error {
 	return nil
 }
 
-func (r *PostgresItemRepository) UpdateItem(item *types.Item) (*types.Item, error) {
+func (r *PostgresArchiveRepository) UpdateItem(item *types.Item) (*types.Item, error) {
 
 	query := `UPDATE item
     set 
@@ -211,9 +204,8 @@ func (r *PostgresItemRepository) UpdateItem(item *types.Item) (*types.Item, erro
 	return item, nil
 }
 
-func (r *PostgresItemRepository) GetItemByID(id *uuid.UUID) (*types.Item, error) {
+func (r *PostgresArchiveRepository) GetItemByID(id *uuid.UUID) (*types.Item, error) {
 	item := &types.Item{}
-	storageLocation := []types.Location{}
 
 	query := `SELECT * FROM item WHERE id = $1 ORDER BY updated_at DESC`
 	err := r.DB.Get(item, query, id)
@@ -225,26 +217,88 @@ func (r *PostgresItemRepository) GetItemByID(id *uuid.UUID) (*types.Item, error)
 		return nil, err
 	}
 
-	query = `SELECT * FROM location WHERE item_id = $1`
-	err = r.DB.Select(&storageLocation, query, item.ID)
-	if err != nil {
-		log.Printf("Cannot get storage location: %s", err)
-	}
-
-	var nl []types.Location
-
-	for _, sl := range storageLocation {
-		storage := &types.Storage{}
-		query = `SELECT * FROM storage WHERE id = $1`
-		err = r.DB.Get(storage, query, sl.StorageID)
-		if err != nil {
-			log.Printf("Cannot get storage: %s", err)
-		}
-		sl.Storage = storage
-		nl = append(nl, sl)
-	}
-
-	item.Locations = nl
-
 	return item, nil
+}
+
+func (r *PostgresArchiveRepository) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {
+	storages := []types.Storage{}
+	query := `SELECT * FROM storage WHERE user_id = $1 ORDER BY updated_at DESC`
+	err := r.DB.Select(&storages, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	return storages, nil
+}
+
+func (r *PostgresArchiveRepository) GetStorageByID(id *uuid.UUID) (*types.Storage, error) {
+	storage := &types.Storage{}
+
+	query := `SELECT * FROM storage where id = $1 ORDER BY updated_at DESC`
+	err := r.DB.Get(storage, query, id)
+	if err != nil {
+		log.Printf("Cannot get storage: %s", err)
+		return nil, err
+	}
+
+	return storage, nil
+}
+
+func (r *PostgresArchiveRepository) AddStorage(storage *types.Storage) (*types.Storage, error) {
+	query := `INSERT INTO storage (user_id, alias, created_at, updated_at) VALUES (:user_id, :alias, now(), now()) RETURNING *`
+	rows, err := r.DB.NamedQuery(query, storage)
+	if err != nil {
+		log.Printf("Cannot add storage: %s", err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		rows.StructScan(storage)
+	}
+	return storage, nil
+}
+
+func (r *PostgresArchiveRepository) EditStorage(storage *types.Storage) (*types.Storage, error) {
+	query := `UPDATE storage SET alias = :alias, updated_at = now() WHERE id = :id`
+	_, err := r.DB.NamedExec(query, storage)
+	if err != nil {
+		log.Printf("Cannot add storage: %s", err)
+		return nil, err
+	}
+	return storage, nil
+}
+
+func (r *PostgresArchiveRepository) DeleteStorageByID(id *uuid.UUID) error {
+	itemsInStorage := []types.Item{}
+	itemsIDList := []*uuid.UUID{}
+	tx, err := r.DB.Begin()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	query := `SELECT i.* FROM item i JOIN location sl on i.id = sl.item_id WHERE sl.storage_id = $1`
+	_ = r.DB.Select(&itemsInStorage, query, id)
+
+	for _, item := range itemsInStorage {
+		itemsIDList = append(itemsIDList, item.ID)
+	}
+
+	query = "DELETE FROM item WHERE id = any ($1)"
+	_, err = tx.Exec(query, itemsIDList)
+	if err != nil {
+		tx.Rollback()
+		log.Println(err)
+		return err
+	}
+
+	query = `DELETE FROM storage WHERE id = $1`
+	_, err = tx.Exec(query, id)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Cannot delete storage: %s", err)
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }

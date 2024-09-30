@@ -3,16 +3,14 @@ package handler
 import "github.com/pidanou/librairian/internal/service"
 
 type Handler struct {
-	ItemService       *service.ItemService
-	StorageService    *service.StorageService
+	ArchiveService    *service.ArchiveService
 	AttachmentService *service.AttachmentService
 }
 
-func New(itemService *service.ItemService, storageService *service.StorageService, attachmentService *service.AttachmentService,
+func New(itemService *service.ArchiveService, attachmentService *service.AttachmentService,
 ) *Handler {
 	return &Handler{
-		ItemService:       itemService,
-		StorageService:    storageService,
+		ArchiveService:    itemService,
 		AttachmentService: attachmentService,
 	}
 }

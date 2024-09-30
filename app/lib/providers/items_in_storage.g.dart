@@ -6,7 +6,7 @@ part of 'items_in_storage.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$itemsInStorageHash() => r'a1eddd566eb13ba6d428a0f007ce60e14dd8fdc3';
+String _$itemsInStorageHash() => r'07866535ba6a70cebe11d2c48cb9c5b0a142e514';
 
 /// Copied from Dart SDK
 class _SystemHash {

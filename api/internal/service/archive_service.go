@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -13,26 +12,26 @@ import (
 	"github.com/pidanou/librairian/internal/types"
 )
 
-type ItemService struct {
-	ItemRepository    repository.ItemRepository
+type ArchiveService struct {
+	ArchiveRepository repository.ArchiveRepository
 	EmbeddingService  IEmbeddingService
 	SimilarityService *SimilarityService
 	BillingService    *BillingService
 }
 
-func NewItemService(r repository.ItemRepository, e IEmbeddingService, s *SimilarityService, b *BillingService) *ItemService {
-	return &ItemService{ItemRepository: r, EmbeddingService: e, SimilarityService: s, BillingService: b}
+func NewArchiveService(r repository.ArchiveRepository, e IEmbeddingService, s *SimilarityService, b *BillingService) *ArchiveService {
+	return &ArchiveService{ArchiveRepository: r, EmbeddingService: e, SimilarityService: s, BillingService: b}
 }
 
-func (s *ItemService) AddItem(item *types.Item) (*types.Item, error) {
-	return s.ItemRepository.AddItem(item)
+func (s *ArchiveService) AddItem(item *types.Item) (*types.Item, error) {
+	return s.ArchiveRepository.AddItem(item)
 }
 
-func (s *ItemService) GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, order types.OrderBy) ([]types.Item, int, error) {
-	return s.ItemRepository.GetItems(userID, storageID, name, page, limit, order)
+func (s *ArchiveService) GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, order types.OrderBy) ([]types.Item, int, error) {
+	return s.ArchiveRepository.GetItems(userID, storageID, name, page, limit, order)
 }
 
-func (s *ItemService) DeleteItem(id, userID *uuid.UUID) error {
+func (s *ArchiveService) DeleteItem(id, userID *uuid.UUID) error {
 	item, err := s.GetItemByID(id, userID)
 	if err != nil {
 		return err
@@ -43,10 +42,10 @@ func (s *ItemService) DeleteItem(id, userID *uuid.UUID) error {
 	if !UserHasAccess(item, userID) {
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
-	return s.ItemRepository.DeleteItem(id)
+	return s.ArchiveRepository.DeleteItem(id)
 }
 
-func (s *ItemService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types.Item, error) {
+func (s *ArchiveService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types.Item, error) {
 	itemCheck, err := s.GetItemByID(item.ID, userID)
 	if err != nil || itemCheck == nil {
 		log.Println(err)
@@ -62,23 +61,23 @@ func (s *ItemService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types.It
 		return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
 	}
 
-	if item.Description != "" && item.Description != itemCheck.Description {
-		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(item.Description)
+	if item.Description != nil && item.Description != itemCheck.Description {
+		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(*item.Description)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
 		item.DescriptionEmbeddings = descriptionEmbedding
-		descriptionToken := s.EmbeddingService.CountTokens(item.Description)
+		descriptionToken := s.EmbeddingService.CountTokens(*item.Description)
 		err = s.BillingService.AddTokenUsage(descriptionToken, userID)
 		if err != nil {
 			log.Println(err)
 		}
 	}
 
-	return s.ItemRepository.UpdateItem(item)
+	return s.ArchiveRepository.UpdateItem(item)
 }
 
-func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, userID *uuid.UUID) (*types.Item, error) {
+func (s *ArchiveService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, userID *uuid.UUID) (*types.Item, error) {
 	oldItem, err := s.GetItemByID(itemID, userID)
 	if httpErr, ok := err.(*echo.HTTPError); ok {
 		return nil, echo.NewHTTPError(httpErr.Code, "Cannot get item")
@@ -92,13 +91,13 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 		return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
 	}
 
-	if newItem.Description != "" && newItem.Description != oldItem.Description {
-		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(newItem.Description)
+	if newItem.Description != nil && newItem.Description != oldItem.Description {
+		descriptionEmbedding, err := s.EmbeddingService.CreateEmbedding(*newItem.Description)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
 		newItem.DescriptionEmbeddings = descriptionEmbedding
-		descriptionToken := s.EmbeddingService.CountTokens(newItem.Description)
+		descriptionToken := s.EmbeddingService.CountTokens(*newItem.Description)
 		err = s.BillingService.AddTokenUsage(descriptionToken, userID)
 		if err != nil {
 			log.Println(err)
@@ -106,23 +105,18 @@ func (s *ItemService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Item, 
 		}
 	}
 
-	if newItem.Locations != nil && len(newItem.Locations) == 0 {
-		mergo.Merge(newItem, oldItem)
-		newItem.Locations = []types.Location{}
-	} else {
-		mergo.Merge(newItem, oldItem)
-		fmt.Println(newItem)
-	}
+	mergo.Merge(newItem, types.ItemFromItemResponse(oldItem))
 
 	if !UserHasAccess(newItem, userID) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	return s.ItemRepository.UpdateItem(newItem)
+	return s.ArchiveRepository.UpdateItem(newItem)
 }
 
-func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item, error) {
-	item, err := s.ItemRepository.GetItemByID(id)
+func (s *ArchiveService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.ItemResponse, error) {
+	var response types.ItemResponse
+	item, err := s.ArchiveRepository.GetItemByID(id)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -130,25 +124,48 @@ func (s *ItemService) GetItemByID(id *uuid.UUID, userID *uuid.UUID) (*types.Item
 	if !item.UserHasAccess(userID) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
-	return item, nil
+
+	locations, err := s.ArchiveRepository.GetItemLocations(id)
+
+	response = types.ItemResponseFromItem(item)
+	response.Locations = locations
+
+	for i, location := range locations {
+		storage, err := s.GetStorageByID(location.StorageID, userID)
+		if err != nil {
+			continue
+		}
+		locations[i].Storage = storage
+	}
+	return &response, nil
 }
 
-func (s *ItemService) AddItemLocation(itemID *uuid.UUID, location *types.Location, userID *uuid.UUID) (*types.Item, error) {
+func (s *ArchiveService) AddItemLocation(itemID *uuid.UUID, location *types.Location, userID *uuid.UUID) (*types.ItemResponse, error) {
 	if !location.UserHasAccess(userID) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
-	return s.ItemRepository.AddItemLocation(location)
+	_, err := s.ArchiveRepository.AddItemLocation(location)
+	if err != nil {
+		return nil, err
+	}
+
+	itemResponse, err := s.GetItemByID(itemID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return itemResponse, nil
 }
 
-func (s *ItemService) DeleteItemLocation(id *uuid.UUID, userID *uuid.UUID) error {
-	location, _ := s.ItemRepository.GetItemLocation(id)
+func (s *ArchiveService) DeleteItemLocation(id *uuid.UUID, userID *uuid.UUID) error {
+	location, _ := s.ArchiveRepository.GetLocation(id)
 	if !location.UserHasAccess(userID) {
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
-	return s.ItemRepository.DeleteItemLocation(id)
+	return s.ArchiveRepository.DeleteItemLocation(id)
 }
 
-func (s *ItemService) FindMatches(search string, threshold float32, maxResults int, userID *uuid.UUID) []types.MatchedItem {
+func (s *ArchiveService) FindMatches(search string, threshold float32, maxResults int, userID *uuid.UUID) []types.MatchedItem {
 	monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
 	if monthlyTokens > 100000000 || err != nil {
 		return []types.MatchedItem{}
@@ -218,4 +235,44 @@ func (s *ItemService) FindMatches(search string, threshold float32, maxResults i
 		}
 	}
 	return deduped
+}
+
+func (s *ArchiveService) GetStorageByID(id, userID *uuid.UUID) (*types.Storage, error) {
+	storage, err := s.ArchiveRepository.GetStorageByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if !UserHasAccess(storage, userID) {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
+	}
+
+	return storage, nil
+}
+
+func (s *ArchiveService) GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error) {
+	return s.ArchiveRepository.GetStorageByUserID(userID)
+}
+
+func (s *ArchiveService) DeleteStorageByID(storageID, userID *uuid.UUID) error {
+	storage, err := s.GetStorageByID(storageID, userID)
+	if err != nil || storage == nil {
+		return echo.NewHTTPError(http.StatusNotFound, "Storage not found")
+	}
+	if !storage.UserHasAccess(userID) {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+
+	return s.ArchiveRepository.DeleteStorageByID(storageID)
+}
+
+func (s *ArchiveService) AddStorage(storage *types.Storage) (*types.Storage, error) {
+	return s.ArchiveRepository.AddStorage(storage)
+}
+
+func (s *ArchiveService) EditStorage(storage *types.Storage, userID *uuid.UUID) (*types.Storage, error) {
+	if !storage.UserHasAccess(userID) {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
+	}
+
+	return s.ArchiveRepository.EditStorage(storage)
 }

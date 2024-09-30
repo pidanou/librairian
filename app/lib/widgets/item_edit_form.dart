@@ -7,6 +7,7 @@ import 'package:librairian/providers/attachment.dart';
 import 'package:librairian/providers/item.dart';
 import 'package:librairian/widgets/attachment_display.dart';
 import 'package:librairian/widgets/attachments_picker.dart';
+import 'package:librairian/widgets/default_error.dart';
 import 'package:librairian/widgets/edit_location.dart';
 
 class ItemEditForm extends ConsumerStatefulWidget {
@@ -35,12 +36,14 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
 
   bool editName = false;
 
+  bool loading = false;
+
   @override
   void didUpdateWidget(oldWidget) {
     super.didUpdateWidget(widget);
     if (widget.itemID != oldWidget.itemID) {
-      descriptionController.text = item.description;
-      nameController.text = item.name;
+      descriptionController.text = "";
+      nameController.text = "";
     }
   }
 
@@ -50,7 +53,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
     if (itemProv is AsyncError) {
       return Center(
           child: TextButton(
-              child: const Text("Error"),
+              child: const DefaultError(),
               onPressed: () {
                 if (MediaQuery.of(context).size.width < 840) {
                   Navigator.of(context).pop();
@@ -63,7 +66,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
       return const Center(child: CircularProgressIndicator());
     }
     if (itemProv.value == null) {
-      return const Center(child: Text("Error"));
+      return const Center(child: DefaultError());
     }
     item = itemProv.value!;
     descriptionController.text = item.description;
@@ -90,15 +93,23 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                 });
                               },
                               onFieldSubmitted: (value) async {
+                                setState(() {
+                                  loading = true;
+                                });
                                 await ref
                                     .read(itemControllerProvider(widget.itemID)
                                         .notifier)
                                     .patch(Item(name: value));
                                 editName = false;
                                 widget.onEdit?.call(item);
+                                setState(() {
+                                  loading = false;
+                                });
                               }),
                           trailing: IconButton(
-                              icon: const Icon(Icons.cancel, size: 20),
+                              icon: const Icon(
+                                Icons.cancel,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   editName = false;
@@ -110,7 +121,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                           title: Text(item.name,
                               style: Theme.of(context).textTheme.titleMedium),
                           trailing: IconButton(
-                              icon: const Icon(Icons.edit, size: 20),
+                              icon: const Icon(
+                                Icons.edit,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   editName = true;
@@ -125,13 +138,18 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                       title: Text("Locations",
                           style: Theme.of(context).textTheme.titleMedium),
                       trailing: IconButton(
-                          icon: const Icon(Icons.add, size: 20),
+                          icon: const Icon(
+                            Icons.add,
+                          ),
                           onPressed: () {
                             showDialog(
                                 context: context,
                                 builder: (context) => EditLocation(
                                     title: const Text("Add location"),
                                     onSave: (sl) async {
+                                      setState(() {
+                                        loading = true;
+                                      });
                                       if (sl != null) {
                                         sl.itemId = item.id;
                                         var newItem = await ref
@@ -140,6 +158,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                                 .notifier)
                                             .addLocation(sl);
                                         widget.onEdit?.call(newItem ?? item);
+                                        setState(() {
+                                          loading = false;
+                                        });
                                       }
                                       if (!context.mounted) return;
                                       Navigator.of(context).pop();
@@ -155,8 +176,13 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                 title: Text(
                                     item.locations?[i].storage?.alias ?? ""),
                                 trailing: IconButton(
-                                    icon: const Icon(Icons.delete, size: 20),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                    ),
                                     onPressed: () async {
+                                      setState(() {
+                                        loading = true;
+                                      });
                                       await ref
                                           .read(itemControllerProvider(
                                                   widget.itemID)
@@ -164,6 +190,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                           .deleteLocation(
                                               item.locations![i].id);
                                       widget.onEdit?.call(item);
+                                      setState(() {
+                                        loading = false;
+                                      });
                                     }),
                               ))
                           : const SizedBox(),
@@ -177,16 +206,23 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                           maxLengthEnforcement: MaxLengthEnforcement.enforced,
                           maxLength: 1000,
                           onFieldSubmitted: (value) async {
+                            setState(() {
+                              loading = true;
+                            });
                             var newItem = await ref
                                 .read(itemControllerProvider(widget.itemID)
                                     .notifier)
                                 .patch(Item(description: value));
+                            if (!context.mounted) return;
                             if (newItem == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text("Error updating item")));
                             }
                             widget.onEdit?.call(item);
+                            setState(() {
+                              loading = false;
+                            });
                           },
                           decoration: const InputDecoration(
                             hintText: "Describe the item and it's content",
@@ -198,6 +234,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                   const SizedBox(height: 10),
                   ListTile(trailing:
                       AttachmentsPicker(onAdd: (List<XFile> files) async {
+                    setState(() {
+                      loading = true;
+                    });
                     for (var file in files) {
                       var bytes = await file.readAsBytes();
                       ref
@@ -205,6 +244,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                               .notifier)
                           .postAttachment(item.id, file.path, bytes);
                     }
+                    setState(() {
+                      loading = false;
+                    });
                   }))
                 ])))
           ])),
@@ -219,6 +261,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                     })
                 : Container(),
             const SizedBox(width: 5),
+            if (loading)
+              const SizedBox(
+                  width: 24, height: 24, child: CircularProgressIndicator()),
           ])),
           const SizedBox(height: 10),
         ]));

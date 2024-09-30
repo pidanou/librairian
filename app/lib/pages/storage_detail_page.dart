@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/providers/storage.dart';
 import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
+import 'package:librairian/widgets/default_error.dart';
 import 'package:librairian/widgets/edit_storage.dart';
 
 class StorageDetailPage extends ConsumerStatefulWidget {
@@ -57,7 +58,7 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                     : const BorderRadius.only(
                         topLeft: Radius.circular(20.0),
                         bottomLeft: Radius.circular(20.0))),
-            child: const Center(child: Text("Error")),
+            child: const Center(child: DefaultError()),
           ));
     }
     if (storage.value == null) {
@@ -84,7 +85,7 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
             actions: editingName
                 ? [
                     IconButton(
-                        icon: const Icon(Icons.cancel, size: 20),
+                        icon: const Icon(Icons.cancel,  ),
                         onPressed: () {
                           setState(() {
                             editingName = false;
@@ -93,14 +94,14 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                   ]
                 : [
                     IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
+                        icon: const Icon(Icons.edit,  ),
                         onPressed: () {
                           setState(() {
                             editingName = true;
                           });
                         }),
                     IconButton(
-                        icon: const Icon(Icons.delete, size: 20),
+                        icon: const Icon(Icons.delete,  ),
                         onPressed: () {
                           showDialog(
                               context: context,

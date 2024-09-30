@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/providers/attachment.dart';
+import 'package:librairian/widgets/default_error.dart';
 import 'package:librairian/widgets/image_viewer.dart';
 
 class AttachmentDisplay extends ConsumerWidget {
@@ -15,7 +16,7 @@ class AttachmentDisplay extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var attachments = ref.watch(itemAttachmentsControllerProvider(itemId));
     if (attachments is AsyncError) {
-      return const Text("Error");
+      return const DefaultError();
     }
     if (attachments is AsyncData && attachments.value!.isNotEmpty) {
       return ListTile(

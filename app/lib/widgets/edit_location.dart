@@ -21,21 +21,19 @@ class EditLocation extends ConsumerStatefulWidget {
 }
 
 class EditLocationState extends ConsumerState<EditLocation> {
-  Storage? storage;
   String? storageID;
 
   @override
   void initState() {
     super.initState();
-    storage = widget.location?.storage;
     storageID = widget.location?.storageId;
   }
 
   void save() {
-    if (storage == null || storageID == null) {
+    if (storageID == null) {
       return;
     }
-    widget.onSave?.call(Location(storage: storage, storageId: storageID!));
+    widget.onSave?.call(Location(storageId: storageID!));
   }
 
   @override
@@ -57,11 +55,9 @@ class EditLocationState extends ConsumerState<EditLocation> {
         title: widget.title,
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           StorageSelector(
-              initialSelection: storage,
               expandedInsets: EdgeInsets.zero,
               onSelected: (s) {
                 setState(() {
-                  storage = s;
                   storageID = s?.id;
                 });
               }),

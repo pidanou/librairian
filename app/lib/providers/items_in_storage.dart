@@ -60,7 +60,7 @@ class ItemsInStorage extends _$ItemsInStorage {
     }
 
     Item? newItem;
-    if (item.id == null) {
+    if (item.id == "") {
       newItem =
           await ref.read(ip.itemControllerProvider(item.id).notifier).add(item);
     } else {

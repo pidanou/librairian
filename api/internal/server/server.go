@@ -24,22 +24,20 @@ func (s *Server) Start() {
 
 	supabasePostgres := config.NewPostgresDB(os.Getenv("POSTGRES_CONNECTION_STRING"))
 
-	itemRepository := repository.NewPostgresItemRepository(supabasePostgres)
-	storageRepository := repository.NewPostgresStorageRepository(supabasePostgres)
+	archiveRepository := repository.NewPostgresArchiveRepository(supabasePostgres)
 	attachmentRepository := repository.NewPostgresAttachmentRepository(supabasePostgres)
 	billingRepository := repository.NewPostgresBillingRepository(supabasePostgres)
 
 	embeddingService := service.NewEmbeddingService(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")
 	similarityService := service.NewSimilarityService(supabasePostgres)
 	imageCaptionService := service.NewImageCaptionsService(os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_SERVICE_ACCOUNT_KEY"), os.Getenv("GCP_LOCATION"))
-	imageStorageService := service.NewSupabaseImageStorageService(os.Getenv("SUPABASE_PROJECT_ID"), os.Getenv("SUPABASE_SERVICE_KEY"))
+	imageArchiveService := service.NewSupabaseImageArchiveService(os.Getenv("SUPABASE_PROJECT_ID"), os.Getenv("SUPABASE_SERVICE_KEY"))
 	billingService := service.NewPostgresBillingService(billingRepository)
 
-	storageService := service.NewStorageService(storageRepository)
-	itemService := service.NewItemService(itemRepository, embeddingService, similarityService, billingService)
-	attachmentService := service.NewAttachmentService(attachmentRepository, embeddingService, imageCaptionService, imageStorageService, billingService)
+	archiveService := service.NewArchiveService(archiveRepository, embeddingService, similarityService, billingService)
+	attachmentService := service.NewAttachmentService(attachmentRepository, embeddingService, imageCaptionService, imageArchiveService, billingService)
 
-	h := handler.New(itemService, storageService, attachmentService)
+	h := handler.New(archiveService, attachmentService)
 
 	e := echo.New()
 	e.HideBanner = true

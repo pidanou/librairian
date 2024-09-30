@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,7 +16,7 @@ func (h *Handler) PostItemLocation(c echo.Context) error {
 
 	id := uuid.MustParse(c.Param("id"))
 
-	item, err := h.ItemService.AddItemLocation(&id, location, userID)
+	item, err := h.ArchiveService.AddItemLocation(&id, location, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -27,10 +26,6 @@ func (h *Handler) PostItemLocation(c echo.Context) error {
 			return echo.NewHTTPError(httpErr.Code, "Cannot update item")
 		}
 	}
-	fmt.Println(item.Locations)
-	for i, n := range item.Locations {
-		fmt.Println(i, *n.Storage.Alias)
-	}
 
 	return c.JSON(http.StatusOK, item)
 }
@@ -39,7 +34,7 @@ func (h *Handler) DeleteItemLocation(c echo.Context) error {
 	userID := getUserIDFromJWT(c)
 	id := uuid.MustParse(c.Param("id"))
 
-	err := h.ItemService.DeleteItemLocation(&id, userID)
+	err := h.ArchiveService.DeleteItemLocation(&id, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)

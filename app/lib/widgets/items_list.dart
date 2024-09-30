@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/helpers/date.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
+import 'package:librairian/providers/item.dart';
 import 'package:librairian/widgets/item_listtile.dart';
 
 class ItemsList extends ConsumerStatefulWidget {
@@ -91,13 +92,16 @@ class ItemsListState extends ConsumerState<ItemsList> {
                 child: ItemListTile(
                     item: item,
                     onTap: () async {
-                      widget.onTap?.call(item).whenComplete(() {
-                        if (MediaQuery.sizeOf(context).width < 840) {
+                      ref.invalidate(itemControllerProvider(item.id));
+                      if (MediaQuery.sizeOf(context).width < 840) {
+                        widget.onTap?.call(item).whenComplete(() {
                           setState(() {
                             editing = "";
                           });
-                        }
-                      });
+                        });
+                      } else {
+                        widget.onTap?.call(item);
+                      }
                       setState(() {
                         editing = item.id;
                         selected = [];

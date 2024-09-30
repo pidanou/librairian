@@ -15,7 +15,7 @@ func (h *Handler) GetStorageByID(c echo.Context) error {
 	userID := getUserIDFromJWT(c)
 	id := uuid.MustParse(c.Param("id"))
 
-	storage, err := h.StorageService.GetStorageByID(&id, userID)
+	storage, err := h.ArchiveService.GetStorageByID(&id, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); ok {
 			log.Println(err)
@@ -32,7 +32,7 @@ func (h *Handler) GetStoragesByUserID(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	storages, err := h.StorageService.GetStorageByUserID(userID)
+	storages, err := h.ArchiveService.GetStorageByUserID(userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); ok {
 			log.Println(err)
@@ -58,7 +58,7 @@ func (h *Handler) PostStorage(c echo.Context) error {
 	fmt.Println(storage)
 
 	storage.UserID = userID
-	storage, err = h.StorageService.AddStorage(storage)
+	storage, err = h.ArchiveService.AddStorage(storage)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); ok {
 			log.Println(err)
@@ -82,7 +82,7 @@ func (h *Handler) PutStorage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid storage")
 	}
 
-	storage, err = h.StorageService.EditStorage(storage, userID)
+	storage, err = h.ArchiveService.EditStorage(storage, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); ok {
 			log.Println(err)
@@ -103,7 +103,7 @@ func (h *Handler) DeleteStorage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
-	err = h.StorageService.DeleteStorageByID(&storageID, userID)
+	err = h.ArchiveService.DeleteStorageByID(&storageID, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); ok {
 			log.Println(err)

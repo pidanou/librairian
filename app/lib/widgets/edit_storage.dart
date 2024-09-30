@@ -108,14 +108,14 @@ class EditStorageState extends ConsumerState<EditStorage> {
                   trailing: editingStorage
                       ? Row(mainAxisSize: MainAxisSize.min, children: [
                           IconButton(
-                              icon: const Icon(Icons.cancel, size: 20),
+                              icon: const Icon(Icons.cancel,  ),
                               onPressed: () {
                                 setState(() {
                                   editingStorage = false;
                                 });
                               }),
                           IconButton(
-                              icon: const Icon(Icons.check_circle, size: 20),
+                              icon: const Icon(Icons.check_circle,  ),
                               onPressed: () {
                                 storage.alias = controller.text;
                                 ref
@@ -128,14 +128,14 @@ class EditStorageState extends ConsumerState<EditStorage> {
                         ])
                       : Row(mainAxisSize: MainAxisSize.min, children: [
                           IconButton(
-                              icon: const Icon(Icons.edit, size: 20),
+                              icon: const Icon(Icons.edit,  ),
                               onPressed: () {
                                 setState(() {
                                   editingStorage = true;
                                 });
                               }),
                           IconButton(
-                              icon: const Icon(Icons.delete, size: 20),
+                              icon: const Icon(Icons.delete,  ),
                               onPressed: () {
                                 showDialog(
                                     context: context,
@@ -154,21 +154,23 @@ class EditStorageState extends ConsumerState<EditStorage> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  CheckboxListTile(
-                      controlAffinity: ListTileControlAffinity.leading,
-                      onChanged: (value) {
-                        setState(() {
-                          selectAll = !selectAll;
-                          if (selectAll == true) {
-                            for (var item in items.value!.data) {
-                              selected.add(item.id);
+                  ListTile(
+                      dense: true,
+                      leading: Checkbox(
+                        onChanged: (value) {
+                          setState(() {
+                            selectAll = !selectAll;
+                            if (selectAll == true) {
+                              for (var item in items.value!.data) {
+                                selected.add(item.id);
+                              }
+                            } else {
+                              selected = [];
                             }
-                          } else {
-                            selected = [];
-                          }
-                        });
-                      },
-                      value: selectAll,
+                          });
+                        },
+                        value: selectAll,
+                      ),
                       title: Row(children: [
                         deleting
                             ? const SizedBox(
@@ -176,7 +178,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                 height: 20,
                                 child: CircularProgressIndicator())
                             : IconButton(
-                                icon: const Icon(Icons.delete, size: 20),
+                                icon: const Icon(Icons.delete,  ),
                                 onPressed: () {
                                   showDialog(
                                       context: context,
@@ -195,13 +197,13 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                 tooltip: 'Delete selected'),
                         IconButton(
                             tooltip: 'Add item',
-                            icon: const Icon(Icons.add_circle, size: 20),
+                            icon: const Icon(Icons.add_circle,  ),
                             onPressed: () async {
                               Item? newItem = await ref
                                   .read(itemControllerProvider(null).notifier)
                                   .add(
                                     Item(name: "New Item", locations: [
-                                      Location(storage: widget.storage)
+                                      Location(storageId: widget.storage.id)
                                     ]),
                                   );
                               if (!context.mounted) {
@@ -230,7 +232,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
                         if (MediaQuery.of(context).size.width > 840)
                           IconButton(
                               tooltip: 'Refresh data',
-                              icon: const Icon(Icons.refresh, size: 20),
+                              icon: const Icon(Icons.refresh,  ),
                               onPressed: () {
                                 ref.invalidate(itemsInStorageProvider(
                                     page, limit, storage.id));

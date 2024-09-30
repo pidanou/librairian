@@ -6,7 +6,7 @@ import (
 	"github.com/pidanou/librairian/internal/types"
 )
 
-type ItemRepository interface {
+type ArchiveRepository interface {
 	AddItem(item *types.Item) (*types.Item, error)
 	GetItems(userID *uuid.UUID, storageID *uuid.UUID, name string, page int, limit int, orderBy types.OrderBy) ([]types.Item, int, error)
 	DeleteItem(id *uuid.UUID) error
@@ -14,10 +14,8 @@ type ItemRepository interface {
 	GetItemByID(id *uuid.UUID) (*types.Item, error)
 	AddItemLocation(location *types.Location) (*types.Item, error)
 	DeleteItemLocation(id *uuid.UUID) error
-	GetItemLocation(id *uuid.UUID) (*types.Location, error)
-}
-
-type StorageRepository interface {
+	GetLocation(id *uuid.UUID) (*types.Location, error)
+	GetItemLocations(itemID *uuid.UUID) ([]types.Location, error)
 	GetStorageByUserID(userID *uuid.UUID) ([]types.Storage, error)
 	GetStorageByID(id *uuid.UUID) (*types.Storage, error)
 	DeleteStorageByID(id *uuid.UUID) error

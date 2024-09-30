@@ -40,7 +40,6 @@ class Location {
     if (updatedAt != null) data['updated_at'] = updatedAt?.toIso8601String();
     if (userId.isNotEmpty) data['user_id'] = userId;
     if (itemId.isNotEmpty) data['item_id'] = itemId;
-    if (storage != null) data['storage'] = storage?.toJson();
     if (storageId.isNotEmpty) data['storage_id'] = storageId;
 
     data['picked'] = picked;

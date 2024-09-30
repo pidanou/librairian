@@ -14,7 +14,7 @@ type AttachmentService struct {
 	AttachmentRepository repository.AttachmentRepository
 	EmbeddingService     IEmbeddingService
 	ImageCaptionService  IImageCaptionService
-	ImageStorageService  IObjectStorageService
+	ImageArchiveService  IObjectArchiveService
 	BillingService       *BillingService
 }
 
@@ -22,10 +22,10 @@ func NewAttachmentService(
 	r repository.AttachmentRepository,
 	e IEmbeddingService,
 	s IImageCaptionService,
-	i IObjectStorageService,
+	i IObjectArchiveService,
 	b *BillingService,
 ) *AttachmentService {
-	return &AttachmentService{AttachmentRepository: r, EmbeddingService: e, ImageCaptionService: s, ImageStorageService: i, BillingService: b}
+	return &AttachmentService{AttachmentRepository: r, EmbeddingService: e, ImageCaptionService: s, ImageArchiveService: i, BillingService: b}
 }
 
 func (s *AttachmentService) GetAttachmentByID(id *uuid.UUID) (*types.Attachment, error) {
@@ -68,7 +68,7 @@ func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userI
 		}
 	}
 	for i, attachment := range attachmentsToAdd {
-		err := s.ImageStorageService.UploadImage("attachments", attachment.Path, attachment.Bytes)
+		err := s.ImageArchiveService.UploadImage("attachments", attachment.Path, attachment.Bytes)
 		if err != nil {
 			log.Println(err)
 			continue

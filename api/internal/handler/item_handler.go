@@ -43,7 +43,7 @@ func (h *Handler) GetItems(c echo.Context) error {
 		limit = 20
 	}
 
-	items, total, err := h.ItemService.GetItems(userID, &storageID, name, page, limit, order)
+	items, total, err := h.ArchiveService.GetItems(userID, &storageID, name, page, limit, order)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -67,12 +67,9 @@ func (h *Handler) PostItem(c echo.Context) error {
 	item := *itemReq
 
 	userID := getUserIDFromJWT(c)
+	item.UserID = userID
 
-	cleanedLocation := h.StorageService.Clean(&item, userID)
-
-	item.Locations = cleanedLocation
-
-	newItem, err := h.ItemService.AddItem(&item)
+	newItem, err := h.ArchiveService.AddItem(&item)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -95,7 +92,7 @@ func (h *Handler) GetItemByID(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	item, err := h.ItemService.GetItemByID(&id, userID)
+	item, err := h.ArchiveService.GetItemByID(&id, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -117,7 +114,7 @@ func (h *Handler) DeleteItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID")
 	}
 
-	err = h.ItemService.DeleteItem(&id, userID)
+	err = h.ArchiveService.DeleteItem(&id, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -137,7 +134,7 @@ func (h *Handler) PutItem(c echo.Context) error {
 
 	userID := getUserIDFromJWT(c)
 
-	item, err := h.ItemService.UpdateItem(item, userID)
+	item, err := h.ArchiveService.UpdateItem(item, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -158,7 +155,7 @@ func (h *Handler) PatchItem(c echo.Context) error {
 
 	id := uuid.MustParse(c.Param("id"))
 
-	item, err := h.ItemService.PartialUpdateItem(&id, item, userID)
+	item, err := h.ArchiveService.PartialUpdateItem(&id, item, userID)
 	if err != nil {
 		if httpErr, ok := err.(*echo.HTTPError); !ok {
 			log.Println(err)
@@ -204,7 +201,7 @@ func (h *Handler) GetMatches(c echo.Context) error {
 		req.MaxResults = 100
 	}
 
-	matches := h.ItemService.FindMatches(req.Search, req.Threshold, req.MaxResults, &userID)
+	matches := h.ArchiveService.FindMatches(req.Search, req.Threshold, req.MaxResults, &userID)
 
 	c.Response().Header().Set("Content-Type", "application/json;charset=UTF-8")
 	return c.JSON(http.StatusOK, matches)
