@@ -9,6 +9,7 @@ import 'package:librairian/widgets/attachment_display.dart';
 import 'package:librairian/widgets/attachments_picker.dart';
 import 'package:librairian/widgets/default_error.dart';
 import 'package:librairian/widgets/edit_location.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ItemEditForm extends ConsumerStatefulWidget {
   const ItemEditForm({
@@ -135,7 +136,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                     height: 0,
                   ),
                   ListTile(
-                      title: Text("Locations",
+                      title: Text(AppLocalizations.of(context)!.locations,
                           style: Theme.of(context).textTheme.titleMedium),
                       trailing: IconButton(
                           icon: const Icon(
@@ -145,7 +146,8 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                             showDialog(
                                 context: context,
                                 builder: (context) => EditLocation(
-                                    title: const Text("Add location"),
+                                    title:
+                                        Text(AppLocalizations.of(context)!.add),
                                     onSave: (sl) async {
                                       setState(() {
                                         loading = true;
@@ -216,8 +218,10 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                             if (!context.mounted) return;
                             if (newItem == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("Error updating item")));
+                                  SnackBar(
+                                      content: Text(
+                                          AppLocalizations.of(context)!
+                                              .error)));
                             }
                             widget.onEdit?.call(item);
                             setState(() {
@@ -255,7 +259,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             widget.onCancel != null
                 ? TextButton(
-                    child: const Text("Cancel"),
+                    child: Text(AppLocalizations.of(context)!.cancel),
                     onPressed: () {
                       widget.onCancel?.call();
                     })

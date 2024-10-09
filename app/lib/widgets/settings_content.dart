@@ -7,6 +7,7 @@ import 'package:librairian/providers/locale.dart';
 import 'package:librairian/providers/settings.dart';
 import 'package:librairian/providers/supabase.dart';
 import 'package:librairian/widgets/account_form.dart';
+import 'package:librairian/widgets/language_form.dart';
 import 'package:librairian/widgets/theme_form.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -14,6 +15,21 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class SettingsContent extends ConsumerWidget {
   const SettingsContent({super.key, this.initialSetting});
   final String? initialSetting;
+
+  Widget _getWidgetForSelection(String? selection) {
+    switch (selection) {
+      case 'usage':
+        return Container(); // Replace with the actual Usage widget
+      case 'account':
+        return const AccountForm(); // Your AccountForm widget here
+      case 'theme':
+        return const ThemeForm(); // Your ThemeForm widget here
+      case 'language':
+        return const LanguageForm(); // Your LanguageForm widget here
+      default:
+        return Container(); // Return an empty container if no match
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,13 +46,18 @@ class SettingsContent extends ConsumerWidget {
                   : MainAxisSize.max,
               children: [
             Expanded(
+                child: Material(
+              type: MaterialType.transparency,
               child: ListView(
                 children: [
                   ListTile(
                       dense: true,
-                      title: Text("Account",
+                      title: Text(AppLocalizations.of(context)!.account,
                           style: Theme.of(context).textTheme.titleSmall)),
                   ListTile(
+                    selectedColor: Theme.of(context).colorScheme.onSurface,
+                    selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
+                    selected: ref.watch(selectedSettingProvider) == "account",
                     leading: const Icon(Icons.mail),
                     title: Text(ref.watch(supabaseUserProvider)?.email ?? ""),
                     onTap: () {
@@ -47,34 +68,59 @@ class SettingsContent extends ConsumerWidget {
                     },
                   ),
                   ListTile(
+                      selectedColor: Theme.of(context).colorScheme.onSurface,
+                      selectedTileColor:
+                          Theme.of(context).colorScheme.surfaceDim,
+                      selected: ref.watch(selectedSettingProvider) == "usage",
                       leading: const Icon(Icons.bar_chart),
-                      title: const Text("Usage"),
-                      onTap: () {}),
+                      title: Text(AppLocalizations.of(context)!.usage),
+                      onTap: () {
+                        ref.read(selectedSettingProvider.notifier).set("usage");
+                      }),
                   const Divider(height: 0),
                   ListTile(
                       dense: true,
                       title: Text("App",
                           style: Theme.of(context).textTheme.titleSmall)),
                   ListTile(
-                      title: IconButton(
-                          icon: const Icon(Icons.settings),
-                          onPressed: () {
-                            ref
-                                .read(localeStateProvider.notifier)
-                                .set(const Locale('fr'));
-                          })),
+                    selectedColor: Theme.of(context).colorScheme.onSurface,
+                    selectedTileColor: Theme.of(context).colorScheme.surfaceDim,
+                    selected: ref.watch(selectedSettingProvider) == "language",
+                    onTap: () {
+                      ref
+                          .read(selectedSettingProvider.notifier)
+                          .set("language");
+                      if (MediaQuery.of(context).size.width < 840) {
+                        GoRouter.of(context).go('/settings/language');
+                      }
+                    },
+                    leading: const Icon(Icons.language),
+                    title: Text(AppLocalizations.of(context)!.language),
+                    subtitle: Text(
+                        ref.watch(localeStateProvider).toString() == "fr"
+                            ? "Français"
+                            : "English"),
+                  ),
                   ListTile(
+                      selectedColor: Theme.of(context).colorScheme.onSurface,
+                      selectedTileColor:
+                          Theme.of(context).colorScheme.surfaceDim,
+                      selected: ref.watch(selectedSettingProvider) == "theme",
                       leading: const Icon(Icons.brightness_6),
-                      title: const Text(
-                        "Theme",
+                      title: Text(
+                        AppLocalizations.of(context)!.theme,
                       ),
                       subtitle: AdaptiveTheme.of(context).mode.isDark
-                          ? const Text("Dark")
+                          ? Text(AppLocalizations.of(context)!.dark)
                           : AdaptiveTheme.of(context).mode.isLight
-                              ? const Text("Light")
-                              : const Text("System (default)"),
+                              ? Text(AppLocalizations.of(context)!.light)
+                              : Text(
+                                  AppLocalizations.of(context)!.systemDefault),
                       onTap: () {
                         ref.read(selectedSettingProvider.notifier).set("theme");
+                        if (MediaQuery.of(context).size.width < 840) {
+                          GoRouter.of(context).go('/settings/theme');
+                        }
                       }),
                   const Divider(height: 0),
                   if (MediaQuery.of(context).size.width < 840)
@@ -95,16 +141,14 @@ class SettingsContent extends ConsumerWidget {
                     )
                 ],
               ),
-            )
+            ))
           ])),
       if (MediaQuery.of(context).size.width > 840) ...[
         VerticalDivider(
           width: 0,
           color: Theme.of(context).colorScheme.surfaceDim,
         ),
-        if (selected == null) Expanded(child: Container()),
-        if (selected == "account") const Expanded(child: AccountForm()),
-        if (selected == "theme") const Expanded(child: ThemeForm()),
+        Expanded(child: _getWidgetForSelection(selected)),
       ]
     ]);
   }

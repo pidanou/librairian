@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DefaultError extends StatelessWidget {
   final String? text;
@@ -14,7 +15,7 @@ class DefaultError extends StatelessWidget {
           () {
             GoRouter.of(context).go("/");
           },
-      child: Text(text ?? 'Error'),
+      child: Text(text ?? AppLocalizations.of(context)!.error),
     );
   }
 }

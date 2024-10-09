@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/providers/supabase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AccountForm extends ConsumerStatefulWidget {
   const AccountForm({super.key});
@@ -21,12 +22,12 @@ class AccountFormState extends ConsumerState<AccountForm> {
         key: _formKey,
         child: Column(children: [
           ListTile(
-            title: const Text("Email"),
+            title: Text(AppLocalizations.of(context)!.email),
             subtitle:
                 Text(ref.watch(supabaseUserProvider)?.email ?? "No email"),
           ),
           ListTile(
-              title: const Text("Password"),
+              title: Text(AppLocalizations.of(context)!.password),
               subtitle: TextFormField(
                 obscureText: true,
                 enabled: editing,
@@ -49,7 +50,7 @@ class AccountFormState extends ConsumerState<AccountForm> {
               )),
           if (editing)
             ListTile(
-                title: const Text("Confirm password"),
+                title: Text(AppLocalizations.of(context)!.confirmPassword),
                 subtitle: TextFormField(
                     enabled: editing,
                     controller: passwordConfirmController,
@@ -73,7 +74,7 @@ class AccountFormState extends ConsumerState<AccountForm> {
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             if (editing)
               TextButton(
-                child: const Text("Cancel"),
+                child: Text(AppLocalizations.of(context)!.cancel),
                 onPressed: () => setState(() {
                   passwordController.clear();
                   passwordConfirmController.clear();

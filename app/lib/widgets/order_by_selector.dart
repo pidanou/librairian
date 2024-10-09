@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OrderBySelector extends StatelessWidget {
   const OrderBySelector(
@@ -14,7 +15,7 @@ class OrderBySelector extends StatelessWidget {
       menuChildren: options,
       builder: (context, controller, child) {
         return ActionChip(
-          label: child ?? const Text("Sort"),
+          label: child ?? Text(AppLocalizations.of(context)!.sort),
           onPressed: () {
             if (controller.isOpen) {
               controller.close();

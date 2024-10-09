@@ -4,6 +4,7 @@ import 'package:librairian/providers/storage.dart';
 import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
 import 'package:librairian/widgets/default_error.dart';
 import 'package:librairian/widgets/edit_storage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StorageDetailPage extends ConsumerStatefulWidget {
   const StorageDetailPage({required this.storageID, super.key});
@@ -75,7 +76,7 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                     : const BorderRadius.only(
                         topLeft: Radius.circular(20.0),
                         bottomLeft: Radius.circular(20.0))),
-            child: const Center(child: Text("Item not found")),
+            child: Center(child: Text(AppLocalizations.of(context)!.notFound)),
           ));
     }
     return Scaffold(
@@ -85,7 +86,9 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
             actions: editingName
                 ? [
                     IconButton(
-                        icon: const Icon(Icons.cancel,  ),
+                        icon: const Icon(
+                          Icons.cancel,
+                        ),
                         onPressed: () {
                           setState(() {
                             editingName = false;
@@ -94,14 +97,18 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                   ]
                 : [
                     IconButton(
-                        icon: const Icon(Icons.edit,  ),
+                        icon: const Icon(
+                          Icons.edit,
+                        ),
                         onPressed: () {
                           setState(() {
                             editingName = true;
                           });
                         }),
                     IconButton(
-                        icon: const Icon(Icons.delete,  ),
+                        icon: const Icon(
+                          Icons.delete,
+                        ),
                         onPressed: () {
                           showDialog(
                               context: context,
@@ -133,7 +140,8 @@ class StorageDetailPageState extends ConsumerState<StorageDetailPage> {
                         editingName = false;
                       });
                     })
-                : Text(storage.value?.alias ?? 'No name'),
+                : Text(storage.value?.alias ??
+                    AppLocalizations.of(context)!.noName),
             centerTitle: true),
         body: Container(
           decoration: BoxDecoration(

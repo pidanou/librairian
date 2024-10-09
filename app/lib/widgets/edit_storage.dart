@@ -11,6 +11,7 @@ import 'package:librairian/widgets/alert_dialog_delete_storage.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/items_list.dart';
 import 'package:librairian/widgets/page_switcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditStorage extends ConsumerStatefulWidget {
   const EditStorage({this.onDelete, required this.storage, super.key});
@@ -41,7 +42,7 @@ class EditStorageState extends ConsumerState<EditStorage> {
     if (!mounted) return true;
     if (newItem == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Item could not be saved")));
+          SnackBar(content: Text(AppLocalizations.of(context)!.error)));
       return false;
     }
     // ref.invalidate(itemsInStorageProvider(page, limit, widget.storage.id));
@@ -108,14 +109,18 @@ class EditStorageState extends ConsumerState<EditStorage> {
                   trailing: editingStorage
                       ? Row(mainAxisSize: MainAxisSize.min, children: [
                           IconButton(
-                              icon: const Icon(Icons.cancel,  ),
+                              icon: const Icon(
+                                Icons.cancel,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   editingStorage = false;
                                 });
                               }),
                           IconButton(
-                              icon: const Icon(Icons.check_circle,  ),
+                              icon: const Icon(
+                                Icons.check_circle,
+                              ),
                               onPressed: () {
                                 storage.alias = controller.text;
                                 ref
@@ -128,14 +133,18 @@ class EditStorageState extends ConsumerState<EditStorage> {
                         ])
                       : Row(mainAxisSize: MainAxisSize.min, children: [
                           IconButton(
-                              icon: const Icon(Icons.edit,  ),
+                              icon: const Icon(
+                                Icons.edit,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   editingStorage = true;
                                 });
                               }),
                           IconButton(
-                              icon: const Icon(Icons.delete,  ),
+                              icon: const Icon(
+                                Icons.delete,
+                              ),
                               onPressed: () {
                                 showDialog(
                                     context: context,
@@ -178,7 +187,9 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                 height: 20,
                                 child: CircularProgressIndicator())
                             : IconButton(
-                                icon: const Icon(Icons.delete,  ),
+                                icon: const Icon(
+                                  Icons.delete,
+                                ),
                                 onPressed: () {
                                   showDialog(
                                       context: context,
@@ -189,15 +200,20 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                               "Are you sure you want to delete these items?"),
                                           message: const Text(
                                               "This cannot be undone."),
-                                          confirmMessage: const Text("Delete"),
+                                          confirmMessage: Text(
+                                              AppLocalizations.of(context)!
+                                                  .delete),
                                           action: deleteSelected,
                                         );
                                       });
                                 },
-                                tooltip: 'Delete selected'),
+                                tooltip: AppLocalizations.of(context)!.delete,
+                              ),
                         IconButton(
-                            tooltip: 'Add item',
-                            icon: const Icon(Icons.add_circle,  ),
+                            tooltip: AppLocalizations.of(context)!.add,
+                            icon: const Icon(
+                              Icons.add_circle,
+                            ),
                             onPressed: () async {
                               Item? newItem = await ref
                                   .read(itemControllerProvider(null).notifier)
@@ -212,9 +228,10 @@ class EditStorageState extends ConsumerState<EditStorage> {
                               if (MediaQuery.of(context).size.width < 840) {
                                 if (newItem == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text("Item could not be added")));
+                                      SnackBar(
+                                          content: Text(
+                                              AppLocalizations.of(context)!
+                                                  .error)));
                                   return;
                                 }
                                 ref.invalidate(itemsInStorageProvider(
@@ -231,8 +248,10 @@ class EditStorageState extends ConsumerState<EditStorage> {
                             }),
                         if (MediaQuery.of(context).size.width > 840)
                           IconButton(
-                              tooltip: 'Refresh data',
-                              icon: const Icon(Icons.refresh,  ),
+                              tooltip: AppLocalizations.of(context)!.refresh,
+                              icon: const Icon(
+                                Icons.refresh,
+                              ),
                               onPressed: () {
                                 ref.invalidate(itemsInStorageProvider(
                                     page, limit, storage.id));

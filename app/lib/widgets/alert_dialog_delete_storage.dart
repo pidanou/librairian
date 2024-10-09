@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/providers/storage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AlertDialogDeleteStorage extends ConsumerWidget {
   const AlertDialogDeleteStorage(
@@ -13,13 +14,12 @@ class AlertDialogDeleteStorage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       icon: const Icon(Icons.warning),
-      title: const Text('Are you sure you want to delete this storage?'),
-      content: const Text(
-          'Items inside the storage will ALL be deleted. You will not be able to undo this action.'),
+      title: Text(AppLocalizations.of(context)!.confirmDelete),
+      content: Text(AppLocalizations.of(context)!.confirmDeleteNotice),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         TextButton(
           onPressed: () {
@@ -27,7 +27,7 @@ class AlertDialogDeleteStorage extends ConsumerWidget {
             onDelete?.call();
             Navigator.pop(context, true);
           },
-          child: const Text('Delete'),
+          child: Text(AppLocalizations.of(context)!.delete),
         ),
       ],
     );

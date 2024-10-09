@@ -7,6 +7,7 @@ import 'package:librairian/widgets/chat_response.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
 import 'package:librairian/widgets/item_edit_form.dart';
 import 'package:librairian/widgets/search_config.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -75,8 +76,8 @@ class SearchPageState extends ConsumerState<SearchPage> {
     if (MediaQuery.of(context).size.width < 840) {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,
-        appBar: const CustomAppBar(
-          title: Text("Search Items"),
+        appBar: CustomAppBar(
+          title: Text(AppLocalizations.of(context)!.search),
         ),
         body: content(context),
       );
@@ -206,13 +207,12 @@ class SearchPageState extends ConsumerState<SearchPage> {
                       scrollController: scrollController,
                       controller: controller,
                       decoration: InputDecoration(
-                          hintText: searchMode == "by description"
-                              ? "Describe the item you are looking for"
-                              : "Name of the item you are looking for",
                           suffixIcon: Padding(
                               padding: const EdgeInsets.only(right: 5),
                               child: IconButton(
-                                icon: const Icon(Icons.send,  ),
+                                icon: const Icon(
+                                  Icons.send,
+                                ),
                                 onPressed: !textFieldEnabled
                                     ? null
                                     : () async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:librairian/providers/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'locale.g.dart';
@@ -7,10 +8,14 @@ part 'locale.g.dart';
 class LocaleState extends _$LocaleState {
   @override
   Locale build() {
-    return const Locale('en');
+    final prefs = ref.read(sharedPreferencesProvider);
+    String locale = prefs.getString("locale") ?? "en";
+    return Locale(locale);
   }
 
   set(Locale value) {
     state = value;
+    final prefs = ref.read(sharedPreferencesProvider);
+    prefs.setString("locale", value.toString());
   }
 }

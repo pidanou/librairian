@@ -5,6 +5,7 @@ import 'package:librairian/models/item.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/item.dart';
 import 'package:librairian/widgets/item_listtile.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ItemsList extends ConsumerStatefulWidget {
   const ItemsList(
@@ -128,7 +129,7 @@ class ItemsListState extends ConsumerState<ItemsList> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text("Last updated:"),
+                        Text(AppLocalizations.of(context)!.lastUpdated),
                         Text(formatTimestamp(item.updatedAt?.toString() ?? ""))
                       ],
                     ))),

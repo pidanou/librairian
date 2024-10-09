@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:librairian/providers/item.dart";
 import "package:librairian/widgets/item_edit_form.dart";
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ItemEditFormPage extends ConsumerStatefulWidget {
   final String itemId;
@@ -22,7 +23,8 @@ class ItemEditFormPageState extends ConsumerState<ItemEditFormPage> {
           appBar: AppBar(
               scrolledUnderElevation: 0,
               backgroundColor: Theme.of(context).colorScheme.surfaceDim,
-              title: Text(item.value?.name ?? 'No name'),
+              title: Text(
+                  item.value?.name ?? AppLocalizations.of(context)!.noName),
               centerTitle: true),
           body: Container(
               decoration: BoxDecoration(

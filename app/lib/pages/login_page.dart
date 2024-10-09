@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:librairian/constants/supabase_locale.dart';
 import 'package:librairian/providers/supabase.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
@@ -17,10 +19,11 @@ class LoginPage extends ConsumerWidget {
             width: 500,
             child: Column(
               children: [
-                Text('Welcome to Librarian',
+                Text(AppLocalizations.of(context)!.welcome,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 32),
                 SupaEmailAuth(
+                  localization: createSupabaseLocalization(context),
                   onSignInComplete: (response) {
                     ref.invalidate(supabaseUserProvider);
                     GoRouter.of(context).go('/search');

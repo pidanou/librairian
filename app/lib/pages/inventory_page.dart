@@ -45,7 +45,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                 ? const SizedBox(
                     width: 20, height: 20, child: CircularProgressIndicator())
                 : IconButton(
-                    tooltip: 'Delete selected',
+                    tooltip: AppLocalizations.of(context)!.delete,
                     icon: const Icon(Icons.delete),
                     onPressed: () {
                       selected.isNotEmpty
@@ -58,7 +58,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                         "Are you sure you want to delete these items?"),
                                     message: const Text(
                                         "This action cannot be undone"),
-                                    confirmMessage: const Text("Delete"),
+                                    confirmMessage: Text(
+                                        AppLocalizations.of(context)!.delete),
                                     action: () async {
                                       setState(() {
                                         deleting = true;
@@ -82,12 +83,12 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                           page, pageSize, null, orderBy, asc));
                                     });
                               })
-                          : ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("No item selected")));
+                          : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(AppLocalizations.of(context)!
+                                  .noItemSelected)));
                     }),
             IconButton(
-                tooltip: 'Add item',
+                tooltip: AppLocalizations.of(context)!.add,
                 icon: const Icon(Icons.add_circle),
                 onPressed: () async {
                   var newItem =
@@ -98,8 +99,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                     return;
                   }
                   if (newItem == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text("Item could not be added")));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(AppLocalizations.of(context)!.error)));
                     return;
                   }
                   ref.invalidate(itemsInStorageProvider(
@@ -156,7 +157,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             menuController.close();
                           },
                           dense: true,
-                          title: const Text("Name A-Z")),
+                          title: Text(AppLocalizations.of(context)!.nameAZ)),
                       ListTile(
                           onTap: () {
                             ref
@@ -169,7 +170,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             menuController.close();
                           },
                           dense: true,
-                          title: const Text("Name Z-A")),
+                          title: Text(AppLocalizations.of(context)!.nameZA)),
                       ListTile(
                           onTap: () {
                             ref
@@ -182,7 +183,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             menuController.close();
                           },
                           dense: true,
-                          title: const Text("Old items to new")),
+                          title: Text(
+                              AppLocalizations.of(context)!.oldItemsToNew)),
                       ListTile(
                           onTap: () {
                             ref
@@ -195,7 +197,8 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             menuController.close();
                           },
                           dense: true,
-                          title: const Text("New items to old")),
+                          title: Text(
+                              AppLocalizations.of(context)!.newItemsToOld)),
                       ListTile(
                           onTap: () {
                             ref
@@ -208,19 +211,20 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             menuController.close();
                           },
                           dense: true,
-                          title: const Text("Last updated")),
+                          title:
+                              Text(AppLocalizations.of(context)!.lastUpdated)),
                     ],
                     child: Text(orderByLabel),
                   ),
                   if (MediaQuery.of(context).size.width > 840) ...[
                     IconButton(
-                        tooltip: "Refresh data",
+                        tooltip: AppLocalizations.of(context)!.refresh,
                         icon: const Icon(Icons.refresh),
                         onPressed: () {
                           ref.invalidate(inventoryProvider);
                         }),
                     IconButton(
-                        tooltip: 'Add item',
+                        tooltip: AppLocalizations.of(context)!.add,
                         icon: const Icon(Icons.add_circle),
                         onPressed: () async {
                           var newItem =
@@ -233,9 +237,9 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             return;
                           }
                           if (newItem == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Item could not be added")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content:
+                                    Text(AppLocalizations.of(context)!.error)));
                             return;
                           }
                           ref.invalidate(inventoryProvider);
@@ -249,7 +253,7 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                             height: 20,
                             child: CircularProgressIndicator())
                         : IconButton(
-                            tooltip: 'Delete selected',
+                            tooltip: AppLocalizations.of(context)!.delete,
                             icon: const Icon(Icons.delete),
                             onPressed: () {
                               selected.isNotEmpty
@@ -262,8 +266,9 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                                 "Are you sure you want to delete these items?"),
                                             message: const Text(
                                                 "This action cannot be undone"),
-                                            confirmMessage:
-                                                const Text("Delete"),
+                                            confirmMessage: Text(
+                                                AppLocalizations.of(context)!
+                                                    .delete),
                                             action: () async {
                                               setState(() {
                                                 deleting = true;
@@ -284,8 +289,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                                             });
                                       })
                                   : ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text("No item selected")));
+                                      SnackBar(
+                                          content: Text(
+                                              AppLocalizations.of(context)!
+                                                  .noItemSelected)));
                             }),
                   ]
                 ])
@@ -365,8 +372,10 @@ class InventoryPageState extends ConsumerState<InventoryPage> {
                     color: Theme.of(context).colorScheme.surfaceDim,
                     width: 1,
                   ),
-                  const Expanded(
-                      child: Center(child: Text("No item selected"))),
+                  Expanded(
+                      child: Center(
+                          child: Text(
+                              AppLocalizations.of(context)!.noItemSelected))),
                 ]
             ]))
     ]);

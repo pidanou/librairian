@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/widgets/storage_selector.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditLocation extends ConsumerStatefulWidget {
   final Location? location;
@@ -44,12 +45,13 @@ class EditLocationState extends ConsumerState<EditLocation> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text("Cancel")),
+              child: Text(AppLocalizations.of(context)!.cancel)),
           TextButton(
             onPressed: () {
               save();
             },
-            child: const Text("Save", textAlign: TextAlign.end),
+            child: Text(AppLocalizations.of(context)!.save,
+                textAlign: TextAlign.end),
           )
         ],
         title: widget.title,

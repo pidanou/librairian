@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/constants/keys.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchConfig extends ConsumerStatefulWidget {
   final void Function(String) onChangeSearchMode;
@@ -42,7 +43,7 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                       });
                       widget.onChangeSearchMode(searchMode);
                     },
-                    child: const Text('by description'),
+                    child: Text(AppLocalizations.of(context)!.byDescription),
                   ),
                   MenuItemButton(
                     onPressed: () {
@@ -51,7 +52,7 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                       });
                       widget.onChangeSearchMode(searchMode);
                     },
-                    child: const Text('by name'),
+                    child: Text(AppLocalizations.of(context)!.byName),
                   ),
                 ],
                 builder: (_, MenuController controller, Widget? child) {
@@ -82,7 +83,8 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                 ],
                 builder: (_, MenuController controller, Widget? child) {
                   return ActionChip(
-                      label: Text("${matchThreshold * 100}% similarity"),
+                      label: Text(
+                          "${matchThreshold * 100}% ${AppLocalizations.of(context)!.similarity}"),
                       onPressed: () {
                         if (controller.isOpen) {
                           controller.close();
@@ -131,7 +133,8 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                       controller.open();
                     }
                   },
-                  label: Text('$maxResults results'),
+                  label: Text(
+                      '$maxResults ${AppLocalizations.of(context)!.results}'),
                 );
               },
             ),
@@ -146,17 +149,19 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                   constraints: BoxConstraints(minWidth: constraints.maxWidth),
                   child: Row(children: [
                     Tooltip(
-                        message: "Search mode",
+                        message: AppLocalizations.of(context)!.searchMode,
                         child: SegmentedButton(
                             showSelectedIcon: false,
-                            segments: const [
+                            segments: [
                               ButtonSegment(
                                 value: "by description",
-                                label: Text("by description"),
+                                label: Text(AppLocalizations.of(context)!
+                                    .byDescription),
                               ),
                               ButtonSegment(
                                 value: "by name",
-                                label: Text("by item name"),
+                                label:
+                                    Text(AppLocalizations.of(context)!.byName),
                               ),
                             ],
                             selected: <String>{searchMode},
@@ -167,7 +172,7 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                               widget.onChangeSearchMode(searchMode);
                             })),
                     Tooltip(
-                        message: "Match threshold",
+                        message: AppLocalizations.of(context)!.matchThreshold,
                         child: Slider(
                             min: 0,
                             max: 1,
@@ -180,7 +185,7 @@ class SearchConfigState extends ConsumerState<SearchConfig> {
                               widget.onChangeMatchThreshold(matchThreshold);
                             })),
                     Tooltip(
-                        message: "Max results",
+                        message: AppLocalizations.of(context)!.maxResults,
                         child: SegmentedButton(
                             showSelectedIcon: false,
                             segments: const [

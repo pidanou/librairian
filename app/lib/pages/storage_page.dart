@@ -4,6 +4,7 @@ import 'package:librairian/providers/storage.dart';
 import 'package:librairian/widgets/dialog_add_storage.dart';
 import 'package:librairian/widgets/custom_appbar.dart';
 import 'package:librairian/widgets/manage_storages.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StoragePage extends ConsumerStatefulWidget {
   const StoragePage({super.key, this.storageID});
@@ -21,10 +22,10 @@ class StoragePageState extends ConsumerState<StoragePage> {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,
         appBar: CustomAppBar(
-          title: const Text("My storages"),
+          title: Text(AppLocalizations.of(context)!.myStorages),
           actions: [
             IconButton(
-                tooltip: 'Add storage',
+                tooltip: AppLocalizations.of(context)!.add,
                 icon: const Icon(Icons.add_circle),
                 onPressed: () {
                   showDialog(
@@ -55,7 +56,7 @@ class StoragePageState extends ConsumerState<StoragePage> {
         ListTile(
           title: Row(children: [
             IconButton(
-                tooltip: 'Add storage',
+                tooltip: AppLocalizations.of(context)!.add,
                 icon: const Icon(
                   Icons.add_circle,
                 ),
@@ -68,7 +69,7 @@ class StoragePageState extends ConsumerState<StoragePage> {
                 }),
             if (MediaQuery.of(context).size.width > 840)
               IconButton(
-                  tooltip: 'Refresh data',
+                  tooltip: AppLocalizations.of(context)!.refresh,
                   icon: const Icon(
                     Icons.refresh,
                   ),

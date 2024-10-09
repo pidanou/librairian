@@ -5,6 +5,7 @@ import 'package:librairian/helpers/date.dart';
 import 'package:librairian/providers/storage.dart' as sp;
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/widgets/edit_storage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ManageStorages extends ConsumerStatefulWidget {
   const ManageStorages({required this.selectAll, this.editing, super.key});
@@ -32,7 +33,9 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
     if (storages is AsyncError) {
       return RefreshIndicator(
           onRefresh: () => ref.refresh(sp.storagesProvider.future),
-          child: const Column(children: [Center(child: Text('Error'))]));
+          child: Column(children: [
+            Center(child: Text(AppLocalizations.of(context)!.error))
+          ]));
     }
     if (storages is AsyncData) {
       return Row(children: [
@@ -87,11 +90,13 @@ class ManageStoragesState extends ConsumerState<ManageStorages> {
                           editing = null;
                         });
                       }))
-              : const Expanded(
+              : Expanded(
                   flex: 2,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text("No storage selected")]))
+                      children: [
+                        Text(AppLocalizations.of(context)!.noStorageSelected)
+                      ]))
         ]
       ]);
     }

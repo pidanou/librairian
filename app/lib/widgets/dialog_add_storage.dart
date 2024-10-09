@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:librairian/models/storage.dart';
 import 'package:librairian/providers/storage.dart' as sp;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DialogAddStorage extends ConsumerStatefulWidget {
   const DialogAddStorage({super.key});
@@ -34,7 +35,7 @@ class DialogAddStorageState extends ConsumerState<DialogAddStorage> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         TextButton(
           onPressed: () {
@@ -49,15 +50,15 @@ class DialogAddStorageState extends ConsumerState<DialogAddStorage> {
             }).catchError((e) {
               if (context.mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("An error occured")));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(AppLocalizations.of(context)!.error)));
               }
             });
           },
-          child: const Text('Add'),
+          child: Text(AppLocalizations.of(context)!.add),
         )
       ],
-      title: const Text('Add Storage'),
+      title: Text(AppLocalizations.of(context)!.add),
       content: content(context),
     );
   }

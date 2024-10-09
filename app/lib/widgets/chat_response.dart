@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/models/item.dart';
 import 'package:librairian/widgets/item_listtile.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatResponse extends ConsumerStatefulWidget {
   const ChatResponse(
@@ -21,9 +22,10 @@ class ChatResponseState extends ConsumerState<ChatResponse> {
   @override
   Widget build(BuildContext context) {
     if (widget.matches.isEmpty) {
-      return const Card(
+      return Card(
           child: Padding(
-              padding: EdgeInsets.all(10), child: Text('No match found')));
+              padding: const EdgeInsets.all(10),
+              child: Text(AppLocalizations.of(context)!.noResult)));
     }
     return Column(children: [
       for (var match in widget.matches)

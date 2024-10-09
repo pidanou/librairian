@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:librairian/pages/account_page.dart';
 import 'package:librairian/pages/item_edit_form_page.dart';
+import 'package:librairian/pages/language_page.dart';
 import 'package:librairian/pages/storage_detail_page.dart';
+import 'package:librairian/pages/theme_page.dart';
 import 'package:librairian/widgets/scaffold_with_nested_navigation.dart';
 import 'package:librairian/pages/login_page.dart';
 import 'package:librairian/pages/settings_page.dart';
@@ -130,6 +132,16 @@ final goRouter = GoRouter(
                     path: "account",
                     pageBuilder: (context, state) => const NoTransitionPage(
                           child: AccountPage(),
+                        )),
+                GoRoute(
+                    path: "theme",
+                    pageBuilder: (context, state) => const NoTransitionPage(
+                          child: ThemePage(),
+                        )),
+                GoRoute(
+                    path: "language",
+                    pageBuilder: (context, state) => const NoTransitionPage(
+                          child: LanguagePage(),
                         ))
               ],
             ),

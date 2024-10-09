@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AttachmentsPicker extends StatefulWidget {
   const AttachmentsPicker({super.key, required this.onAdd});
@@ -19,7 +20,7 @@ class AttachmentsPickerState extends State<AttachmentsPicker> {
       if (!kIsWeb) ...[
         FilledButton.tonalIcon(
             icon: const Icon(Icons.add_a_photo),
-            label: const Text('Camera'),
+            label: Text(AppLocalizations.of(context)!.camera),
             onPressed: () async {
               final XFile? image =
                   await picker.pickImage(source: ImageSource.camera);
@@ -31,7 +32,7 @@ class AttachmentsPickerState extends State<AttachmentsPicker> {
       ],
       FilledButton.tonalIcon(
           icon: const Icon(Icons.add_photo_alternate),
-          label: const Text('Gallery'),
+          label: Text(AppLocalizations.of(context)!.gallery),
           onPressed: () async {
             final List<XFile> images = await picker.pickMultiImage();
             widget.onAdd(images);
