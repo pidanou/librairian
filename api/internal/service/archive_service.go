@@ -67,11 +67,11 @@ func (s *ArchiveService) UpdateItem(item *types.Item, userID *uuid.UUID) (*types
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
 		item.DescriptionEmbeddings = descriptionEmbedding
-		descriptionToken := s.EmbeddingService.CountTokens(*item.Description)
-		err = s.BillingService.AddTokenUsage(descriptionToken, userID)
-		if err != nil {
-			log.Println(err)
-		}
+		// descriptionToken := s.EmbeddingService.CountTokens(*item.Description)
+		// err = s.BillingService.AddTokenUsage(descriptionToken, userID)
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 	}
 
 	return s.ArchiveRepository.UpdateItem(item)
@@ -97,12 +97,12 @@ func (s *ArchiveService) PartialUpdateItem(itemID *uuid.UUID, newItem *types.Ite
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Cannot create description embedding")
 		}
 		newItem.DescriptionEmbeddings = descriptionEmbedding
-		descriptionToken := s.EmbeddingService.CountTokens(*newItem.Description)
-		err = s.BillingService.AddTokenUsage(descriptionToken, userID)
-		if err != nil {
-			log.Println(err)
-			return nil, err
-		}
+		// descriptionToken := s.EmbeddingService.CountTokens(*newItem.Description)
+		// err = s.BillingService.AddTokenUsage(descriptionToken, userID)
+		// if err != nil {
+		// 	log.Println(err)
+		// 	return nil, err
+		// }
 	}
 
 	mergo.Merge(newItem, types.ItemFromItemResponse(oldItem))
@@ -175,12 +175,12 @@ func (s *ArchiveService) FindMatches(search string, threshold float32, maxResult
 	if err != nil {
 		return []types.MatchedItem{}
 	}
-	searchToken := s.EmbeddingService.CountTokens(search)
-	err = s.BillingService.AddTokenUsage(searchToken, userID)
-	if err != nil {
-		log.Println(err)
-		return []types.MatchedItem{}
-	}
+	// searchToken := s.EmbeddingService.CountTokens(search)
+	// err = s.BillingService.AddTokenUsage(searchToken, userID)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return []types.MatchedItem{}
+	// }
 
 	matches := []types.MatchedItem{}
 	matchesByCaptions := []types.MatchedItem{}

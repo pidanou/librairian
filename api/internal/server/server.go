@@ -29,7 +29,7 @@ func (s *Server) Start() {
 	attachmentRepository := repository.NewPostgresAttachmentRepository(supabasePostgres)
 	billingRepository := repository.NewPostgresBillingRepository(supabasePostgres)
 
-	embeddingService := service.NewEmbeddingService(os.Getenv("OPENAI_API_KEY"), "text-embedding-3-small")
+	embeddingService := service.NewEmbeddingService(os.Getenv("SUPABASE_ANON_KEY"), os.Getenv("SUPABASE_URL"), "text-embedding-3-small")
 	similarityService := service.NewSimilarityService(supabasePostgres)
 	imageCaptionService := service.NewImageCaptionsService(os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_SERVICE_ACCOUNT_KEY"), os.Getenv("GCP_LOCATION"))
 	imageArchiveService := service.NewSupabaseImageArchiveService(os.Getenv("SUPABASE_PROJECT_ID"), os.Getenv("SUPABASE_SERVICE_KEY"))
