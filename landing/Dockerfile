@@ -10,7 +10,6 @@ COPY . ./
 RUN npm run build
 
 
-
 # Use a lightweight web server image
 FROM nginx:stable-alpine
 COPY --from=build /landing/build /usr/share/nginx/html
