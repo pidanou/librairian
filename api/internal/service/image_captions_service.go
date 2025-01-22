@@ -1,12 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	b64 "encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 
@@ -66,63 +63,64 @@ func NewImageCaptionsService(projectID string, jsonCred string, location string)
 	return &ImageCaptionService{URL: url, ProjectID: projectID, Location: location, HttpClient: httpClient}
 }
 
+// Will add captions later
 func (r *ImageCaptionService) CreateCaption(image []byte) (string, error) {
-	base64Image := b64.StdEncoding.EncodeToString(image)
+	// base64Image := b64.StdEncoding.EncodeToString(image)
+	//
+	// imageCaptionRequest := ImageCaptionRequest{
+	// 	Instances: []ImageInstance{
+	// 		{
+	// 			Image: ImageData{
+	// 				BytesBase64Encoded: base64Image,
+	// 			},
+	// 		},
+	// 	},
+	// 	Parameters: Parameters{
+	// 		SampleCount: 1,
+	// 		Language:    "fr",
+	// 	},
+	// }
+	//
+	// jsonData, err := json.Marshal(imageCaptionRequest)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return "", fmt.Errorf("failed to marshal image caption request: %v", err)
+	// }
+	//
+	// req, err := http.NewRequest("POST", r.URL, bytes.NewBuffer(jsonData))
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return "", fmt.Errorf("failed to create HTTP request: %v", err)
+	// }
+	//
+	// req.Header.Set("Content-Type", "application/json")
+	//
+	// resp, err := r.HttpClient.Do(req)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return "", fmt.Errorf("failed to send HTTP request: %v", err)
+	// }
+	// defer resp.Body.Close()
+	//
+	// bodyBytes, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to read response body: %v", err)
+	// }
+	//
+	// var result map[string]interface{}
+	// if err := json.Unmarshal(bodyBytes, &result); err != nil {
+	// 	return "", fmt.Errorf("failed to parse response body: %v", err)
+	// }
+	//
+	// predictions, ok := result["predictions"].([]interface{})
+	// if !ok || len(predictions) == 0 {
+	// 	return "", fmt.Errorf("no predictions found in response")
+	// }
+	//
+	// caption, ok := predictions[0].(string)
+	// if !ok {
+	// 	return "", fmt.Errorf("failed to extract caption from prediction")
+	// }
 
-	imageCaptionRequest := ImageCaptionRequest{
-		Instances: []ImageInstance{
-			{
-				Image: ImageData{
-					BytesBase64Encoded: base64Image,
-				},
-			},
-		},
-		Parameters: Parameters{
-			SampleCount: 1,
-			Language:    "fr",
-		},
-	}
-
-	jsonData, err := json.Marshal(imageCaptionRequest)
-	if err != nil {
-		fmt.Println(err)
-		return "", fmt.Errorf("failed to marshal image caption request: %v", err)
-	}
-
-	req, err := http.NewRequest("POST", r.URL, bytes.NewBuffer(jsonData))
-	if err != nil {
-		fmt.Println(err)
-		return "", fmt.Errorf("failed to create HTTP request: %v", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := r.HttpClient.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return "", fmt.Errorf("failed to send HTTP request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %v", err)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(bodyBytes, &result); err != nil {
-		return "", fmt.Errorf("failed to parse response body: %v", err)
-	}
-
-	predictions, ok := result["predictions"].([]interface{})
-	if !ok || len(predictions) == 0 {
-		return "", fmt.Errorf("no predictions found in response")
-	}
-
-	caption, ok := predictions[0].(string)
-	if !ok {
-		return "", fmt.Errorf("failed to extract caption from prediction")
-	}
-
-	return caption, nil
+	return "", nil
 }

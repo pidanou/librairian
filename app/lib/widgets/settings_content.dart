@@ -18,8 +18,6 @@ class SettingsContent extends ConsumerWidget {
 
   Widget _getWidgetForSelection(String? selection) {
     switch (selection) {
-      case 'usage':
-        return Container(); // Replace with the actual Usage widget
       case 'account':
         return const AccountForm(); // Your AccountForm widget here
       case 'theme':
@@ -67,16 +65,6 @@ class SettingsContent extends ConsumerWidget {
                       }
                     },
                   ),
-                  ListTile(
-                      selectedColor: Theme.of(context).colorScheme.onSurface,
-                      selectedTileColor:
-                          Theme.of(context).colorScheme.surfaceDim,
-                      selected: ref.watch(selectedSettingProvider) == "usage",
-                      leading: const Icon(Icons.bar_chart),
-                      title: Text(AppLocalizations.of(context)!.usage),
-                      onTap: () {
-                        ref.read(selectedSettingProvider.notifier).set("usage");
-                      }),
                   const Divider(height: 0),
                   ListTile(
                       dense: true,

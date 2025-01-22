@@ -88,7 +88,8 @@ func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userI
 		if err != nil {
 			log.Println(err)
 		}
-		err = s.BillingService.AddTokenUsage(75000, userID)
+		// Set to 75000 (or cost of captions) when implemented
+		err = s.BillingService.AddTokenUsage(0, userID)
 		if err != nil {
 			log.Println(err)
 		}
