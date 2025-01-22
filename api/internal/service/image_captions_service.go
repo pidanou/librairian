@@ -1,8 +1,6 @@
 package service
 
 import (
-	"log"
-
 	"github.com/supabase-community/supabase-go"
 )
 
@@ -35,12 +33,12 @@ type ImageCaptionRequest struct {
 }
 
 func NewImageCaptionsService(API_KEY, API_URL, model string) *ImageCaptionService {
-	client, err := supabase.NewClient("", "", &supabase.ClientOptions{})
-	if err != nil {
-		log.Panic("cannot initalize client", err)
-	}
+	// client, err := supabase.NewClient("", "", &supabase.ClientOptions{})
+	// if err != nil {
+	// 	log.Panic("cannot initalize client", err)
+	// }
 	return &ImageCaptionService{
-		Client: client,
+		Client: nil,
 	}
 }
 

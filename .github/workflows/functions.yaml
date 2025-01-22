@@ -2,6 +2,8 @@ name: Deploy Function
 
 on:
   push:
+    paths:
+      - supabase/functions/**
     branches:
       - main
   workflow_dispatch:
