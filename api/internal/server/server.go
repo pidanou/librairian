@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/http"
 	"os"
 
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -48,6 +49,7 @@ func (s *Server) Start() {
 		AllowOrigins: []string{"https://app.librairian.io", "http://localhost:3000"},
 	}))
 
+	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
 	api := e.Group("/api/v1")
 	api.Use(echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
