@@ -71,6 +71,9 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
     }
     item = itemProv.value!;
     descriptionController.text = item.description;
+    nameController.text = item.name;
+    var oldDesc = item.description;
+    var oldName = item.name;
     return RefreshIndicator(
         onRefresh: () => ref.read(itemControllerProvider(widget.itemID).future),
         child: Column(children: [
@@ -81,19 +84,28 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                  editName
-                      ? ListTile(
+                      ListTile(
                           title: TextFormField(
-                              autofocus: true,
                               maxLines: 1,
                               focusNode: nameFocusNode,
                               controller: nameController,
-                              onChanged: (value) {
-                                setState(() {
-                                  item.name = value;
-                                });
+                              onTapOutside: (_) async {
+                                      if (nameController.text == oldName) return;
+                                      setState(() {
+                                        loading = true;
+                                      });
+                                      await ref
+                                          .read(itemControllerProvider(widget.itemID)
+                                              .notifier)
+                                          .patch(Item(name: nameController.text));
+                                      editName = false;
+                                      widget.onEdit?.call(item);
+                                      setState(() {
+                                        loading = false;
+                                      });
                               },
                               onFieldSubmitted: (value) async {
+                                if (nameController.text == oldName) return;
                                 setState(() {
                                   loading = true;
                                 });
@@ -107,30 +119,7 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                                   loading = false;
                                 });
                               }),
-                          trailing: IconButton(
-                              icon: const Icon(
-                                Icons.cancel,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  editName = false;
-                                });
-                                setState(() {});
-                              }),
-                        )
-                      : ListTile(
-                          title: Text(item.name,
-                              style: Theme.of(context).textTheme.titleMedium),
-                          trailing: IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  editName = true;
-                                  nameFocusNode.requestFocus();
-                                });
-                              })),
+                        ),
                   Divider(
                     color: Theme.of(context).colorScheme.surfaceDim,
                     height: 0,
@@ -204,10 +193,34 @@ class ItemEditFormState extends ConsumerState<ItemEditForm> {
                   ),
                   ListTile(
                       title: TextFormField(
+                          focusNode: descriptionFocusNode,
                           controller: descriptionController,
                           maxLengthEnforcement: MaxLengthEnforcement.enforced,
                           maxLength: 1000,
+                          onTapOutside: (_) async {
+                            if (descriptionController.text == oldDesc) return;
+                            setState(() {
+                              loading = true;
+                            });
+                            var newItem = await ref
+                                .read(itemControllerProvider(widget.itemID)
+                                    .notifier)
+                                .patch(Item(description: descriptionController.text));
+                            if (!context.mounted) return;
+                            if (newItem == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          AppLocalizations.of(context)!
+                                              .error)));
+                            }
+                            widget.onEdit?.call(item);
+                            setState(() {
+                              loading = false;
+                            });
+                          },
                           onFieldSubmitted: (value) async {
+                            if (descriptionController.text == oldDesc) return;
                             setState(() {
                               loading = true;
                             });

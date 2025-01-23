@@ -27,6 +27,7 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
 
   bool _extendedRail = false;
   bool _fixedRail = false;
+  bool _mouseOutside = false;
 
   @override
   void initState() {
@@ -63,15 +64,23 @@ class ScaffoldWithSideBarState extends ConsumerState<ScaffoldWithSideBar> {
                     children: [
                       MouseRegion(
                           onEnter: (_) {
-                            if (!_fixedRail) {
-                              setState(() {
-                                _extendedRail = true;
-                              });
+                                setState(() {
+                                  _mouseOutside = false;
+                                });
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              if (_mouseOutside) return;
+                              if (!_fixedRail) {
+                                setState(() {
+                                  _mouseOutside = false;
+                                  _extendedRail = true;
+                                });
                             }
+                            });
                           },
                           onExit: (_) {
                             if (!_fixedRail) {
                               setState(() {
+                                _mouseOutside = true;
                                 _extendedRail = false;
                               });
                             }

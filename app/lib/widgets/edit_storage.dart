@@ -222,6 +222,11 @@ class EditStorageState extends ConsumerState<EditStorage> {
                                       Location(storageId: widget.storage.id)
                                     ]),
                                   );
+                              newItem = await ref
+                                  .read(itemControllerProvider(null).notifier)
+                                  .addLocation(
+                                      Location(storageId: widget.storage.id, itemId: newItem!.id)
+                                  );
                               if (!context.mounted) {
                                 return;
                               }
