@@ -35,19 +35,19 @@ func (r *PostgresBillingRepository) AddTokenUsage(usage *types.TokenUsage) error
 }
 
 func (r *PostgresBillingRepository) GetUserMonthlyTokenUsage(userID *uuid.UUID) (int, error) {
-	var amount int
-	subscription, err := r.GetUserActiveSubscription(userID)
-	if err != nil || subscription == nil {
-		return 0, errors.New("no active subscription")
-	}
+	// var amount int
+	// subscription, err := r.GetUserActiveSubscription(userID)
+	// if err != nil || subscription == nil {
+	// 	return 0, errors.New("no active subscription")
+	// }
 
-	query := `SELECT COALESCE(SUM(amount), 0)  FROM token_usage WHERE user_id = $1 AND created_at BETWEEN $2 AND $3`
-	err = r.DB.Get(&amount, query, userID, subscription.SubscriptionStart, subscription.SubscriptionEnd)
-	if err != nil {
-		log.Println("Cannot get token usage: ", err)
-		return 0, err
-	}
-	return amount, nil
+	// query := `SELECT COALESCE(SUM(amount), 0)  FROM token_usage WHERE user_id = $1 AND created_at BETWEEN $2 AND $3`
+	//  err := r.DB.Get(&amount, query, userID, subscription.SubscriptionStart, subscription.SubscriptionEnd)
+	// if err != nil {
+	// 	log.Println("Cannot get token usage: ", err)
+	// 	return 0, err
+	// }
+	return 0, nil
 }
 
 func (r *PostgresBillingRepository) GetUserActiveSubscription(userID *uuid.UUID) (*types.Subscription, error) {
@@ -67,12 +67,12 @@ func (r *PostgresBillingRepository) GetUserActiveSubscription(userID *uuid.UUID)
 
 // Limit managed through Supabase RLS
 func (r *PostgresBillingRepository) GetTotalStorageUsed(userID *uuid.UUID) (int, error) {
-	var amount int
-	query := `SELECT COALESCE(SUM(size), 0)  FROM attachment WHERE user_id = $1`
-	err := r.DB.Get(&amount, query, userID)
-	if err != nil {
-		log.Println("Cannot get token usage: ", err)
-		return 0, err
-	}
-	return amount, nil
+	// var amount int
+	// query := `SELECT COALESCE(SUM(size), 0)  FROM attachment WHERE user_id = $1`
+	// err := r.DB.Get(&amount, query, userID)
+	// if err != nil {
+	// 	log.Println("Cannot get token usage: ", err)
+	// 	return 0, err
+	// }
+	return 0, nil
 }
