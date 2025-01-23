@@ -74,25 +74,15 @@ func (s *AttachmentService) AddAttachments(attachments []types.Attachment, userI
 			continue
 		}
 
-		monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
-		if monthlyTokens > 100000000 || err != nil {
-			return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
-		}
-		// captions, _ := s.ImageCaptionService.CreateCaption(attachment.Bytes)
-		// attachment.Captions = captions
-
-		// captionsEmbedding, _ := s.EmbeddingService.CreateEmbedding(captions)
-		// attachment.CaptionsEmbeddings = captionsEmbedding
-		// tokens := s.EmbeddingService.CountTokens(captions)
-		// err = s.BillingService.AddTokenUsage(tokens, userID)
-		// if err != nil {
-		// 	log.Println(err)
+		// monthlyTokens, err := s.BillingService.GetUserMonthlyTokenUsage(userID)
+		// if monthlyTokens > 100000000 || err != nil {
+		// 	return nil, echo.NewHTTPError(http.StatusForbidden, "Out of credits")
 		// }
-		// Set to 75000 (or cost of captions) when implemented
-		err = s.BillingService.AddTokenUsage(0, userID)
-		if err != nil {
-			log.Println(err)
-		}
+		captions, _ := s.ImageCaptionService.CreateCaption(attachment.Bytes)
+		attachment.Captions = captions
+
+		captionsEmbedding, _ := s.EmbeddingService.CreateEmbedding(captions)
+		attachment.CaptionsEmbeddings = captionsEmbedding
 
 		attachmentsToAdd[i] = attachment
 	}

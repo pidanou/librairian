@@ -34,9 +34,6 @@ class AttachmentDisplay extends ConsumerWidget {
                       return Padding(
                           padding: const EdgeInsets.only(right: 20),
                           child: ImageViewer(
-                            // caption: Text(
-                            //     attachments.value![index].captions ?? "",
-                            //     style: Theme.of(context).textTheme.bodySmall),
                             image: (attachment is AsyncData)
                                 ? Image.memory(attachment.value!)
                                 : const SizedBox(

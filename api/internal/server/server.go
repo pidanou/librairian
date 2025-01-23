@@ -31,7 +31,7 @@ func (s *Server) Start() {
 
 	embeddingService := service.NewEmbeddingService(os.Getenv("SUPABASE_ANON_KEY"), os.Getenv("SUPABASE_URL"), "text-embedding-3-small")
 	similarityService := service.NewSimilarityService(supabasePostgres)
-	imageCaptionService := service.NewImageCaptionsService(os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_SERVICE_ACCOUNT_KEY"), os.Getenv("GCP_LOCATION"))
+	imageCaptionService := service.NewImageCaptionsService(os.Getenv("SUPABASE_URL"), os.Getenv("SUPABASE_ANON_KEY"))
 	imageArchiveService := service.NewSupabaseImageArchiveService(os.Getenv("SUPABASE_PROJECT_ID"), os.Getenv("SUPABASE_SERVICE_KEY"))
 	billingService := service.NewPostgresBillingService(billingRepository)
 
