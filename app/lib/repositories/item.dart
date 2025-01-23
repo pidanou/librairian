@@ -80,7 +80,7 @@ class ItemRepository {
           headers: headers, body: jsonEncode(item));
       if (response.statusCode < 300) {
         Item newItem = Item.fromJson(jsonDecode(response.body));
-        return newItem;
+        return getItem(newItem.id);
       }
     } catch (e) {
       print("Exception : $e");
